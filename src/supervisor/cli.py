@@ -80,7 +80,7 @@ def _doctor(args: argparse.Namespace) -> int:
           f"backend={payload['cache_backend']}")
     print(f"  litellm status:      {payload['litellm_status']}")
     print(f"  openrouter status:   {payload['openrouter_status']}")
-    print(f"  openai router:       {payload['openai_router_status']}")
+    print(f"  openai router:       {payload['router_status']}")
     print("  safe configuration warnings:")
     if not payload["warnings"]:
         print("    none")
