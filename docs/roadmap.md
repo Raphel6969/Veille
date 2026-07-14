@@ -6,7 +6,7 @@ Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_
 |---|---|---|---|
 | 0 | Discovery, repository setup, baseline | **Complete (verified)** | Contracts, docs, synthetic workflow, fixtures, metrics defined; `pytest`/ruff/mypy green |
 | 1 | Observe and explain | **Implemented (pending release)** | SDK, automatic events, timeline, observe-only policies ([plan](development/phase-1-plan.md)) |
-| 2 | Deterministic protection | Not started | Budgets, duplicate/loop detection, intervention modes |
+| 2 | Deterministic protection | **Proposed — plan ready** | Budgets, duplicate/loop detection, intervention modes ([plan](../docs/development/phase-2-plan.md)) |
 | 3 | Planner, context, routing | Not started | Cost tiers, context manifests, model routing, validation |
 | 4 | Adaptive optimization | Not started | Semantic detection, caching, experiments |
 | 5 | Memory and enterprise | Not started | Multi-tenancy, RBAC, audit, retention |
@@ -63,10 +63,9 @@ Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_
 
 ## Explicit deferrals
 
-- Policy enforcement (warn/enforce actions) — Phase 2
 - Cost tier planner and routing — Phase 3
-- Next.js control plane UI (Phase 1 delivered CLI/API-first)
-- PostgreSQL/Redis/MinIO deep wiring (Phase 1+)
+- Next.js control plane UI (Phase 1 delivered CLI-first; Phase 2 enforcement observable via CLI/OTel/audit)
+- PostgreSQL/Redis/MinIO deep wiring (Phase 2+; Redis counters optional behind a port)
 - Real LiteLLM provider calls (opt-in)
 - Langfuse/Phoenix/LangSmith export (Phase 1+; OTel export implemented)
 
