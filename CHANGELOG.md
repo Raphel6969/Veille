@@ -4,6 +4,20 @@ All notable changes are documented here. This project follows phase-based delive
 
 ## [Unreleased]
 
+### Approved cache policy (post-0.2.0, ADR-012)
+
+- **`supervisor/optimize/policy.py`**: `CachePolicy` + `build_cache_key` encode the
+  three partner-validated cache rules. `search_competitors` is cacheable only for
+  **identical normalized inputs** (exact); semantic/near-duplicate matches are
+  recommended, never served. Cache keys include **tenant/project, tool version,
+  policy version, and authorization/context boundaries**. Default **300s TTL**;
+  expired/uncertain results re-execute. Serving is gated behind partner
+  confirmation (`SUPERVISOR_CACHE_APPROVED` override or `SUPERVISOR_CACHE_CONFIRMATIONS >= 3`).
+- **SDK wiring** (`src/supervisor/sdk/supervisor.py`): `tool()`/`model()` serve only
+  when approved, allowlisted, idempotent, and exact; composite key + TTL applied.
+- **Adaptive rerouting remains advisory-only** (unchanged).
+- Tests: `tests/sdk/test_cache_policy.py` (6 rules/gate tests); 125 total passing.
+
 ## [0.2.0] — Phases 1–5 (2026-07-14)
 
 ### Phase 5 — Memory lifecycle & retrieval governance (implemented)

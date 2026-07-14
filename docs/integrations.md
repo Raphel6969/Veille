@@ -72,7 +72,8 @@ The `ModelRegistry` is seeded with mock candidates (`mock-research`, `mock-analy
 
 - `SemanticKey` port (`src/supervisor/optimize/keys.py`): `ShingleSemanticKey` tokenizes input into word-shingles and compares with Jaccard similarity (default threshold 0.85). An embedding backend is a future port behind this interface.
 - `CacheBackend` port (`src/supervisor/optimize/cache.py`): `InMemoryCache` (bounded LRU-ish FIFO + per-entry TTL) is the default; Redis is a later backend behind the same port.
-- `Supervisor.tool(..., idempotent=True)` / `Supervisor.model(..., cacheable=True)` consult `DuplicateDetector` and the cache; dry-run recommends, active serves idempotent hits.
+- `CachePolicy` (`src/supervisor/optimize/policy.py`): partner-validated rules — serve only identical normalized inputs (exact), composite keys include tenant/project/tool+policy version/auth+context boundaries, 300s TTL with re-execute on expiry/uncertainty, and a partner-confirmation rollout gate (`approved`). See [ADR-012](adr/012-cache-policy.md).
+- `Supervisor.tool(..., idempotent=True)` / `Supervisor.model(..., cacheable=True)` consult `DuplicateDetector` and the cache; dry-run recommends, active serves allowlisted exact hits once the confirmation gate is met.
 
 See [ADR-010](adr/010-semantic-dedup-caching.md).
 

@@ -147,6 +147,19 @@ Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_
 - Under `SUPERVISOR_MEMORY=1` the demo researcher node stores a working memory and retrieves it on the next call; off-mode emits no `memory.*` events and leaves behavior unchanged.
 - Works without API keys on Python 3.14.
 
+## Post-0.2.0 — Approved cache policy (ADR-012, on `pre_dev`)
+
+The design-partner program validated three explicit cache rules, now enforced:
+
+- `search_competitors` cacheable **only for identical normalized inputs** (exact); semantic/near-duplicate → recommend, never serve.
+- Cache keys include **tenant/project, tool version, policy version, auth/context boundaries**.
+- Default **300s TTL**; expired/uncertain results re-execute. Serving gated behind **partner confirmation** (`SUPERVISOR_CACHE_APPROVED=1` or `SUPERVISOR_CACHE_CONFIRMATIONS >= 3`).
+- Adaptive rerouting stays **advisory-only**.
+- `pytest` — **125 passed** (added `tests/sdk/test_cache_policy.py`); ruff + mypy clean.
+
+**Rollout gate:** build cross-run (durable) caching only after **3–5 partners confirm**
+the cacheable unit (Q3) and freshness policy (Q4) with no material stale-result concern.
+
 ## Phase 1 approval gate — completed
 
 ```

@@ -1,7 +1,7 @@
 [
   {
     "schema": "design-partner-packet/1",
-    "generated_at": "2026-07-14T11:57:30.292513+00:00",
+    "generated_at": "2026-07-14T12:13:09.780730+00:00",
     "supervisor_version": "0.2.0",
     "scenario": "expensive",
     "flag_preset": "all",
@@ -9,6 +9,7 @@
       "SUPERVISOR_PLAN": "1",
       "SUPERVISOR_OPTIMIZE": "1",
       "SUPERVISOR_OPTIMIZE_MODE": "active",
+      "SUPERVISOR_CACHE_APPROVED": "1",
       "SUPERVISOR_MEMORY": "1"
     },
     "task_contract_met": true,
@@ -187,7 +188,7 @@
         {
           "role": "researcher",
           "included": [
-            "0477eb6c-67f3-4e90-9760-297e6998be00"
+            "4244f314-4b52-466c-a19b-88f2242c8d8e"
           ],
           "excluded": [],
           "stale": [],
@@ -238,13 +239,14 @@
   },
   {
     "schema": "design-partner-packet/1",
-    "generated_at": "2026-07-14T11:57:30.297900+00:00",
+    "generated_at": "2026-07-14T12:13:09.787769+00:00",
     "supervisor_version": "0.2.0",
     "scenario": "expensive",
     "flag_preset": "optimize_active",
     "flags": {
       "SUPERVISOR_OPTIMIZE": "1",
-      "SUPERVISOR_OPTIMIZE_MODE": "active"
+      "SUPERVISOR_OPTIMIZE_MODE": "active",
+      "SUPERVISOR_CACHE_APPROVED": "1"
     },
     "task_contract_met": true,
     "total_cost_usd": 0.0218,
@@ -437,7 +439,7 @@
   },
   {
     "schema": "design-partner-packet/1",
-    "generated_at": "2026-07-14T11:57:30.303733+00:00",
+    "generated_at": "2026-07-14T12:13:09.793019+00:00",
     "supervisor_version": "0.2.0",
     "scenario": "expensive",
     "flag_preset": "plan",
@@ -646,7 +648,7 @@
   },
   {
     "schema": "design-partner-packet/1",
-    "generated_at": "2026-07-14T11:57:30.310681+00:00",
+    "generated_at": "2026-07-14T12:13:09.798337+00:00",
     "supervisor_version": "0.2.0",
     "scenario": "success",
     "flag_preset": "all",
@@ -654,6 +656,7 @@
       "SUPERVISOR_PLAN": "1",
       "SUPERVISOR_OPTIMIZE": "1",
       "SUPERVISOR_OPTIMIZE_MODE": "active",
+      "SUPERVISOR_CACHE_APPROVED": "1",
       "SUPERVISOR_MEMORY": "1"
     },
     "task_contract_met": true,
@@ -712,7 +715,7 @@
         {
           "role": "researcher",
           "included": [
-            "586d5bee-5fbc-450e-91cf-ac14779e2b49"
+            "b4b80066-f6ab-4ab0-bfae-98ae3850c87a"
           ],
           "excluded": [],
           "stale": [],
@@ -763,7 +766,7 @@
   },
   {
     "schema": "design-partner-packet/1",
-    "generated_at": "2026-07-14T11:57:30.317256+00:00",
+    "generated_at": "2026-07-14T12:13:09.804595+00:00",
     "supervisor_version": "0.2.0",
     "scenario": "failed_validation",
     "flag_preset": "all",
@@ -771,6 +774,7 @@
       "SUPERVISOR_PLAN": "1",
       "SUPERVISOR_OPTIMIZE": "1",
       "SUPERVISOR_OPTIMIZE_MODE": "active",
+      "SUPERVISOR_CACHE_APPROVED": "1",
       "SUPERVISOR_MEMORY": "1"
     },
     "task_contract_met": false,
@@ -829,7 +833,7 @@
         {
           "role": "researcher",
           "included": [
-            "ace57b66-0bd2-4c3b-93fa-6e0e8ff9a75f"
+            "3298c9d5-0e72-4a5c-b9f3-c4562d05eb65"
           ],
           "excluded": [],
           "stale": [],
@@ -880,7 +884,7 @@
   },
   {
     "schema": "design-partner-packet/1",
-    "generated_at": "2026-07-14T11:57:30.323248+00:00",
+    "generated_at": "2026-07-14T12:13:09.811022+00:00",
     "supervisor_version": "0.2.0",
     "scenario": "expensive",
     "flag_preset": "memory",
@@ -1049,7 +1053,7 @@
         {
           "role": "researcher",
           "included": [
-            "fbc8326a-9712-42f7-bfca-76b0e86ca869"
+            "f0410243-5bde-41b2-b587-dce410167d29"
           ],
           "excluded": [],
           "stale": [],

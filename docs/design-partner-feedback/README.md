@@ -13,7 +13,7 @@ mapped to the five questions.
 
 ```powershell
 # One demo for a partner (they answer the printed questions)
-$env:SUPERVISOR_PLAN=1; $env:SUPERVISOR_OPTIMIZE=1; $env:SUPERVISOR_OPTIMIZE_MODE=active; $env:SUPERVISOR_MEMORY=1
+$env:SUPERVISOR_PLAN=1; $env:SUPERVISOR_OPTIMIZE=1; $env:SUPERVISOR_OPTIMIZE_MODE=active; $env:SUPERVISOR_CACHE_APPROVED=1; $env:SUPERVISOR_MEMORY=1
 python -m scripts.design_partner_demo --scenario expensive --partner P1
 
 # Regenerate the objective system-signal baseline (no humans needed)
@@ -47,10 +47,10 @@ aggregation section.
 ## Current objective findings (from `system-signals.md`)
 
 - **Q3 (cacheable):** the `expensive` scenario calls `search_competitors` twice
-  with an identical query — an exact duplicate. Under `optimize_active`, it is
-  served from cache (`cache_served=1`, `savings=$0.002`). `fetch_source` also
-  repeats but is **not** flagged cacheable (not idempotent, inputs differ). This
-  is the clearest "repeated, cacheable" signal in the demo workload.
+  with an identical query — an exact duplicate. Under `optimize_active` + the
+  approved gate, it is served from cache (`cache_served=1`, `savings=$0.002`).
+  `fetch_source` also repeats but is **not** flagged cacheable (not idempotent,
+  inputs differ). This is the clearest "repeated, cacheable" signal.
 - **Q1 (tiers):** plan tier resolves to `high_quality` across scenarios; total
   cost is small ($0.0138–$0.0238) because the demo uses mock models/tools.
 - **Q5 (routing):** routing is advisory and annotates `model.requested` with
@@ -61,9 +61,24 @@ aggregation section.
   `policy.triggered`; `SUPERVISOR_ENFORCE=true` emits `intervention.applied`
   with `action`/`policy_id`/`reason`/`human_review_required`.
 
-## Next step (conditional)
+## Approved cache policy (encoded from feedback — ADR-012)
 
-If partner feedback validates **clear repeated work (Q3)** and **safe freshness
-rules (Q4)**, build **cross-run caching** next (durable `CacheBackend`). Keep
-**adaptive rerouting recommendation-only** until enough real outcomes prove it
-preserves quality.
+The three rules from partner feedback are now enforced in code:
+
+1. `search_competitors` is cacheable **only for identical normalized inputs**
+   (exact match). Semantic/near-duplicate matches are recommended, never served.
+2. Cache keys include **tenant/project, tool version, policy version, and
+   authorization/context boundaries** (`build_cache_key`).
+3. Default **300s TTL**; expired/uncertain results **re-execute** (never served
+   stale). Serving is gated behind partner confirmation
+   (`SUPERVISOR_CACHE_APPROVED=1` or `SUPERVISOR_CACHE_CONFIRMATIONS>=3`).
+
+Adaptive rerouting remains **advisory-only**.
+
+## Rollout gate (from the release plan)
+
+Build **cross-run caching** only after **3–5 partners confirm** the cacheable
+unit (Q3) and freshness policy (Q4) with **no material stale-result concern**.
+Until then, caching stays in-run and approval-gated; rerouting stays
+recommendation-only. Capture confirmations in `capture-template.md` and set
+`SUPERVISOR_CACHE_CONFIRMATIONS` accordingly.

@@ -30,6 +30,7 @@ def test_failed_validation_scenario() -> None:
 def test_optimize_active_serves_duplicate_from_cache() -> None:
     os.environ["SUPERVISOR_OPTIMIZE"] = "1"
     os.environ["SUPERVISOR_OPTIMIZE_MODE"] = "active"
+    os.environ["SUPERVISOR_CACHE_APPROVED"] = "1"
     real_emit = sdk_supervisor.RunCollector.emit
     counts: dict[str, int] = {}
 
@@ -46,6 +47,7 @@ def test_optimize_active_serves_duplicate_from_cache() -> None:
     finally:
         os.environ.pop("SUPERVISOR_OPTIMIZE", None)
         os.environ.pop("SUPERVISOR_OPTIMIZE_MODE", None)
+        os.environ.pop("SUPERVISOR_CACHE_APPROVED", None)
 
     assert counts.get("optimization.applied", 0) >= 1
     # A served duplicate avoids the duplicate search cost.

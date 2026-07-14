@@ -27,6 +27,7 @@ from supervisor.memory import (
     MemoryTier,
 )
 from supervisor.optimize import DuplicateDetector, InMemoryCache
+from supervisor.optimize.policy import CachePolicy, build_cache_key
 from supervisor.planning import Planner
 from supervisor.policy.budgets import BudgetTracker
 from supervisor.policy.enforcement import Enforcer, GuardDecision, StopRun
@@ -64,6 +65,10 @@ class Supervisor:
         optimize: bool | None = None,
         optimize_mode: str | None = None,
         memory: bool | None = None,
+        cache_policy: CachePolicy | None = None,
+        tenant: str = "default",
+        project: str | None = None,
+        policy_version: str = "unversioned",
     ) -> None:
         self.task_contract = task_contract
         self.task_id = task_contract.task_id
@@ -95,7 +100,15 @@ class Supervisor:
         )
         self.optimize_mode = mode if self.optimize else "dry_run"
         self._detector = DuplicateDetector()
-        self._cache = InMemoryCache()
+        # Approved cache policy (v0.2.0 partner-validated rules + confirmation gate).
+        self._cache_policy = cache_policy or CachePolicy(
+            approved_override=os.getenv("SUPERVISOR_CACHE_APPROVED") == "1",
+            partner_confirmations=int(os.getenv("SUPERVISOR_CACHE_CONFIRMATIONS", "0") or 0),
+        )
+        self._tenant = tenant
+        self._project = project or task_contract.task_id or "default"
+        self._policy_version = policy_version
+        self._cache = InMemoryCache(default_ttl_seconds=self._cache_policy.default_ttl_seconds)
         # Phase 5: memory governance is opt-in (mirrors SUPERVISOR_ENFORCE / PLAN / OPTIMIZE).
         self.memory_enabled = (
             memory if memory is not None else os.getenv("SUPERVISOR_MEMORY") == "1"
@@ -193,6 +206,8 @@ class Supervisor:
         adapter: Any,
         routing: RoutingDecision | None = None,
         cacheable: bool = True,
+        auth_scope: str = "default",
+        context_boundary: str = "default",
     ) -> str:
         request_attrs: dict[str, Any] = {"prompt_preview": prompt[:120]}
         if routing is not None:
@@ -200,18 +215,35 @@ class Supervisor:
             request_attrs["routing_reason"] = routing.reason
             request_attrs["routing_capability"] = routing.capability
 
-        # Phase 4: semantic dedup + caching for model calls (opt-in).
+        # Phase 4/5 cache policy for model calls (opt-in, approval-gated).
         opt_match = None
         served = False
         cached: dict[str, Any] | None = None
+        composite_key: str | None = None
         if self.optimize and cacheable:
             exact_key = _sha256(f"{model}|{prompt}")
+            composite_key = build_cache_key(
+                f"model:{model}",
+                prompt,
+                tenant=self._tenant,
+                project=self._project,
+                tool_version="unversioned",
+                policy_version=self._policy_version,
+                auth_scope=auth_scope,
+                context_boundary=context_boundary,
+            )
             opt_match = self._detector.check(f"model:{model}", prompt, exact_key)
             if opt_match is not None:
                 request_attrs["match_type"] = opt_match.match_type
                 request_attrs["similarity"] = opt_match.similarity
-                cached = self._cache.get(opt_match.cache_key)
-                served = cached is not None and self.optimize_mode == "active"
+                cached = self._cache.get(composite_key)
+                served = (
+                    cached is not None
+                    and self.optimize_mode == "active"
+                    and self._cache_policy.approved
+                    and self._cache_policy.is_cacheable_model(model)
+                    and self._cache_policy.may_serve(opt_match.match_type)
+                )
 
         self._collector.emit(
             EventType.MODEL_REQUESTED,
@@ -228,7 +260,7 @@ class Supervisor:
                 agent_id=agent_id,
                 model_name=model,
                 attributes={
-                    "cache_key": opt_match.cache_key,
+                    "cache_key": composite_key or opt_match.cache_key,
                     "match_type": opt_match.match_type,
                     "similarity": opt_match.similarity,
                     "cache_hit": True,
@@ -250,17 +282,24 @@ class Supervisor:
 
         result = adapter.complete(model, prompt)
 
-        if self.optimize and cacheable and cached is None:
+        if (
+            self.optimize
+            and cacheable
+            and self._cache_policy.is_cacheable_model(model)
+            and cached is None
+            and composite_key is not None
+        ):
             self._cache.put(
-                    exact_key,
-                    {
-                        "content": result.content,
-                        "latency_ms": result.latency_ms,
-                        "input_tokens": result.input_tokens,
-                        "output_tokens": result.output_tokens,
-                        "cost_usd": result.cost_usd,
-                    },
-                )
+                composite_key,
+                {
+                    "content": result.content,
+                    "latency_ms": result.latency_ms,
+                    "input_tokens": result.input_tokens,
+                    "output_tokens": result.output_tokens,
+                    "cost_usd": result.cost_usd,
+                },
+                ttl_seconds=self._cache_policy.default_ttl_seconds,
+            )
             if opt_match is not None and self.optimize_mode == "dry_run":
                 self._collector.emit(
                     EventType.OPTIMIZATION_RECOMMENDED,
@@ -268,7 +307,7 @@ class Supervisor:
                     agent_id=agent_id,
                     model_name=model,
                     attributes={
-                        "cache_key": opt_match.cache_key,
+                        "cache_key": composite_key or opt_match.cache_key,
                         "match_type": opt_match.match_type,
                         "similarity": opt_match.similarity,
                         "cache_hit": cached is not None,
@@ -451,6 +490,9 @@ class Supervisor:
         status: str = "ok",
         error_message: str | None = None,
         idempotent: bool = False,
+        tool_version: str = "unversioned",
+        auth_scope: str = "default",
+        context_boundary: str = "default",
     ) -> Any:
         attributes: dict[str, Any] = {"input": input}
         if duplicate:
@@ -491,24 +533,39 @@ class Supervisor:
         if failed:
             attributes["failed"] = True
 
-        # Phase 4: semantic dedup + caching (opt-in). Never changes execution
-        # unless active mode serves an idempotent call from cache.
+        # Phase 4/5 cache policy (opt-in). Never changes execution unless the
+        # approved policy allows serving an exact, identical-input, cacheable call.
         opt_match = None
         served_from_cache = False
         cached_result: Any = None
+        composite_key: str | None = None
         if self.optimize and not failed:
             text = _canonical_text(input)
             exact_key = normalized_input_hash or _sha256(text)
+            composite_key = build_cache_key(
+                tool_name,
+                text,
+                tenant=self._tenant,
+                project=self._project,
+                tool_version=tool_version,
+                policy_version=self._policy_version,
+                auth_scope=auth_scope,
+                context_boundary=context_boundary,
+            )
             opt_match = self._detector.check(tool_name, text, exact_key)
             if opt_match is not None:
                 attributes["match_type"] = opt_match.match_type
                 attributes["similarity"] = opt_match.similarity
-                cached_result = self._cache.get(opt_match.cache_key)
-                if (
-                    cached_result is not None
-                    and self.optimize_mode == "active"
+                cached_result = self._cache.get(composite_key)
+                can_serve = (
+                    self.optimize_mode == "active"
+                    and self._cache_policy.approved
+                    and self._cache_policy.is_cacheable_tool(tool_name)
                     and idempotent
-                ):
+                    and self._cache_policy.may_serve(opt_match.match_type)
+                    and cached_result is not None
+                )
+                if can_serve:
                     served_from_cache = True
 
         self._collector.emit(
@@ -526,7 +583,7 @@ class Supervisor:
                 agent_id=agent_id,
                 tool_name=tool_name,
                 attributes={
-                    "cache_key": opt_match.cache_key,
+                    "cache_key": composite_key,
                     "match_type": opt_match.match_type,
                     "similarity": opt_match.similarity,
                     "cache_hit": True,
@@ -548,8 +605,17 @@ class Supervisor:
         result = fn()
         resolved_status = "error" if failed else "ok"
 
-        if self.optimize and not failed and idempotent and cached_result is None:
-            self._cache.put(exact_key, result)
+        if (
+            self.optimize
+            and not failed
+            and idempotent
+            and self._cache_policy.is_cacheable_tool(tool_name)
+            and cached_result is None
+            and composite_key is not None
+        ):
+            self._cache.put(
+                composite_key, result, ttl_seconds=self._cache_policy.default_ttl_seconds
+            )
 
         if self.optimize and not failed and opt_match is not None:
             if self.optimize_mode == "dry_run":
@@ -558,15 +624,15 @@ class Supervisor:
                     step_id=step_id,
                     agent_id=agent_id,
                     tool_name=tool_name,
-                    attributes={
-                        "cache_key": opt_match.cache_key,
-                        "match_type": opt_match.match_type,
-                        "similarity": opt_match.similarity,
-                        "cache_hit": cached_result is not None,
-                        "estimated_savings_usd": (cost_usd or 0.0)
-                        if cached_result is not None
-                        else 0.0,
-                    },
+                        attributes={
+                            "cache_key": composite_key or opt_match.cache_key,
+                            "match_type": opt_match.match_type,
+                            "similarity": opt_match.similarity,
+                            "cache_hit": cached_result is not None,
+                            "estimated_savings_usd": (cost_usd or 0.0)
+                            if cached_result is not None
+                            else 0.0,
+                        },
                 )
 
         self._collector.emit(

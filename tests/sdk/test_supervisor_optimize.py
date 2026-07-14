@@ -1,6 +1,7 @@
 from supervisor.analytics.run_summary import summarize
 from supervisor.contracts.events import EventType
 from supervisor.contracts.task import RiskLevel, TaskContract
+from supervisor.optimize.policy import CachePolicy
 from supervisor.sdk import Supervisor
 
 
@@ -45,8 +46,12 @@ def test_dry_run_recommends_but_executes() -> None:
     assert not _events(s, EventType.OPTIMIZATION_APPLIED)
 
 
+def _approved_policy() -> CachePolicy:
+    return CachePolicy(cacheable_tools={"t"}, approved_override=True)
+
+
 def test_active_serves_from_cache() -> None:
-    s = Supervisor(_task(), optimize=True, optimize_mode="active")
+    s = Supervisor(_task(), optimize=True, optimize_mode="active", cache_policy=_approved_policy())
     s.start_run()
     calls = {"n": 0}
 
@@ -64,7 +69,7 @@ def test_active_serves_from_cache() -> None:
 
 
 def test_non_idempotent_never_served() -> None:
-    s = Supervisor(_task(), optimize=True, optimize_mode="active")
+    s = Supervisor(_task(), optimize=True, optimize_mode="active", cache_policy=_approved_policy())
     s.start_run()
     calls = {"n": 0}
 
@@ -78,7 +83,7 @@ def test_non_idempotent_never_served() -> None:
 
 
 def test_summary_accounts_for_cache() -> None:
-    s = Supervisor(_task(), optimize=True, optimize_mode="active")
+    s = Supervisor(_task(), optimize=True, optimize_mode="active", cache_policy=_approved_policy())
     s.start_run()
     s.tool(
         step_id="s",

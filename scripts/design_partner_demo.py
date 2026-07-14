@@ -46,12 +46,17 @@ MEMORY_DEFAULT_TTL = None  # MemoryRecord.ttl_seconds default (no expiry)
 FLAG_PRESETS: dict[str, dict[str, str]] = {
     "baseline": {},
     "plan": {"SUPERVISOR_PLAN": "1"},
-    "optimize_active": {"SUPERVISOR_OPTIMIZE": "1", "SUPERVISOR_OPTIMIZE_MODE": "active"},
+    "optimize_active": {
+        "SUPERVISOR_OPTIMIZE": "1",
+        "SUPERVISOR_OPTIMIZE_MODE": "active",
+        "SUPERVISOR_CACHE_APPROVED": "1",
+    },
     "memory": {"SUPERVISOR_MEMORY": "1"},
     "all": {
         "SUPERVISOR_PLAN": "1",
         "SUPERVISOR_OPTIMIZE": "1",
         "SUPERVISOR_OPTIMIZE_MODE": "active",
+        "SUPERVISOR_CACHE_APPROVED": "1",
         "SUPERVISOR_MEMORY": "1",
     },
 }
@@ -203,8 +208,12 @@ def _cacheable_calls(events: list[Any], summary: RunSummary) -> dict[str, Any]:
                 opt_by_tool[tn].append(a.get("match_type") or "unknown")
     for e in events:
         if e.event_type == EventType.TOOL_REQUESTED:
+            # Count only SDK-originated tool events (the adapter also emits
+            # tool.requested callbacks without a stable tool_name).
+            tool = getattr(e, "tool_name", None)
+            if not tool:
+                continue
             a = _attrs(e)
-            tool = getattr(e, "tool_name", None) or a.get("name") or "?"
             inp = a.get("input")
             key = f"{tool}::{json.dumps(inp, sort_keys=True, default=str)}"
             g = groups.setdefault(
