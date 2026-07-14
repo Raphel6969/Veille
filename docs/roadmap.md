@@ -7,7 +7,7 @@ Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_
 | 0 | Discovery, repository setup, baseline | **Complete (verified)** | Contracts, docs, synthetic workflow, fixtures, metrics defined; `pytest`/ruff/mypy green |
 | 1 | Observe and explain | **Implemented (pending release)** | SDK, automatic events, timeline, observe-only policies ([plan](development/phase-1-plan.md)) |
 | 2 | Deterministic protection | **Implemented (pending release)** | Budgets, duplicate/loop detection, intervention modes ([plan](development/phase-2-plan.md)) |
-| 3 | Planner, context, routing | **Proposed — plan ready** | Cost tiers, context manifests, model routing, validation ([plan](development/phase-3-plan.md)) |
+| 3 | Planner, context, routing | **Implemented (pending release)** | Cost tiers, context manifests, model routing, validation ([plan](development/phase-3-plan.md)) |
 | 4 | Adaptive optimization | Not started | Semantic detection, caching, experiments |
 | 5 | Memory and enterprise | Not started | Multi-tenancy, RBAC, audit, retention |
 | 6 | Simulation and learned policies | Not started | Offline simulation, learned recommendations |
@@ -63,7 +63,6 @@ Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_
 
 ## Explicit deferrals
 
-- Cost tier planner and routing — Phase 3
 - Next.js control plane UI (Phase 1 delivered CLI-first; Phase 2 enforcement observable via CLI/OTel/audit)
 - PostgreSQL/Redis/MinIO deep wiring (Phase 2+; Redis counters optional behind a port)
 - Real LiteLLM provider calls (opt-in)
@@ -87,6 +86,24 @@ Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_
 - `ruff check` / `ruff format` — clean
 - `mypy src/supervisor` — clean (strict)
 - Under `SUPERVISOR_ENFORCE=true` the expensive demo scenario is stopped on retry-budget exhaustion; success scenario is unaffected (non-interference).
+
+## Phase 3 deliverables
+
+- [x] `PlanTier` vocabulary + deterministic `select_tier(task)` (risk baseline, cost bump, critical clamp)
+- [x] `Planner.build_plan` → `ExecutionPlan` (tier options with cost/latency multipliers + steps; one `recommended`)
+- [x] `ContextEngine.build_manifest` → role-sensitive `ContextManifest` (included/excluded/compressed + estimated tokens)
+- [x] `ModelRouter.select` → tier-aware `RoutingDecision` from a `ModelRegistry` (capability + tier + allowed_models, deterministic, safe fallback)
+- [x] SDK wiring: `Supervisor.plan()`, `route_model()`, `model(routing=)`, `context(master_context=)`, `start_run` carries `tier`
+- [x] `RunSummary.plan_tier` + `routing[]` from routed `model.requested` events
+- [x] Demo opt-in via `SUPERVISOR_PLAN=1` (researcher/analyst/writer wired through planner/router/context engine)
+- [x] Tests: planning, context, routing, SDK integration; ADR-008, ADR-009
+
+### Phase 3 verification (2026-07-14)
+
+- `pytest` — **79 passed** (planning, context, routing, sdk, analytics, policy, enforcement, budgets, adapters, cli, demo)
+- `ruff check` — clean
+- `mypy src/supervisor` — clean (strict)
+- `SUPERVISOR_PLAN=1` demo emits `tier` on `run.started`, per-step `context.attached` manifests, and `routing_tier` on routed `model.requested`; `RunSummary` reports `plan_tier` and `routing`.
 
 ## Phase 1 approval gate — completed
 

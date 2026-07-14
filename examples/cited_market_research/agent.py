@@ -35,6 +35,27 @@ from supervisor.sdk import Supervisor
 def _enforcement_enabled() -> bool:
     return os.environ.get("SUPERVISOR_ENFORCE", "").lower() in ("1", "true", "yes")
 
+
+def _planning_enabled() -> bool:
+    return os.environ.get("SUPERVISOR_PLAN", "").lower() in ("1", "true", "yes")
+
+
+MASTER_CONTEXT: list[str] = [
+    "question What AI runtime supervision competitors exist in 2026?",
+    "policy Approved sources must be dated within 12 months and vendor-neutral.",
+    "competitor LangChain and LangGraph are the most cited orchestration frameworks.",
+    "competitor AgentOps and LangSmith focus on observability for agent runs.",
+    "evidence Verified evidence requires a linked primary source per material claim.",
+    "rubric Brief must compare at least eight competitors with a comparison table.",
+    "constraint Cost must stay under the task contract budget; retries are bounded.",
+    "audience The brief is read by a platform engineering lead making a build/buy call.",
+    "format Output must be a markdown table plus a short risk summary.",
+    "This is a very long planning history slice that should be compressed when not "
+    "directly relevant to the current step because it contains verbose background "
+    "notes about earlier meetings, internal debates, and deprecated alternatives "
+    "that are no longer part of the recommended approach for this engagement.",
+]
+
 TASK_CONTRACT_PATH = Path(__file__).parent / "task_contract.yaml"
 FIXTURES_OUT = Path(__file__).resolve().parents[2] / "fixtures" / "traces"
 
@@ -55,16 +76,28 @@ def researcher_node(
     state: AgentState, supervisor: Supervisor, adapter: LiteLLMMockAdapter
 ) -> AgentState:
     with supervisor.node(step_id="research", agent_id="researcher", role="researcher"):
-        supervisor.context(
-            step_id="research",
-            agent_id="researcher",
-            role="researcher",
-            included=["question", "source policy", "open questions"],
-            excluded=["UI choices", "deployment logs"],
-            compressed=["planning history -> decision summary"],
-            estimated_tokens=600,
-            reason="Researcher needs the question, sourcing rules, and open questions.",
-        )
+        if _planning_enabled():
+            supervisor.context(
+                step_id="research",
+                agent_id="researcher",
+                role="researcher",
+                master_context=MASTER_CONTEXT,
+            )
+            routing = supervisor.route_model(
+                step_id="research", agent_id="researcher", capability="research"
+            )
+        else:
+            supervisor.context(
+                step_id="research",
+                agent_id="researcher",
+                role="researcher",
+                included=["question", "source policy", "open questions"],
+                excluded=["UI choices", "deployment logs"],
+                compressed=["planning history -> decision summary"],
+                estimated_tokens=600,
+                reason="Researcher needs the question, sourcing rules, and open questions.",
+            )
+            routing = None
         include_duplicates = state["scenario"] == "expensive"
         search = search_competitors(state["query"], include_duplicates=include_duplicates)
         query_hash = normalize_input("search_competitors", {"query": state["query"]})
@@ -90,13 +123,23 @@ def researcher_node(
                 duration_ms=80.0,
                 cost_usd=0.002,
             )
-        supervisor.model(
-            step_id="research",
-            agent_id="researcher",
-            model="mock-research",
-            prompt=f"Plan evidence collection for: {state['query']}",
-            adapter=adapter,
-        )
+        if routing is not None:
+            supervisor.model(
+                step_id="research",
+                agent_id="researcher",
+                model=routing.model,
+                prompt=f"Plan evidence collection for: {state['query']}",
+                adapter=adapter,
+                routing=routing,
+            )
+        else:
+            supervisor.model(
+                step_id="research",
+                agent_id="researcher",
+                model="mock-research",
+                prompt=f"Plan evidence collection for: {state['query']}",
+                adapter=adapter,
+            )
         return {
             **state,
             "role": "analyst",
@@ -109,16 +152,28 @@ def analyst_node(
     state: AgentState, supervisor: Supervisor, adapter: LiteLLMMockAdapter
 ) -> AgentState:
     with supervisor.node(step_id="analysis", agent_id="analyst", role="analyst"):
-        supervisor.context(
-            step_id="analysis",
-            agent_id="analyst",
-            role="analyst",
-            included=["verified evidence", "rubric", "constraints"],
-            excluded=["duplicate pages", "stale traces"],
-            compressed=["raw browsing -> verified claims"],
-            estimated_tokens=1200,
-            reason="Analyst needs verified evidence and the acceptance rubric.",
-        )
+        if _planning_enabled():
+            supervisor.context(
+                step_id="analysis",
+                agent_id="analyst",
+                role="analyst",
+                master_context=MASTER_CONTEXT,
+            )
+            analysis_routing = supervisor.route_model(
+                step_id="analysis", agent_id="analyst", capability="analysis"
+            )
+        else:
+            supervisor.context(
+                step_id="analysis",
+                agent_id="analyst",
+                role="analyst",
+                included=["verified evidence", "rubric", "constraints"],
+                excluded=["duplicate pages", "stale traces"],
+                compressed=["raw browsing -> verified claims"],
+                estimated_tokens=1200,
+                reason="Analyst needs verified evidence and the acceptance rubric.",
+            )
+            analysis_routing = None
         evidence: list[dict[str, Any]] = []
         fail_retries = state["scenario"] == "expensive"
         for competitor in state["competitors"]:
@@ -175,13 +230,23 @@ def analyst_node(
                 cost_usd=0.001,
             )
             evidence.append(result)
-        supervisor.model(
-            step_id="analysis",
-            agent_id="analyst",
-            model="mock-research",
-            prompt="Verify evidence coverage and open questions.",
-            adapter=adapter,
-        )
+        if analysis_routing is not None:
+            supervisor.model(
+                step_id="analysis",
+                agent_id="analyst",
+                model=analysis_routing.model,
+                prompt="Verify evidence coverage and open questions.",
+                adapter=adapter,
+                routing=analysis_routing,
+            )
+        else:
+            supervisor.model(
+                step_id="analysis",
+                agent_id="analyst",
+                model="mock-research",
+                prompt="Verify evidence coverage and open questions.",
+                adapter=adapter,
+            )
         return {**state, "role": "writer", "evidence": evidence, "retry_count": 0}
 
 
@@ -189,16 +254,28 @@ def writer_node(
     state: AgentState, supervisor: Supervisor, adapter: LiteLLMMockAdapter
 ) -> AgentState:
     with supervisor.node(step_id="writing", agent_id="writer", role="writer"):
-        supervisor.context(
-            step_id="writing",
-            agent_id="writer",
-            role="writer",
-            included=["verified facts", "audience", "format"],
-            excluded=["tool errors", "unused raw context"],
-            compressed=["evidence -> draft sections"],
-            estimated_tokens=1400,
-            reason="Writer needs verified facts and the output format.",
-        )
+        if _planning_enabled():
+            supervisor.context(
+                step_id="writing",
+                agent_id="writer",
+                role="writer",
+                master_context=MASTER_CONTEXT,
+            )
+            writing_routing = supervisor.route_model(
+                step_id="writing", agent_id="writer", capability="synthesis"
+            )
+        else:
+            supervisor.context(
+                step_id="writing",
+                agent_id="writer",
+                role="writer",
+                included=["verified facts", "audience", "format"],
+                excluded=["tool errors", "unused raw context"],
+                compressed=["evidence -> draft sections"],
+                estimated_tokens=1400,
+                reason="Writer needs verified facts and the output format.",
+            )
+            writing_routing = None
         omit_citations = state["scenario"] == "failed_validation"
         brief = synthesize_brief(state["evidence"], omit_citations=omit_citations)
         supervisor.tool(
@@ -213,13 +290,23 @@ def writer_node(
             duration_ms=90.0,
             cost_usd=0.003,
         )
-        supervisor.model(
-            step_id="writing",
-            agent_id="writer",
-            model="mock-synthesis",
-            prompt="Draft cited competitor brief.",
-            adapter=adapter,
-        )
+        if writing_routing is not None:
+            supervisor.model(
+                step_id="writing",
+                agent_id="writer",
+                model=writing_routing.model,
+                prompt="Draft cited competitor brief.",
+                adapter=adapter,
+                routing=writing_routing,
+            )
+        else:
+            supervisor.model(
+                step_id="writing",
+                agent_id="writer",
+                model="mock-synthesis",
+                prompt="Draft cited competitor brief.",
+                adapter=adapter,
+            )
         return {**state, "role": "done", "brief": brief}
 
 
@@ -242,6 +329,8 @@ def run_scenario(scenario: Literal["success", "expensive", "failed_validation"])
     supervisor.scenario = scenario
     adapter = LiteLLMMockAdapter(use_mock=True)
 
+    if _planning_enabled():
+        supervisor.plan()
     supervisor.start_run()
     graph = build_graph(supervisor, adapter)
     instrumented = LangGraphInstrumentedAdapter().attach(

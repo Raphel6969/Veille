@@ -52,6 +52,8 @@ class RunSummary:
     duplicates: int
     context_attached: int
     validation_status: str | None
+    plan_tier: str | None = None
+    routing: list[dict[str, Any]] = field(default_factory=list)
     per_step: list[StepSummary] = field(default_factory=list)
     per_model: list[ModelSummary] = field(default_factory=list)
     per_tool: list[ToolSummary] = field(default_factory=list)
@@ -60,6 +62,7 @@ class RunSummary:
         lines = [
             f"Run {self.run_id}  (task {self.task_id})",
             f"  scenario:         {self.scenario}",
+            f"  plan tier:       {self.plan_tier}",
             f"  cost:             ${self.total_cost_usd:.4f}",
             f"  latency:          {self.total_latency_s:.2f}s",
             f"  tokens in/out:    {self.total_tokens_in}/{self.total_tokens_out}",
@@ -69,6 +72,13 @@ class RunSummary:
             f"  context attached: {self.context_attached}",
             f"  validation:       {self.validation_status}",
         ]
+        if self.routing:
+            lines.append("  routing:")
+            for r in self.routing:
+                lines.append(
+                    f"    - {r.get('capability')}: {r.get('model')} "
+                    f"(tier {r.get('tier')})"
+                )
         if self.per_step:
             lines.append("  steps:")
             for s in self.per_step:
@@ -115,6 +125,19 @@ def summarize(batch: RunEventBatch) -> RunSummary:
     context_attached = sum(1 for e in events if e.event_type == EventType.CONTEXT_ATTACHED)
     validation = next((e for e in events if e.event_type == EventType.VALIDATION_COMPLETED), None)
     validation_status = validation.status if validation is not None else None
+
+    plan_tier = started.attributes.get("tier") if started is not None else None
+    routing: list[dict[str, Any]] = []
+    for e in events:
+        if e.event_type == EventType.MODEL_REQUESTED and e.attributes.get("routing_tier"):
+            routing.append(
+                {
+                    "capability": e.attributes.get("routing_capability"),
+                    "model": e.model_name,
+                    "tier": e.attributes.get("routing_tier"),
+                    "reason": e.attributes.get("routing_reason"),
+                }
+            )
 
     steps: dict[str, StepSummary] = {}
     models: dict[str, ModelSummary] = {}
@@ -165,6 +188,8 @@ def summarize(batch: RunEventBatch) -> RunSummary:
         duplicates=duplicates,
         context_attached=context_attached,
         validation_status=validation_status,
+        plan_tier=plan_tier,
+        routing=routing,
         per_step=list(steps.values()),
         per_model=list(models.values()),
         per_tool=list(tools.values()),

@@ -21,11 +21,11 @@ flowchart TD
 | Stage | Phase 0 | Inputs | Outputs | Failure paths |
 |---|---|---|---|---|
 | Agent Request | Demo only | User query, task contract YAML | Initial agent state | Missing contract |
-| Inspect Request | **Planned Phase 3** | Task contract, request metadata | Intent classification | Unsupported task type |
-| Create / Select Plan | Schema only | Task contract | `ExecutionPlan` skeleton | — |
-| Estimate Cost/Latency | **Planned Phase 3** | Plan, model pricing | Tier options (Min/Balanced/High/Max) | Exceeds policy budget |
-| Optimize Context | **Planned Phase 3** | Master context, step role | Context manifest | Conflict detected |
-| Route Model | **Planned Phase 3** | Step capabilities, registry | Routing decision + reason | No approved model |
+| Inspect Request | Implemented (Phase 3, advisory) | Task contract, request metadata | Intent classification | Unsupported task type |
+| Create / Select Plan | Implemented (Phase 3) | Task contract | `ExecutionPlan` (tier options + steps) | — |
+| Estimate Cost/Latency | Implemented (Phase 3, relative multipliers) | Plan, tier model | Tier options (Min/Balanced/High/Max) | Exceeds policy budget |
+| Optimize Context | Implemented (Phase 3) | Master context, step role | Context manifest | Conflict detected |
+| Route Model | Implemented (Phase 3) | Step capabilities, registry, tier | Routing decision + reason | No approved model |
 | Execute and Monitor | SDK + callbacks (Phase 1) | LangGraph graph, mock or live tools | `RunEvent` stream | Tool/model errors |
 | Detect Problems | Observe mode (Phase 1) | Event stream | Policy triggers (`observe`) | — |
 | Intervene | **Planned Phase 2** | Policy match | Intervention record | Unsafe to act |
@@ -59,6 +59,17 @@ Phase 1 detects waste patterns from the event stream without changing execution:
 - Validation failures via `validation.completed`.
 
 Each match emits a `policy.triggered` event with `policy_id`, `mode`, and `reason`. The recommended `intervention` field is advisory only—Phase 1 never acts.
+
+## Phase 3 advisory planning (plan / context / routing)
+
+Phase 3 is **advisory-only**, gated behind `SUPERVISOR_PLAN=1` (mirroring `SUPERVISOR_ENFORCE`). It annotates the event stream; it does not block or rewrite execution.
+
+- `Supervisor.plan()` selects a `PlanTier` from the task contract (`select_tier`) and builds an `ExecutionPlan` with tier options and steps. The chosen tier is recorded on `run.started` as `tier`.
+- `Supervisor.context(master_context=...)` builds a deterministic per-step `ContextManifest` (included / excluded / compressed slices + estimated tokens) via `ContextEngine` and emits `context.attached`.
+- `Supervisor.route_model(capability=...)` resolves a model from `ModelRouter` using the planned tier, returning a `RoutingDecision`. Passing it to `Supervisor.model(routing=...)` records `routing_tier` / `routing_capability` / `routing_reason` on `model.requested`.
+- `RunSummary` surfaces the plan tier (`plan_tier`) and every routed model call (`routing`).
+
+See [ADR-008](adr/008-plan-tier-cost-model.md) and [ADR-009](adr/009-model-routing.md).
 
 ## Decision ledger
 

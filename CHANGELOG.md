@@ -4,6 +4,32 @@ All notable changes are documented here. This project follows phase-based delive
 
 ## [Unreleased]
 
+### Phase 3 — Planner, context, routing (implemented, pending release)
+
+- **Plan tiers** (`src/supervisor/contracts/plan.py`): `PlanTier` (minimum / balanced /
+  high_quality / maximum_assurance), `TierEstimate`, `PlanStep`, `ExecutionPlan`.
+- **Planner** (`src/supervisor/planning/planner.py`): deterministic `select_tier(task)`
+  (risk baseline, cost bump, critical clamp) and `Planner.build_plan` → `ExecutionPlan`
+  with tier options (cost/latency multipliers) and steps; one option marked `recommended`.
+- **Context engine** (`src/supervisor/context/engine.py`): `ContextEngine.build_manifest`
+  builds a role-sensitive `ContextManifest` (included / excluded / compressed slices +
+  estimated tokens) deterministically from a master context.
+- **Model routing** (`src/supervisor/routing/router.py`): `ModelRegistry` + `ModelRouter.select`
+  returns a tier-aware `RoutingDecision` (capability + tier + allowed_models; deterministic;
+  safe static fallback for empty registries).
+- **SDK wiring** (`src/supervisor/sdk/supervisor.py`): `Supervisor.plan()`, `route_model()`,
+  `model(routing=)`, `context(master_context=)`; `start_run` records the planned `tier`.
+- **Run summary** (`src/supervisor/analytics/run_summary.py`): `RunSummary.plan_tier` and
+  `routing[]` derived from routed `model.requested` events (`routing_tier` /
+  `routing_capability` / `routing_reason`).
+- **Advisory by default:** gated behind `SUPERVISOR_PLAN=1` (mirroring `SUPERVISOR_ENFORCE`);
+  never blocks or rewrites execution.
+- **Demo:** `examples/cited_market_research/agent.py` wires researcher/analyst/writer through
+  the planner, router, and context engine when `SUPERVISOR_PLAN=1`.
+- **Tests:** planning, context, routing, SDK integration — 79 total.
+- **Docs:** ADR-008 (tier/cost model), ADR-009 (routing), data-contracts / architecture /
+  runtime-chain / integrations / operations / roadmap / README updates.
+
 ### Phase 2 — Deterministic protection (implemented, pending release)
 
 - **Enforcement engine** (`src/supervisor/policy/enforcement.py`): `Enforcer` +

@@ -65,6 +65,17 @@ flowchart TB
 | Run-explorer CLI | `src/supervisor/cli.py` | Implemented |
 | Demo refactored to use SDK | `examples/cited_market_research/agent.py` | Implemented |
 
+## Phase 3 components (Advisory planning, context, routing)
+
+| Component | Path | Status |
+|---|---|---|
+| Planner (tier selection + plan) | `src/supervisor/planning/planner.py` | Implemented |
+| Context engine (per-step manifests) | `src/supervisor/context/engine.py` | Implemented |
+| Model routing (capability + tier) | `src/supervisor/routing/router.py` | Implemented |
+| SDK `plan` / `route_model` / `context(master_context=)` | `src/supervisor/sdk/supervisor.py` | Implemented |
+| Run summary `plan_tier` + `routing` | `src/supervisor/analytics/run_summary.py` | Implemented |
+| Demo wired with `SUPERVISOR_PLAN=1` opt-in | `examples/cited_market_research/agent.py` | Implemented |
+
 ## Data boundaries
 
 - **Contracts are vendor-neutral.** Event and task schemas do not depend on LangGraph, LiteLLM, or any observability vendor.

@@ -2,7 +2,7 @@
 
 Control plane for production AI-agent work. The Supervisor plans, contextualizes, routes, governs, and verifies each agent run—reducing wasted spend and unreliable outcomes without requiring teams to rebuild their applications.
 
-**Current phase:** Phase 2 — Deterministic protection (implemented, pending release).
+**Current phase:** Phase 3 — Planner, context, routing (implemented, pending release).
 
 ## What exists today
 
@@ -15,9 +15,10 @@ Control plane for production AI-agent work. The Supervisor plans, contextualizes
 - **Opt-in enforcement** (Phase 2): block / retry / pause / stop with full audit trail
 - Budget tracking (`BudgetTracker`, in-memory default, Redis backend port)
 - Run-explorer CLI and OpenTelemetry export (Console + OTLP)
+- **Advisory planning** (Phase 3): tier selection, per-step context manifests, capability+tier model routing
 - Local development environment (Docker Compose + pytest)
 
-**Not yet implemented:** routing, context engine, control-plane UI (enforcement is opt-in by default).
+**Not yet implemented:** control-plane UI (planning/routing are opt-in by default via `SUPERVISOR_PLAN=1`).
 
 ## Quickstart
 
@@ -53,6 +54,10 @@ python -m supervisor.cli explore --run fixtures/traces/expensive_run.json --poli
 
 # Live run with policy observations and OTel export
 python -m supervisor.cli explore --live --scenario expensive --policy --otel
+
+# Phase 3 advisory planning (plan tier + context manifests + model routing)
+$env:SUPERVISOR_PLAN=1
+python -m examples.cited_market_research.agent --scenario all
 ```
 
 No API keys required. Mock models and tools are used by default.

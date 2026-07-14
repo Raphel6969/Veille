@@ -72,6 +72,7 @@ The `attributes` object is open-ended. Phase 1 standardizes these keys (all opti
 | `task_id` | string | `run.started` | Task contract id |
 | `scenario` | string | `run.started` | Run tag (e.g. `success`, `expensive`) |
 | `risk_level` | string | `run.started` | `low` \| `medium` \| `high` |
+| `tier` | string | `run.started` | Planned `PlanTier` (`minimum` \| `balanced` \| `high_quality` \| `maximum_assurance`) when planning is enabled |
 | `task_contract_met` | bool | `run.completed` / `run.failed` | Outcome validation result |
 | `total_cost_usd` | number | `run.completed` / `run.failed` | Aggregated run cost |
 | `duration_ms` | number | `run.completed` / `run.failed` | Total run wall time |
@@ -82,6 +83,14 @@ The `attributes` object is open-ended. Phase 1 standardizes these keys (all opti
 | `error_message` | string | `tool.completed` | Error detail when `failed` |
 | `model` | string | `model.*` | Model identifier |
 | `prompt` | string | `model.requested` | Prompt text |
+| `routing_tier` | string | `model.requested` | `PlanTier` selected by `route_model` (advisory, Phase 3) |
+| `routing_capability` | string | `model.requested` | Capability used for routing (e.g. `research`) |
+| `routing_reason` | string | `model.requested` | Why the router chose the model |
+| `included` | list[string] | `context.attached` | Context slices included for the step |
+| `excluded` | list[string] | `context.attached` | Context slices excluded for the step |
+| `compressed` | list[string] | `context.attached` | Long slices compressed for the step |
+| `estimated_tokens` | int | `context.attached` | Estimated token cost of the attached context |
+| `reason` | string | `context.attached` | Why this context manifest was built |
 | `attempt` | int | `retry.*` | Current retry attempt (1-based) |
 | `max_attempts` | int | `retry.*` | Retry budget for the step |
 | `reason` | string | `retry.scheduled` / `policy.triggered` | Why the event fired |
@@ -121,7 +130,14 @@ Used for replay and fixtures:
   "plan_id": "plan-001",
   "task_id": "cited-competitor-brief-001",
   "selected_tier": "balanced",
-  "tier_options": [],
+  "tier_options": [
+    {
+      "tier": "balanced",
+      "cost_multiplier": 1.0,
+      "latency_multiplier": 1.0,
+      "recommended": true
+    }
+  ],
   "steps": [
     {
       "step_id": "research",
@@ -136,6 +152,19 @@ Used for replay and fixtures:
   "policy_limits": {}
 }
 ```
+
+### PlanTier vocabulary (Phase 3)
+
+| Tier | Meaning |
+|---|---|
+| `minimum` | Lowest assurance, cheapest, fastest |
+| `balanced` | Default trade-off for medium-risk tasks |
+| `high_quality` | Extra review/coverage for high-risk tasks |
+| `maximum_assurance` | Strongest checks (e.g. human-in-the-loop) for critical tasks |
+
+`TierEstimate` carries relative `cost_multiplier` / `latency_multiplier` (not
+absolute currency). Exactly one tier option is flagged `recommended`, matching
+`selected_tier`.
 
 ## Policy Definition (skeleton)
 

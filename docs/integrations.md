@@ -39,6 +39,33 @@ Default models in demo: `mock-research`, `mock-synthesis`, `mock-review`.
 
 Set `USE_MOCK_MODELS=false` and provide API keys to use real providers (Phase 1+).
 
+## Planning and routing (Phase 3, advisory)
+
+**Status:** Implemented (Phase 3). Gated behind `SUPERVISOR_PLAN=1` (mirroring `SUPERVISOR_ENFORCE`). Does not block execution—annotates events only.
+
+```python
+from supervisor.sdk import Supervisor
+
+supervisor = Supervisor(task)          # task = TaskContract
+plan = supervisor.plan()                # selects PlanTier, builds ExecutionPlan
+supervisor.start_run()
+
+decision = supervisor.route_model(
+    step_id="research", agent_id="researcher", capability="research"
+)                                       # RoutingDecision (tier-aware)
+supervisor.model(
+    step_id="research", agent_id="researcher",
+    model=decision.model, prompt="...",
+    adapter=adapter, routing=decision,  # records routing_tier on model.requested
+)
+supervisor.context(
+    step_id="research", agent_id="researcher", role="researcher",
+    master_context=MASTER_CONTEXT,      # builds a ContextManifest via ContextEngine
+)
+```
+
+The `ModelRegistry` is seeded with mock candidates (`mock-research`, `mock-analysis`, `mock-synthesis`, `mock-review`). Replace the registry to route to real providers without changing call sites. See [ADR-008](adr/008-plan-tier-cost-model.md) and [ADR-009](adr/009-model-routing.md).
+
 ## OpenTelemetry export
 
 **Status:** Implemented (Phase 1). `ConsoleOTelExporter` prints spans; `OtlpExporter` exports via OTLP/gRPC.

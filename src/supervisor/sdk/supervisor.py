@@ -12,11 +12,15 @@ from contextlib import contextmanager
 from typing import Any
 from uuid import uuid4
 
+from supervisor.context import ContextEngine, ContextManifest
 from supervisor.contracts.events import EventType, RunEventBatch
+from supervisor.contracts.plan import ExecutionPlan, PlanTier
 from supervisor.contracts.task import TaskContract
+from supervisor.planning import Planner
 from supervisor.policy.budgets import BudgetTracker
 from supervisor.policy.enforcement import Enforcer, GuardDecision, StopRun
 from supervisor.policy.engine import DEFAULT_ENFORCE_POLICIES
+from supervisor.routing import ModelRouter, RoutingDecision
 from supervisor.sdk.collector import RunCollector
 
 
@@ -52,6 +56,11 @@ class Supervisor:
         )
         self._seen_tool_status: dict[tuple[str, str], str] = {}
         self._tool_cache: dict[tuple[str, str], Any] = {}
+        self._planner = Planner()
+        self._router = ModelRouter()
+        self._context_engine = ContextEngine()
+        self._plan: ExecutionPlan | None = None
+        self._plan_tier: PlanTier | None = None
 
     @property
     def collector(self) -> RunCollector:
@@ -63,7 +72,31 @@ class Supervisor:
         attributes: dict[str, Any] = {"task": self.task_contract.task}
         if self.scenario is not None:
             attributes["scenario"] = self.scenario
+        if self._plan_tier is not None:
+            attributes["tier"] = self._plan_tier.value
         self._collector.emit(EventType.RUN_STARTED, attributes=attributes)
+
+    # -- planning / routing / context -------------------------------------
+
+    def plan(self) -> ExecutionPlan:
+        """Build an execution plan (tier + steps) for this run's task contract."""
+        self._plan = self._planner.build_plan(self.task_contract)
+        self._plan_tier = self._plan.selected_tier
+        return self._plan
+
+    def route_model(
+        self,
+        *,
+        step_id: str,
+        agent_id: str,
+        capability: str,
+        allowed_models: list[str] | None = None,
+    ) -> RoutingDecision:
+        tier = self._plan_tier or PlanTier.BALANCED
+        allowed = allowed_models or (
+            self.task_contract.constraints.allowed_models or None
+        )
+        return self._router.select(capability, tier, allowed)
 
     def finish_run(self, status: str) -> None:
         duplicates = sum(
@@ -117,13 +150,19 @@ class Supervisor:
         model: str,
         prompt: str,
         adapter: Any,
+        routing: RoutingDecision | None = None,
     ) -> str:
+        request_attrs: dict[str, Any] = {"prompt_preview": prompt[:120]}
+        if routing is not None:
+            request_attrs["routing_tier"] = routing.tier.value
+            request_attrs["routing_reason"] = routing.reason
+            request_attrs["routing_capability"] = routing.capability
         self._collector.emit(
             EventType.MODEL_REQUESTED,
             step_id=step_id,
             agent_id=agent_id,
             model_name=model,
-            attributes={"prompt_preview": prompt[:120]},
+            attributes=request_attrs,
         )
         result = adapter.complete(model, prompt)
         self._collector.emit(
@@ -324,21 +363,31 @@ class Supervisor:
         step_id: str,
         agent_id: str,
         role: str,
-        included: list[str],
-        excluded: list[str],
-        compressed: list[str],
-        estimated_tokens: int,
-        reason: str,
+        included: list[str] | None = None,
+        excluded: list[str] | None = None,
+        compressed: list[str] | None = None,
+        estimated_tokens: int = 0,
+        reason: str = "",
+        master_context: list[str] | None = None,
     ) -> None:
+        if master_context is not None:
+            manifest: ContextManifest = self._context_engine.build_manifest(
+                master_context, role, step_id
+            )
+            included = manifest.included
+            excluded = manifest.excluded
+            compressed = manifest.compressed
+            estimated_tokens = manifest.estimated_tokens
+            reason = manifest.reason
         self._collector.emit(
             EventType.CONTEXT_ATTACHED,
             step_id=step_id,
             agent_id=agent_id,
             attributes={
                 "role": role,
-                "included": included,
-                "excluded": excluded,
-                "compressed": compressed,
+                "included": included or [],
+                "excluded": excluded or [],
+                "compressed": compressed or [],
                 "estimated_tokens": estimated_tokens,
                 "reason": reason,
             },
