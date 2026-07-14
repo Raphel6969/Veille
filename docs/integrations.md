@@ -76,6 +76,24 @@ The `ModelRegistry` is seeded with mock candidates (`mock-research`, `mock-analy
 
 See [ADR-010](adr/010-semantic-dedup-caching.md).
 
+## Memory governance (Phase 5, opt-in)
+
+**Status:** Implemented (Phase 5). Gated behind `SUPERVISOR_MEMORY=1` (default off). The supervisor governs *memory inclusion*, not storage.
+
+- `MemoryBackend` port (`src/supervisor/memory/store.py`): `InMemoryMemoryStore` is the default (no external deps, tenant-isolated). Mem0/Letta/customer RAG attach behind this port.
+- `MemoryGovernor.retrieve(...)` scores candidates (recency/usage/provenance/confidence + role weights), flags `stale`/`drift`, and emits a `memory.retrieved` manifest. No automatic deletion — expiry is audited.
+- `Supervisor.remember` / `retrieve_memory` / `expire_memory` / `forget_memory` are the SDK surface; off-mode `retrieve_memory` is a no-op passthrough.
+
+```python
+from supervisor.sdk import Supervisor
+
+supervisor = Supervisor(task)
+supervisor.remember(content="Prior query context", tier="long", role="researcher")
+memories = supervisor.retrieve_memory(step_id="research", role="researcher", query="AI runtime supervision")
+```
+
+See [ADR-011](adr/011-memory-governance.md).
+
 ## OpenTelemetry export
 
 **Status:** Implemented (Phase 1). `ConsoleOTelExporter` prints spans; `OtlpExporter` exports via OTLP/gRPC.
@@ -94,7 +112,7 @@ OtlpExporter(endpoint="http://localhost:4317").export_events(events)
 | System | Phase | Notes |
 |---|---|---|
 | Langfuse / Phoenix / LangSmith | 1+ | Export via OTel |
-| Mem0 / Letta | 5+ | Memory connectors |
+| Mem0 / Letta | 5+ (backend) | Memory connectors behind `MemoryBackend` port |
 | Portkey | 3+ | Alternative gateway |
 | Patronus / custom evaluators | 3+ | Evaluator connector |
 

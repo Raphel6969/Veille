@@ -127,6 +127,26 @@ Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_
 - Under `SUPERVISOR_OPTIMIZE=1 SUPERVISOR_OPTIMIZE_MODE=active` the expensive demo scenario serves the duplicate `search_competitors` call from cache (`optimization.applied`), reducing measured cost (0.0238 → 0.0218); dry-run emits `optimization.recommended` and leaves execution unchanged.
 - Works without API keys on Python 3.14.
 
+## Phase 5 deliverables (Memory lifecycle & governance — opt-in; enterprise deferred)
+
+- [x] `MemoryBackend` port + `InMemoryMemoryStore` (tenant-isolated, no deps)
+- [x] `MemoryRecord` (tier working/short/long/archive, provenance, confidence, TTL, baseline hash for drift)
+- [x] `score()` governance (recency decay + usage + provenance + confidence, role weights)
+- [x] `MemoryGovernor.retrieve()` → `MemoryManifest` (included/excluded/stale/drift/scores/reason); audited expiry via `expire_due()`
+- [x] Event schema 0.2.0 additive: `memory.retrieved` (manifest) + `memory.expired` (audited)
+- [x] SDK `Supervisor.remember` / `retrieve_memory` / `expire_memory` / `forget_memory` (`SUPERVISOR_MEMORY=1`, off = passthrough)
+- [x] `RunSummary` memory accounting (`memories_retrieved`, `memories_stale`, `memories_drift`, `memories_expired`)
+- [x] Demo memory-backed retrieval opt-in for the researcher node
+- [x] Tests: store, scoring, governor, SDK memory, demo memory; ADR-011
+
+### Phase 5 verification (2026-07-14)
+
+- `pytest` — **119 passed** (memory store/scoring/governor, SDK memory, demo memory, + prior suites)
+- `ruff check` — clean
+- `mypy src/supervisor` — clean (strict)
+- Under `SUPERVISOR_MEMORY=1` the demo researcher node stores a working memory and retrieves it on the next call; off-mode emits no `memory.*` events and leaves behavior unchanged.
+- Works without API keys on Python 3.14.
+
 ## Phase 1 approval gate — completed
 
 ```

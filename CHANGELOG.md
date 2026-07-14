@@ -4,6 +4,18 @@ All notable changes are documented here. This project follows phase-based delive
 
 ## [Unreleased]
 
+### Phase 5 — Memory lifecycle & retrieval governance (implemented, pending release)
+
+- **Memory store** (`src/supervisor/memory/store.py`): `MemoryBackend` port + `InMemoryMemoryStore` (tenant-isolated, no deps); `MemoryRecord` with tier (working/short/long/archive), provenance, confidence, TTL, and baseline hash for drift; `content_hash` util. Mem0/Letta/customer RAG attach behind the port.
+- **Scoring** (`src/supervisor/memory/scoring.py`): `score(record, now, role_weights)` combines recency (exponential decay), usage, provenance quality, and confidence; metadata-driven, no embeddings by default. `default_role_weights` nudge tier preference by role.
+- **Governor** (`src/supervisor/memory/governor.py`): `MemoryManifest` + `MemoryGovernor.retrieve(...)` scores candidates, flags `stale` (recency/confidence) and `drift` (content hash vs baseline), and emits an included/excluded/stale/drift/scores/reason manifest. `expire_due(...)` surfaces TTL-elapsed records for **audited** removal — no automatic deletion.
+- **Event schema 0.2.0 (additive):** `memory.retrieved` carries the governance manifest; new `memory.expired` records expiry candidates and explicit removals.
+- **SDK wiring** (`src/supervisor/sdk/supervisor.py`): `Supervisor.remember`, `retrieve_memory`, `expire_memory`, `forget_memory`; gated by `SUPERVISOR_MEMORY=1`. Off-mode `retrieve_memory` is a no-op passthrough (identical to Phase 4).
+- **Run summary** (`src/supervisor/analytics/run_summary.py`): `memories_retrieved`, `memories_stale`, `memories_drift`, `memories_expired`.
+- **Demo:** researcher node stores a working memory and retrieves it on subsequent calls when `SUPERVISOR_MEMORY=1`.
+- **Tests:** store, scoring, governor, SDK memory, demo memory — 119 total.
+- **Docs:** ADR-011 (memory governance), data-contracts / architecture / runtime-chain / integrations / operations / roadmap / README updates.
+
 ### Phase 4 — Semantic dedup and adaptive caching (implemented, pending release)
 
 - **Semantic key** (`src/supervisor/optimize/keys.py`): `ShingleSemanticKey` tokenizes input into word-shingles and compares with Jaccard similarity (default threshold 0.85). Embedding backend is a future `SemanticKey` port.

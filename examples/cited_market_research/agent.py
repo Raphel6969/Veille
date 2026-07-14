@@ -28,6 +28,7 @@ from supervisor.adapters.langgraph.adapter import LangGraphInstrumentedAdapter
 from supervisor.adapters.litellm.mock import LiteLLMMockAdapter
 from supervisor.contracts.events import EventType
 from supervisor.io import load_task_contract, save_trace_fixture
+from supervisor.memory import MemoryTier
 from supervisor.policy import StopRun, evaluate, evaluate_observe
 from supervisor.sdk import Supervisor
 
@@ -38,6 +39,10 @@ def _enforcement_enabled() -> bool:
 
 def _planning_enabled() -> bool:
     return os.environ.get("SUPERVISOR_PLAN", "").lower() in ("1", "true", "yes")
+
+
+def _memory_enabled() -> bool:
+    return os.environ.get("SUPERVISOR_MEMORY", "").lower() in ("1", "true", "yes")
 
 
 MASTER_CONTEXT: list[str] = [
@@ -141,6 +146,20 @@ def researcher_node(
                 model="mock-research",
                 prompt=f"Plan evidence collection for: {state['query']}",
                 adapter=adapter,
+            )
+        if _memory_enabled():
+            supervisor.remember(
+                step_id="research",
+                agent_id="researcher",
+                content=f"Prior query context: {state['query']}",
+                tier=MemoryTier.LONG,
+                confidence=0.9,
+            )
+            supervisor.retrieve_memory(
+                step_id="research",
+                agent_id="researcher",
+                role="researcher",
+                query=state["query"],
             )
         return {
             **state,

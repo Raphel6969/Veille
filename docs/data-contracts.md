@@ -60,7 +60,8 @@ metadata: {}
 | `model.requested` / `model.completed` | Model calls |
 | `tool.requested` / `tool.completed` | Tool calls |
 | `context.attached` | Context manifest attachment |
-| `memory.retrieved` | Memory retrieval |
+| `memory.retrieved` | Memory retrieval + governance manifest |
+| `memory.expired` | Memory expiry candidate / explicit removal (audited) |
 | `retry.scheduled` / `retry.completed` | Retry lifecycle |
 | `policy.triggered` | Policy evaluation match |
 | `intervention.applied` | Action taken |
@@ -107,6 +108,13 @@ The `attributes` object is open-ended. Phase 1 standardizes these keys (all opti
 | `cache_key` | string | `optimization.*` | Semantic cache key of the served/near-duplicate call |
 | `cache_hit` | bool | `optimization.*` / `tool.completed`(served) | `true` when a cache entry matched |
 | `estimated_savings_usd` | number | `optimization.*` | Cost avoided by serving from cache |
+| `included` | list[string] | `memory.retrieved` | Memory ids included for the step |
+| `excluded` | list[string] | `memory.retrieved` | Memory ids excluded (low score / stale / drift) |
+| `stale` | list[string] | `memory.retrieved` | Memory ids flagged stale (recency/confidence) |
+| `drift` | list[string] | `memory.retrieved` | Memory ids flagged drift (content changed vs baseline) |
+| `scores` | object | `memory.retrieved` | Memory id → governance score |
+| `memory_id` | string | `memory.expired` | Memory id due for / subject to removal |
+| `reason` | string | `memory.expired` | `ttl_elapsed` \| `explicit_removal` |
 | `check_id` | string | `validation.completed` | Quality check identifier |
 | `passed` | bool | `validation.completed` | Check result |
 | `message` | string | `validation.completed` | Check message |
@@ -175,6 +183,43 @@ Used for replay and fixtures:
 `TierEstimate` carries relative `cost_multiplier` / `latency_multiplier` (not
 absolute currency). Exactly one tier option is flagged `recommended`, matching
 `selected_tier`.
+
+## Memory Record & Manifest (Phase 5, opt-in)
+
+```json
+{
+  "schema_version": "0.2.0",
+  "id": "mem-001",
+  "tenant": "default",
+  "content": "Prior query context: AI runtime supervision competitors 2026",
+  "tier": "long",
+  "provenance": { "run_id": "run-1", "step_id": "research", "agent_id": "researcher" },
+  "confidence": 0.9,
+  "created_at": "2026-07-14T12:00:00Z",
+  "last_accessed": "2026-07-14T12:00:00Z",
+  "access_count": 1,
+  "ttl_seconds": null,
+  "baseline_hash": "sha256..."
+}
+```
+
+A `memory.retrieved` event carries a governance manifest:
+
+```json
+{
+  "role": "researcher",
+  "query": "AI runtime supervision competitors",
+  "included": ["mem-001"],
+  "excluded": [],
+  "stale": [],
+  "drift": [],
+  "scores": { "mem-001": 0.82 },
+  "reason": "Role 'researcher' retrieved 1 of 1 candidate memories (stale=0, drift=0)."
+}
+```
+
+Tiers: `working` | `short` | `long` | `archive`. Scoring is metadata-driven
+(recency/usage/provenance/confidence); no embeddings by default.
 
 ## Policy Definition (skeleton)
 

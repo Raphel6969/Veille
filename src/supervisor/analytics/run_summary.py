@@ -58,6 +58,10 @@ class RunSummary:
     cache_served: int = 0
     semantic_duplicates: int = 0
     estimated_savings_usd: float = 0.0
+    memories_retrieved: int = 0
+    memories_stale: int = 0
+    memories_drift: int = 0
+    memories_expired: int = 0
     per_step: list[StepSummary] = field(default_factory=list)
     per_model: list[ModelSummary] = field(default_factory=list)
     per_tool: list[ToolSummary] = field(default_factory=list)
@@ -78,6 +82,9 @@ class RunSummary:
             f"  cache hits:       {self.cache_hits} (served: {self.cache_served})",
             f"  semantic dups:    {self.semantic_duplicates}",
             f"  est. savings:     ${self.estimated_savings_usd:.4f}",
+            f"  memories:         retrieved={self.memories_retrieved} "
+            f"stale={self.memories_stale} drift={self.memories_drift} "
+            f"expired={self.memories_expired}",
         ]
         if self.routing:
             lines.append("  routing:")
@@ -137,6 +144,10 @@ def summarize(batch: RunEventBatch) -> RunSummary:
     semantic_duplicates = 0
     cache_served = 0
     estimated_savings_usd = 0.0
+    memories_retrieved = 0
+    memories_stale = 0
+    memories_drift = 0
+    memories_expired = 0
     for e in events:
         if e.event_type in (EventType.TOOL_REQUESTED, EventType.MODEL_REQUESTED):
             if e.attributes.get("match_type"):
@@ -148,6 +159,12 @@ def summarize(batch: RunEventBatch) -> RunSummary:
             estimated_savings_usd += _as_float(e.attributes.get("estimated_savings_usd"))
         elif e.event_type == EventType.OPTIMIZATION_RECOMMENDED:
             estimated_savings_usd += _as_float(e.attributes.get("estimated_savings_usd"))
+        elif e.event_type == EventType.MEMORY_RETRIEVED:
+            memories_retrieved += len(e.attributes.get("included") or [])
+            memories_stale += len(e.attributes.get("stale") or [])
+            memories_drift += len(e.attributes.get("drift") or [])
+        elif e.event_type == EventType.MEMORY_EXPIRED:
+            memories_expired += 1
 
     plan_tier = started.attributes.get("tier") if started is not None else None
     routing: list[dict[str, Any]] = []
@@ -216,6 +233,10 @@ def summarize(batch: RunEventBatch) -> RunSummary:
         cache_served=cache_served,
         semantic_duplicates=semantic_duplicates,
         estimated_savings_usd=round(estimated_savings_usd, 6),
+        memories_retrieved=memories_retrieved,
+        memories_stale=memories_stale,
+        memories_drift=memories_drift,
+        memories_expired=memories_expired,
         routing=routing,
         per_step=list(steps.values()),
         per_model=list(models.values()),

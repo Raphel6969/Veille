@@ -2,7 +2,7 @@
 
 Control plane for production AI-agent work. The Supervisor plans, contextualizes, routes, governs, and verifies each agent run—reducing wasted spend and unreliable outcomes without requiring teams to rebuild their applications.
 
-**Current phase:** Phase 4 — Semantic dedup + adaptive caching (implemented, pending release).
+**Current phase:** Phase 5 — Memory lifecycle & retrieval governance (implemented, pending release).
 
 ## What exists today
 
@@ -17,6 +17,7 @@ Control plane for production AI-agent work. The Supervisor plans, contextualizes
 - Run-explorer CLI and OpenTelemetry export (Console + OTLP)
 - **Advisory planning** (Phase 3): tier selection, per-step context manifests, capability+tier model routing
 - **Adaptive optimization** (Phase 4): semantic near-duplicate detection + idempotent result caching (`SUPERVISOR_OPTIMIZE`, dry-run default)
+- **Memory governance** (Phase 5): memory store + scoring + governor (`memory.retrieved`/`memory.expired` manifest) with audited expiry, no automatic deletion (`SUPERVISOR_MEMORY`)
 - Local development environment (Docker Compose + pytest)
 
 **Not yet implemented:** control-plane UI (planning/routing/optimization are opt-in by default).
@@ -64,6 +65,10 @@ python -m examples.cited_market_research.agent --scenario all
 $env:SUPERVISOR_OPTIMIZE=1                       # dry-run: recommend only
 $env:SUPERVISOR_OPTIMIZE_MODE=active             # serve idempotent cache hits
 python -m examples.cited_market_research.agent --scenario expensive
+
+# Phase 5 memory governance (memory-backed retrieval)
+$env:SUPERVISOR_MEMORY=1
+python -m examples.cited_market_research.agent --scenario all
 ```
 
 No API keys required. Mock models and tools are used by default.

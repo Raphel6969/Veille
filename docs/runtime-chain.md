@@ -27,6 +27,7 @@ flowchart TD
 | Optimize Context | Implemented (Phase 3) | Master context, step role | Context manifest | Conflict detected |
 | Route Model | Implemented (Phase 3) | Step capabilities, registry, tier | Routing decision + reason | No approved model |
 | Detect Near-Duplicates / Cache | Implemented (Phase 4, opt-in) | Tool/model input + semantic key | `optimization.recommended` / `optimization.applied` | Cache miss / non-idempotent |
+| Govern Memory | Implemented (Phase 5, opt-in) | Step role, memory store, query | `memory.retrieved` manifest (incl/excl/stale/drift) | No candidate / all excluded |
 | Execute and Monitor | SDK + callbacks (Phase 1) | LangGraph graph, mock or live tools | `RunEvent` stream | Tool/model errors |
 | Detect Problems | Observe mode (Phase 1) | Event stream | Policy triggers (`observe`) | — |
 | Intervene | **Planned Phase 2** | Policy match | Intervention record | Unsafe to act |
@@ -91,6 +92,24 @@ a business outcome unless explicitly activated.
   policies still enforce on top.
 
 See [ADR-010](adr/010-semantic-dedup-caching.md).
+
+## Phase 5 memory lifecycle & governance (opt-in)
+
+Phase 5 is **opt-in**, gated behind `SUPERVISOR_MEMORY=1` (default off). The
+supervisor owns *memory governance*, not storage (storage is a `MemoryBackend`
+port; Mem0/Letta are later integrations).
+
+- `Supervisor.remember(...)` stores a `MemoryRecord` (tier, provenance, confidence,
+  TTL, baseline hash for drift).
+- `Supervisor.retrieve_memory(step_id, role, query)` consults `MemoryGovernor`,
+  which scores candidates (recency/usage/provenance/confidence + role weights), flags
+  `stale` (recency/confidence) and `drift` (content hash vs baseline), and emits a
+  `memory.retrieved` manifest with `included`/`excluded`/`stale`/`drift`/`scores`/`reason`.
+- `Supervisor.expire_memory()` surfaces TTL-elapsed records as `memory.expired`
+  **without deleting**; `forget_memory(id)` removes explicitly (audited). Automatic
+  deletion is intentionally deferred per the blueprint.
+
+See [ADR-011](adr/011-memory-governance.md).
 
 ## Decision ledger
 

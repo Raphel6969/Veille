@@ -21,6 +21,7 @@ class EventType(StrEnum):
     TOOL_COMPLETED = "tool.completed"
     CONTEXT_ATTACHED = "context.attached"
     MEMORY_RETRIEVED = "memory.retrieved"
+    MEMORY_EXPIRED = "memory.expired"
     RETRY_SCHEDULED = "retry.scheduled"
     RETRY_COMPLETED = "retry.completed"
     POLICY_TRIGGERED = "policy.triggered"

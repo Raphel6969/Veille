@@ -88,6 +88,18 @@ flowchart TB
 | `RunSummary` cache/savings accounting | `src/supervisor/analytics/run_summary.py` | Implemented |
 | Demo idempotent-tool caching opt-in | `examples/cited_market_research/agent.py` | Implemented |
 
+## Phase 5 components (Memory lifecycle & governance — opt-in)
+
+| Component | Path | Status |
+|---|---|---|
+| Memory store port + in-memory impl | `src/supervisor/memory/store.py` | Implemented |
+| Memory scoring (recency/usage/provenance/confidence) | `src/supervisor/memory/scoring.py` | Implemented |
+| Memory governor (include/exclude/stale/drift + manifest) | `src/supervisor/memory/governor.py` | Implemented |
+| SDK `remember` / `retrieve_memory` / `expire_memory` / `forget_memory` | `src/supervisor/sdk/supervisor.py` | Implemented |
+| `memory.retrieved` / `memory.expired` events (schema 0.2.0) | `src/supervisor/contracts/events.py` | Implemented |
+| `RunSummary` memory accounting | `src/supervisor/analytics/run_summary.py` | Implemented |
+| Demo memory-backed retrieval opt-in | `examples/cited_market_research/agent.py` | Implemented |
+
 ## Data boundaries
 
 - **Contracts are vendor-neutral.** Event and task schemas do not depend on LangGraph, LiteLLM, or any observability vendor.

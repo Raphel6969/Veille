@@ -19,6 +19,13 @@ from supervisor.context import ContextEngine, ContextManifest
 from supervisor.contracts.events import EventType, RunEventBatch
 from supervisor.contracts.plan import ExecutionPlan, PlanTier
 from supervisor.contracts.task import TaskContract
+from supervisor.memory import (
+    InMemoryMemoryStore,
+    MemoryBackend,
+    MemoryGovernor,
+    MemoryRecord,
+    MemoryTier,
+)
 from supervisor.optimize import DuplicateDetector, InMemoryCache
 from supervisor.planning import Planner
 from supervisor.policy.budgets import BudgetTracker
@@ -56,6 +63,7 @@ class Supervisor:
         budget: BudgetTracker | None = None,
         optimize: bool | None = None,
         optimize_mode: str | None = None,
+        memory: bool | None = None,
     ) -> None:
         self.task_contract = task_contract
         self.task_id = task_contract.task_id
@@ -88,6 +96,12 @@ class Supervisor:
         self.optimize_mode = mode if self.optimize else "dry_run"
         self._detector = DuplicateDetector()
         self._cache = InMemoryCache()
+        # Phase 5: memory governance is opt-in (mirrors SUPERVISOR_ENFORCE / PLAN / OPTIMIZE).
+        self.memory_enabled = (
+            memory if memory is not None else os.getenv("SUPERVISOR_MEMORY") == "1"
+        )
+        self._memory_backend: MemoryBackend = InMemoryMemoryStore()
+        self._memory_governor = MemoryGovernor()
 
     @property
     def collector(self) -> RunCollector:
@@ -276,6 +290,98 @@ class Supervisor:
             status="ok",
         )
         return str(result.content)
+
+    # -- memory -----------------------------------------------------------
+
+    def remember(
+        self,
+        *,
+        step_id: str,
+        agent_id: str,
+        content: str,
+        tier: MemoryTier = MemoryTier.SHORT,
+        confidence: float = 1.0,
+        ttl_seconds: float | None = None,
+        tenant: str = "default",
+    ) -> MemoryRecord:
+        """Store a memory record with lifecycle metadata (opt-in)."""
+        record = MemoryRecord(
+            tenant=tenant,
+            content=content,
+            tier=tier,
+            confidence=confidence,
+            ttl_seconds=ttl_seconds,
+            provenance={"run_id": self.run_id, "step_id": step_id, "agent_id": agent_id},
+        )
+        self._memory_backend.store(record)
+        return record
+
+    def retrieve_memory(
+        self,
+        *,
+        step_id: str,
+        agent_id: str,
+        role: str,
+        query: str,
+        limit: int = 5,
+        tenant: str = "default",
+    ) -> list[MemoryRecord]:
+        """Retrieve governed memories for a step/role (opt-in).
+
+        Emits ``memory.retrieved`` with an inclusion manifest. When memory is
+        disabled this is a no-op passthrough (empty retrieval, minimal event).
+        """
+        if not self.memory_enabled:
+            self._collector.emit(
+                EventType.MEMORY_RETRIEVED,
+                step_id=step_id,
+                agent_id=agent_id,
+                attributes={"role": role, "included": [], "reason": "memory disabled"},
+            )
+            return []
+        records, manifest = self._memory_governor.retrieve(
+            self._memory_backend, query, role, tenant=tenant, limit=limit
+        )
+        self._collector.emit(
+            EventType.MEMORY_RETRIEVED,
+            step_id=step_id,
+            agent_id=agent_id,
+            attributes={
+                "role": role,
+                "query": query,
+                "included": manifest.included,
+                "excluded": manifest.excluded,
+                "stale": manifest.stale,
+                "drift": manifest.drift,
+                "scores": manifest.scores,
+                "reason": manifest.reason,
+            },
+        )
+        return records
+
+    def expire_memory(self) -> list[MemoryRecord]:
+        """Surface memories due for audited removal (never auto-deletes)."""
+        if not self.memory_enabled:
+            return []
+        due = self._memory_governor.expire_due(self._memory_backend)
+        for rec in due:
+            self._collector.emit(
+                EventType.MEMORY_EXPIRED,
+                attributes={
+                    "memory_id": rec.id,
+                    "tier": rec.tier.value,
+                    "reason": "ttl_elapsed",
+                },
+            )
+        return due
+
+    def forget_memory(self, memory_id: str) -> None:
+        """Explicitly remove a memory (audited). Caller is accountable."""
+        self._memory_backend.remove(memory_id)
+        self._collector.emit(
+            EventType.MEMORY_EXPIRED,
+            attributes={"memory_id": memory_id, "reason": "explicit_removal"},
+        )
 
     # -- intervention emission -------------------------------------------
 

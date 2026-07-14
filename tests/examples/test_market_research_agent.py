@@ -51,3 +51,25 @@ def test_optimize_active_serves_duplicate_from_cache() -> None:
     # A served duplicate avoids the duplicate search cost.
     assert result["total_cost_usd"] < 0.023
 
+
+def test_memory_enabled_governs_retrieval() -> None:
+    os.environ["SUPERVISOR_MEMORY"] = "1"
+    real_emit = sdk_supervisor.RunCollector.emit
+    counts: dict[str, int] = {}
+
+    def counting(self: object, et: EventType, **kw: object):
+        counts[et.value] = counts.get(et.value, 0) + 1
+        return real_emit(self, et, **kw)
+
+    try:
+        sdk_supervisor.RunCollector.emit = counting  # type: ignore[assignment]
+        try:
+            run_scenario("success")
+        finally:
+            sdk_supervisor.RunCollector.emit = real_emit  # type: ignore[assignment]
+    finally:
+        os.environ.pop("SUPERVISOR_MEMORY", None)
+
+    assert counts.get("memory.retrieved", 0) >= 1
+
+
