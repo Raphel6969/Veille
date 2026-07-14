@@ -94,12 +94,38 @@ python -m examples.real_world_demo.agent --scenario success
 Tests: `tests/examples/test_real_world_demo.py` (offline run, cache serve when
 approved, gate blocks without confirmation).
 
+### 5.1 Cross-run (durable) caching
+
+The cache backend is pluggable (`supervisor.optimize.cache.CacheBackend`). The
+default is an in-memory, per-run `InMemoryCache`; a durable, disk-backed
+`FileCacheBackend` (JSON, TTL, tenant-scoped by the composite key) is available,
+and `Supervisor` selects it when `SUPERVISOR_CACHE_BACKEND=file` (with
+`SUPERVISOR_CACHE_DIR`) or when a backend is passed in code. The same approved
+`CachePolicy` (exact-only, boundary-scoped, confirmation-gated) governs serving,
+so a cached result is reused across runs/processes **only** for identical inputs
+within the same isolation + governance boundary.
+
+The demo exposes this with `--cross-run`:
+
+```powershell
+$env:SUPERVISOR_OPTIMIZE=1; $env:SUPERVISOR_OPTIMIZE_MODE=active; $env:SUPERVISOR_CACHE_APPROVED=1
+python -m examples.real_world_demo.agent --scenario success --cross-run
+# -> run1_cost_usd: 0.008, run2_cost_usd: 0.004, cross_run_saving_usd: 0.004
+```
+
+Run 2 serves all three searches from run 1's durable cache (exact-identical
+inputs); only the two fetches re-execute. Tests:
+`tests/sdk/test_file_cache.py` (backend TTL/expiry, cross-instance read, and
+end-to-end cross-run serving via `Supervisor`).
+
 ## 4. Open decisions to confirm before building
 
 - **Deployment shape:** self-host library (pip install + OTel) vs a hosted
   control-plane service with a UI? (Affects the enterprise slice we deferred.)
 - **First real integration target:** which framework/adapter and which safe
   read-only API should the real-world demo use?
-- **Cross-run caching:** still gated on 3–5 partner confirmations (ADR-012). Do
-  we run the real-world demos to collect those confirmations, or build the
-  durable `CacheBackend` behind the same policy now and validate later?
+- **Cross-run caching:** the durable `CacheBackend` is now built behind the same
+  approved `CachePolicy` (exact-only, boundary-scoped, confirmation-gated). It is
+  still *opt-in* and only serves after the confirmation gate is passed; rolling it
+  out broadly remains gated on 3–5 partner confirmations (ADR-012). The remaining
+  open question is whether the backend should be swappable for Redis at scale.

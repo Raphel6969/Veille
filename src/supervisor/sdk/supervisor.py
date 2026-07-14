@@ -12,6 +12,7 @@ import json
 import os
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
@@ -26,7 +27,7 @@ from supervisor.memory import (
     MemoryRecord,
     MemoryTier,
 )
-from supervisor.optimize import DuplicateDetector, InMemoryCache
+from supervisor.optimize import DuplicateDetector, InMemoryCache, make_backend
 from supervisor.optimize.policy import CachePolicy, build_cache_key
 from supervisor.planning import Planner
 from supervisor.policy.budgets import BudgetTracker
@@ -66,6 +67,7 @@ class Supervisor:
         optimize_mode: str | None = None,
         memory: bool | None = None,
         cache_policy: CachePolicy | None = None,
+        cache_backend: Any = None,
         tenant: str = "default",
         project: str | None = None,
         policy_version: str = "unversioned",
@@ -108,7 +110,19 @@ class Supervisor:
         self._tenant = tenant
         self._project = project or task_contract.task_id or "default"
         self._policy_version = policy_version
-        self._cache = InMemoryCache(default_ttl_seconds=self._cache_policy.default_ttl_seconds)
+        # Durable (cross-run) backend when requested; default in-memory per-run.
+        backend_kind = os.getenv("SUPERVISOR_CACHE_BACKEND", "memory")
+        backend_dir = os.getenv("SUPERVISOR_CACHE_DIR")
+        if cache_backend is not None:
+            self._cache = cache_backend
+        elif backend_kind == "file":
+            self._cache = make_backend(
+                "file",
+                cache_dir=backend_dir or (Path(os.getcwd()) / ".supervisor_cache"),
+                default_ttl_seconds=self._cache_policy.default_ttl_seconds,
+            )
+        else:
+            self._cache = InMemoryCache(default_ttl_seconds=self._cache_policy.default_ttl_seconds)
         # Phase 5: memory governance is opt-in (mirrors SUPERVISOR_ENFORCE / PLAN / OPTIMIZE).
         self.memory_enabled = (
             memory if memory is not None else os.getenv("SUPERVISOR_MEMORY") == "1"
@@ -553,20 +567,29 @@ class Supervisor:
                 context_boundary=context_boundary,
             )
             opt_match = self._detector.check(tool_name, text, exact_key)
+            # Cache lookup is by the exact composite key, independent of the
+            # in-run dedup detector. A hit means an identical-input call was
+            # previously executed (same tenant/project/tool/policy/auth/context),
+            # which is the only safe serve under the approved cache policy
+            # (ADR-012 Rule 1: exact-only). This is what enables cross-run caching:
+            # a fresh Supervisor still reads prior runs' cached results.
+            if idempotent and self._cache_policy.is_cacheable_tool(tool_name):
+                cached_result = self._cache.get(composite_key)
             if opt_match is not None:
                 attributes["match_type"] = opt_match.match_type
                 attributes["similarity"] = opt_match.similarity
-                cached_result = self._cache.get(composite_key)
-                can_serve = (
-                    self.optimize_mode == "active"
-                    and self._cache_policy.approved
-                    and self._cache_policy.is_cacheable_tool(tool_name)
-                    and idempotent
-                    and self._cache_policy.may_serve(opt_match.match_type)
-                    and cached_result is not None
-                )
-                if can_serve:
-                    served_from_cache = True
+            exact_hit = cached_result is not None
+            match_type = "exact" if exact_hit else (opt_match.match_type if opt_match else None)
+            can_serve = (
+                self.optimize_mode == "active"
+                and self._cache_policy.approved
+                and self._cache_policy.is_cacheable_tool(tool_name)
+                and idempotent
+                and cached_result is not None
+                and self._cache_policy.may_serve(match_type or "exact")
+            )
+            if can_serve:
+                served_from_cache = True
 
         self._collector.emit(
             EventType.TOOL_REQUESTED,
@@ -576,7 +599,7 @@ class Supervisor:
             attributes=attributes,
         )
 
-        if served_from_cache and opt_match is not None:
+        if served_from_cache:
             self._collector.emit(
                 EventType.OPTIMIZATION_APPLIED,
                 step_id=step_id,
@@ -584,8 +607,8 @@ class Supervisor:
                 tool_name=tool_name,
                 attributes={
                     "cache_key": composite_key,
-                    "match_type": opt_match.match_type,
-                    "similarity": opt_match.similarity,
+                    "match_type": opt_match.match_type if opt_match else "exact",
+                    "similarity": opt_match.similarity if opt_match else 1.0,
                     "cache_hit": True,
                     "estimated_savings_usd": cost_usd or 0.0,
                 },

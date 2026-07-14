@@ -18,6 +18,22 @@ All notable changes are documented here. This project follows phase-based delive
 - **Adaptive rerouting remains advisory-only** (unchanged).
 - Tests: `tests/sdk/test_cache_policy.py` (6 rules/gate tests); 125 total passing.
 
+### Cross-run (durable) caching
+
+- **`supervisor/optimize/cache.py`**: new pluggable `CacheBackend` (port) with an
+  in-memory `InMemoryCache` (per-run) and a durable `FileCacheBackend` (JSON on
+  disk, wall-clock TTL, tenant-scoped by the composite key). `make_backend(...)`
+  constructs by kind (`memory`|`file`).
+- **SDK wiring** (`src/supervisor/sdk/supervisor.py`): `Supervisor` accepts a
+  `cache_backend` and selects `FileCacheBackend` when `SUPERVISOR_CACHE_BACKEND=file`
+  (`SUPERVISOR_CACHE_DIR`). Cross-run cache lookup is by exact composite key and is
+  independent of the in-run dedup detector, so a fresh `Supervisor` still reads
+  prior runs' cached results (and the same approved `CachePolicy` gates serving).
+- **Real-world demo** (`examples/real_world_demo`): `--cross-run` flag shares a
+  durable backend across two runs; under approval the second run serves all
+  identical searches (cost $0.008 → $0.004). Tests: `tests/sdk/test_file_cache.py`.
+- 131 total passing (ruff + mypy clean).
+
 ## [0.2.0] — Phases 1–5 (2026-07-14)
 
 ### Phase 5 — Memory lifecycle & retrieval governance (implemented)

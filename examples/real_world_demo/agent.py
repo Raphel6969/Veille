@@ -20,6 +20,7 @@ from typing import Any
 from examples.real_world_demo.api import PER_CALL_COST_USD, CompetitorAPI
 from supervisor.contracts.task import RiskLevel, TaskContract
 from supervisor.contracts.validation import CheckResult, ValidationReport
+from supervisor.optimize.cache import FileCacheBackend
 from supervisor.sdk import Supervisor
 
 QUERY = "observability"
@@ -38,7 +39,7 @@ def _build_task() -> TaskContract:
     )
 
 
-def run_scenario(scenario: str) -> dict[str, Any]:
+def run_scenario(scenario: str, cache_backend: Any = None) -> dict[str, Any]:
     api = CompetitorAPI(os.environ.get("SUPERVISOR_DEMO_API_URL"))
     task = _build_task()
     supervisor = Supervisor(
@@ -47,6 +48,7 @@ def run_scenario(scenario: str) -> dict[str, Any]:
         memory=_flag("SUPERVISOR_MEMORY"),
         optimize=_flag("SUPERVISOR_OPTIMIZE"),
         optimize_mode=os.environ.get("SUPERVISOR_OPTIMIZE_MODE", "dry_run"),
+        cache_backend=cache_backend,
     )
     if _flag("SUPERVISOR_PLAN"):
         supervisor.plan()
@@ -138,7 +140,31 @@ def run_scenario(scenario: str) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Real-world (read-only API) supervisor demo.")
     parser.add_argument("--scenario", choices=["success", "expensive"], default="success")
+    parser.add_argument(
+        "--cross-run",
+        action="store_true",
+        help="Use a durable file cache shared across two runs (demonstrates cross-run caching).",
+    )
     args = parser.parse_args()
+
+    if args.cross_run:
+        import tempfile
+
+        backend = FileCacheBackend(tempfile.mkdtemp(prefix="sup_cache_"))
+        run1 = run_scenario(args.scenario, cache_backend=backend)
+        run2 = run_scenario(args.scenario, cache_backend=backend)
+        print(json.dumps(
+            {
+                "mode": "cross-run",
+                "scenario": args.scenario,
+                "run1_cost_usd": run1["total_cost_usd"],
+                "run2_cost_usd": run2["total_cost_usd"],
+                "cross_run_saving_usd": round(run1["total_cost_usd"] - run2["total_cost_usd"], 4),
+            },
+            indent=2,
+        ))
+        return
+
     result = run_scenario(args.scenario)
     print(json.dumps(
         {
