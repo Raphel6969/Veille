@@ -46,14 +46,12 @@ def doctor_payload() -> dict[str, Any]:
         "policy_mode": "observe",
         "enforce_enabled": settings.enforce,
         "optimize_enabled": settings.optimize,
-        "cross_run_cache": {
-            "approved": settings.cache_approved,
-            "backend": settings.cache_backend,
-        },
+        "cache_approved": settings.cache_approved,
+        "cache_backend": settings.cache_backend,
         "litellm_status": "real-ready" if _ready("litellm", settings) else "mock",
         "openrouter_status": "real-ready" if _ready("openrouter", settings) else "mock",
-        "openai_router_status": "real-ready" if _ready("openai", settings) else "mock",
-        "safe_config_warnings": warnings,
+        "router_status": "real-ready" if _ready("openai", settings) else "mock",
+        "warnings": warnings,
     }
 
 

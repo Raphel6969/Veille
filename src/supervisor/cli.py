@@ -76,15 +76,16 @@ def _doctor(args: argparse.Namespace) -> int:
     print(f"  policy mode:         {payload['policy_mode']} (warn/enforce via SUPERVISOR_ENFORCE)")
     print(f"  enforce enabled:     {payload['enforce_enabled']}")
     print(f"  optimize enabled:    {payload['optimize_enabled']}")
-    print(f"  cross-run cache:     approved={payload['cross_run_cache']['approved']} "
-          f"backend={payload['cross_run_cache']['backend']}")
+    print(f"  cross-run cache:     approved={payload['cache_approved']} "
+          f"backend={payload['cache_backend']}")
     print(f"  litellm status:      {payload['litellm_status']}")
     print(f"  openrouter status:   {payload['openrouter_status']}")
     print(f"  openai router:       {payload['openai_router_status']}")
     print("  safe configuration warnings:")
-    if not payload["safe_config_warnings"]:
+    if not payload["warnings"]:
         print("    none")
-    for w in payload["safe_config_warnings"]:
+        return
+    for w in payload["warnings"]:
         print(f"    ! {w}")
     return 0
 
