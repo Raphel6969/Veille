@@ -100,7 +100,8 @@ class CompetitorAPI:
     def _get(self, path: str, **params: str) -> dict[str, Any]:
         url = self.base_url + path + "?" + urllib.parse.urlencode(params)
         with urllib.request.urlopen(url, timeout=5) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+            data: dict[str, Any] = json.loads(resp.read().decode("utf-8"))
+        return data
 
     def close(self) -> None:
         if self._server is not None:

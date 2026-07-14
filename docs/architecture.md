@@ -100,6 +100,63 @@ flowchart TB
 | `RunSummary` memory accounting | `src/supervisor/analytics/run_summary.py` | Implemented |
 | Demo memory-backed retrieval opt-in | `examples/cited_market_research/agent.py` | Implemented |
 
+## Local Integration Console
+
+The console is a developer-facing layer on top of the runtime. It does **not** replace the runtime or bypass its safety rules — every workflow execution goes through the Supervisor SDK, and no secret is ever exposed.
+
+```mermaid
+flowchart LR
+    subgraph user [Developer]
+        CLI[veille CLI]
+        UI[React web UI]
+    end
+    subgraph console [Console Layer]
+        Config[VEILLE_* settings]
+        Registry[Workflow registry]
+        Explorer[Run explorer]
+        Doctor[Health + config report]
+        Connections[Provider connections]
+        Server[FastAPI server]
+    end
+    subgraph runtime [Runtime Layer]
+        SDK[Supervisor SDK]
+        Adapters[Framework adapters]
+        Providers[Provider drivers]
+        Contracts[Data contracts]
+        Analytics[Run summary]
+    end
+    CLI --> Server
+    UI --> Server
+    Server --> Explorer
+    Server --> Registry
+    Server --> Doctor
+    Server --> Connections
+    Registry --> SDK
+    Explorer --> Analytics
+    Connections --> Providers
+    SDK --> Adapters
+    SDK --> Contracts
+    Analytics --> Contracts
+```
+
+| Component | Path | Status |
+|---|---|---|
+| VEILLE_* configuration | `src/supervisor/console/config.py` | Implemented |
+| Workflow registry | `src/supervisor/console/run_registry.py` | Implemented |
+| Run explorer (multi-view) | `src/supervisor/console/explorer.py` | Implemented |
+| Connection discovery + validation | `src/supervisor/console/connections.py` | Implemented |
+| Health/doctor report | `src/supervisor/console/doctor.py` | Implemented |
+| FastAPI server (web API) | `src/supervisor/console/server.py` | Implemented |
+| `veille` CLI entry point | `src/supervisor/cli.py` | Implemented |
+| React+TS+Vite web UI | `ui/` | Implemented |
+| Framework adapter ports | `src/supervisor/adapters/ports.py` | Implemented |
+| Provider drivers (×8) | `src/supervisor/adapters/providers/` | Implemented |
+| LangGraph adapter | `src/supervisor/adapters/langgraph/` | Implemented |
+| OpenAI Agents SDK adapter | `src/supervisor/adapters/openai_agents/` | Skeleton |
+| OpenAI Responses API adapter | `src/supervisor/adapters/openai_responses/` | Skeleton |
+| Generic framework adapter | `src/supervisor/adapters/generic.py` | Implemented |
+| Context compression/diversification | `src/supervisor/context/diversification.py` | Implemented |
+
 ## Data boundaries
 
 - **Contracts are vendor-neutral.** Event and task schemas do not depend on LangGraph, LiteLLM, or any observability vendor.

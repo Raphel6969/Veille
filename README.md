@@ -1,14 +1,16 @@
-# AI Runtime Supervisor
+# AI Runtime Supervisor / Veille Console
 
 Control plane for production AI-agent work. The Supervisor plans, contextualizes, routes, governs, and verifies each agent run—reducing wasted spend and unreliable outcomes without requiring teams to rebuild their applications.
 
-**Current release:** [0.2.0](docs/release-notes/0.2.0.md) — Phases 1–5 (observe, enforce, plan, optimize, govern memory). Event schema `0.2.0`. All capabilities are opt-in and off by default.
+**Current release:** [0.2.0](docs/release-notes/0.2.0.md) — Phases 1–5 + **Local Integration Console**. Event schema `0.2.0`. All capabilities are opt-in and off by default.
 
 ## What exists today
 
 - Versioned data contracts (task, events, plan, policy, validation)
 - Python SDK (`Supervisor` + `RunCollector`) for zero-touch event emission
 - LangGraph adapter with automatic callback-based instrumentation
+- **OpenAI Agents SDK adapter** and **OpenAI Responses API adapter** (skeleton)
+- **Model provider port** with 8 provider drivers (LiteLLM, OpenAI, Anthropic, Gemini, OpenRouter, Ollama, LM Studio, OpenAI-compatible)
 - Synthetic cited market-research LangGraph demo workflow with mock tools
 - Representative trace fixtures for success, expensive, and failed-validation runs
 - Observe-only policy engine (duplicate detection, retry budget, cost overrun, validation)
@@ -18,9 +20,8 @@ Control plane for production AI-agent work. The Supervisor plans, contextualizes
 - **Advisory planning** (Phase 3): tier selection, per-step context manifests, capability+tier model routing
 - **Adaptive optimization** (Phase 4): semantic near-duplicate detection + idempotent result caching (`SUPERVISOR_OPTIMIZE`, dry-run default)
 - **Memory governance** (Phase 5): memory store + scoring + governor (`memory.retrieved`/`memory.expired` manifest) with audited expiry, no automatic deletion (`SUPERVISOR_MEMORY`)
+- **Local Integration Console** (`veille` CLI + FastAPI + React web UI) — register workflows, connect providers, run live, inspect execution
 - Local development environment (Docker Compose + pytest)
-
-**Not yet implemented:** control-plane UI (planning/routing/optimization are opt-in by default).
 
 ## Quickstart
 
@@ -42,7 +43,36 @@ Control plane for production AI-agent work. The Supervisor plans, contextualizes
 pytest -v
 ```
 
-### Run the demo workflow
+### Use the console
+
+```powershell
+# Doctor — environment + safe-config report
+veille doctor
+
+# List provider connections
+veille connections
+veille connections validate openai
+
+# List registered workflows
+veille workflows
+
+# Run the mock demo
+veille demo mock
+
+# Run the real-world demo
+veille demo real-world
+
+# List saved runs
+veille runs
+
+# Run an arbitrary registered workflow
+veille run cited_market_research --input '{"scenario":"success"}'
+
+# Start the web UI (then open http://127.0.0.1:8000)
+veille serve
+```
+
+### Run the classic demo workflow
 
 ```powershell
 # Successful run
@@ -56,19 +86,6 @@ python -m supervisor.cli explore --run fixtures/traces/expensive_run.json --poli
 
 # Live run with policy observations and OTel export
 python -m supervisor.cli explore --live --scenario expensive --policy --otel
-
-# Phase 3 advisory planning (plan tier + context manifests + model routing)
-$env:SUPERVISOR_PLAN=1
-python -m examples.cited_market_research.agent --scenario all
-
-# Phase 4 adaptive optimization (semantic dedup + caching)
-$env:SUPERVISOR_OPTIMIZE=1                       # dry-run: recommend only
-$env:SUPERVISOR_OPTIMIZE_MODE=active             # serve idempotent cache hits
-python -m examples.cited_market_research.agent --scenario expensive
-
-# Phase 5 memory governance (memory-backed retrieval)
-$env:SUPERVISOR_MEMORY=1
-python -m examples.cited_market_research.agent --scenario all
 ```
 
 No API keys required. Mock models and tools are used by default.
@@ -76,11 +93,12 @@ No API keys required. Mock models and tools are used by default.
 ## Repository layout
 
 ```text
-src/supervisor/          Core contracts, SDK, adapters, analytics, policy, telemetry, CLI
+src/supervisor/          Core contracts, SDK, adapters, analytics, policy, telemetry, CLI, console
 examples/                Runnable demo workflows
 fixtures/traces/         Synthetic trace JSON for tests and baselines
 docs/                    Architecture, contracts, roadmap, ADRs
 docs/development/        Source master prompt, blueprint, phase plans
+ui/                      React+TypeScript+Vite web UI (veille console frontend)
 templates/               Baseline measurement templates
 ```
 
@@ -92,13 +110,21 @@ templates/               Baseline measurement templates
 | [Runtime chain](docs/runtime-chain.md) | Stage-by-stage runtime flow |
 | [Data contracts](docs/data-contracts.md) | Schema reference |
 | [Roadmap](docs/roadmap.md) | Phase status and deferrals |
-| [Integrations](docs/integrations.md) | Adapter contracts |
+| [Integrations](docs/integrations.md) | Adapter contracts + provider drivers |
 | [Operations](docs/operations.md) | Local dev, commands, runbooks |
 | [Policy engine](docs/policy-engine.md) | Policy modes and Phase 1 observe policies |
+| [ADR-013](docs/adr/013-local-integration-console.md) | Local Integration Console design |
 
-## First workflow
+### Setup guides
 
-**Cited market-research agent** — produces a competitor brief with citations, comparison table, and validation against a task contract. See `examples/cited_market_research/`.
+| Guide | Description |
+|---|---|
+| [Safe local setup](docs/guides/safe-local-setup.md) | Running with mock providers (default) |
+| [Mock demo walkthrough](docs/guides/mock-demo.md) | End-to-end mock demo |
+| [Real provider setup](docs/guides/real-provider-setup.md) | Setting up real model providers |
+| [OpenRouter integration](docs/guides/openrouter-setup.md) | Using OpenRouter as a gateway |
+| [OpenAI Agents SDK](docs/guides/openai-agents-sdk.md) | Running an OpenAI Agents SDK workflow |
+| [LiteLLM integration](docs/guides/litellm-integration.md) | Using LiteLLM for multi-provider access |
 
 ## License
 

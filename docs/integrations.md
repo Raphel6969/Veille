@@ -2,6 +2,17 @@
 
 Integration-first design: retain customer frameworks and connect via adapter ports.
 
+## Adapter ports
+
+All adapters implement `FrameworkAdapter` (a Protocol from `src/supervisor/adapters/ports.py`). The console discovers installed adapters at runtime.
+
+| Adapter | Status | Package |
+|---|---|---|
+| LangGraph | **Implemented** (Phase 1) | `langgraph` (dev dependency) |
+| OpenAI Agents SDK | **Skeleton** | `openai-agents` (optional) |
+| OpenAI Responses API | **Skeleton** | `openai` (optional) |
+| Generic (any callable) | **Implemented** | none required |
+
 ## LangGraph adapter
 
 **Status:** Implemented (Phase 1). Callback-based instrumentation via a LangGraph `BaseCallbackHandler`.
@@ -38,6 +49,67 @@ The adapter attaches a `LangGraphCallbackHandler` so the agent emits normalized 
 Default models in demo: `mock-research`, `mock-synthesis`, `mock-review`.
 
 Set `USE_MOCK_MODELS=false` and provide API keys to use real providers (Phase 1+).
+
+## Model provider drivers
+
+The console registers 8 provider drivers via `src/supervisor/adapters/providers/__init__.py`. Each extends `BaseModelProvider`.
+
+| Provider | Identifier | API Key Env Var | Status |
+|---|---|---|---|
+| LiteLLM | `litellm` | `OPENAI_API_KEY` | Implemented |
+| OpenAI | `openai` | `OPENAI_API_KEY` | Implemented |
+| Anthropic | `anthropic` | `ANTHROPIC_API_KEY` | Implemented |
+| Google Gemini | `gemini` | `GEMINI_API_KEY` | Implemented |
+| OpenRouter | `openrouter` | `OPENROUTER_API_KEY` | Implemented |
+| Ollama | `ollama` | `OLLAMA_BASE_URL` | Implemented |
+| LM Studio | `lmstudio` | `LMSTUDIO_BASE_URL` | Implemented |
+| OpenAI-compatible | `openai-compatible` | `OPENAI_COMPATIBLE_API_KEY` | Implemented |
+
+All providers default to **mock mode** — no credentials needed. Set `VEILLE_REAL_MODE=true` and supply the corresponding key to use real inference.
+
+The `_derive_provider(model)` helper maps model strings to provider identifiers:
+
+- `gpt-4o` → `openai`
+- `openrouter/gpt-4o` → `openrouter`
+- `claude-3.5-sonnet` → `anthropic`
+- `gemini-1.5-pro` → `gemini`
+- `ollama/llama3` → `ollama`
+- `lmstudio/local-model` → `lmstudio`
+- `litellm/gpt-4o` → `litellm`
+
+## Generic framework adapter
+
+**Status:** Implemented. Wraps any callable into an `InstrumentedAgent` that emits normalized events through the Supervisor SDK.
+
+```python
+from supervisor.adapters.generic import GenericFrameworkAdapter
+
+adapter = GenericFrameworkAdapter()
+agent = adapter.attach(my_callable, supervisor)
+result = agent.run(input_data, config)
+```
+
+## OpenAI Agents SDK adapter
+
+**Status:** Skeleton. When the `openai-agents` package is installed, routes through the native `Runner` so tracing integrates. Falls back to the generic adapter otherwise.
+
+```python
+from supervisor.adapters.openai_agents import OpenAIAgentsAdapter
+
+adapter = OpenAIAgentsAdapter()
+agent = adapter.attach(my_agent, supervisor)
+```
+
+## OpenAI Responses API adapter
+
+**Status:** Skeleton. When the `openai` SDK is available, uses `client.responses.create` for native tracing. Falls back to the generic adapter otherwise.
+
+```python
+from supervisor.adapters.openai_responses import OpenAIResponsesAdapter
+
+adapter = OpenAIResponsesAdapter()
+agent = adapter.attach(my_agent, supervisor)
+```
 
 ## Planning and routing (Phase 3, advisory)
 

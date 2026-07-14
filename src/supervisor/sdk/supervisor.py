@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from supervisor.adapters.providers import _derive_provider
 from supervisor.context import ContextEngine, ContextManifest
 from supervisor.contracts.events import EventType, RunEventBatch
 from supervisor.contracts.plan import ExecutionPlan, PlanTier
@@ -222,12 +223,20 @@ class Supervisor:
         cacheable: bool = True,
         auth_scope: str = "default",
         context_boundary: str = "default",
+        provider: str | None = None,
+        prompt_version: str = "unversioned",
     ) -> str:
-        request_attrs: dict[str, Any] = {"prompt_preview": prompt[:120]}
+        request_attrs: dict[str, Any] = {
+            "prompt_preview": prompt[:120],
+            "model": model,
+            "provider": provider or _derive_provider(model),
+            "prompt_version": prompt_version,
+        }
         if routing is not None:
             request_attrs["routing_tier"] = routing.tier.value
             request_attrs["routing_reason"] = routing.reason
             request_attrs["routing_capability"] = routing.capability
+            request_attrs["routing_provider"] = routing.provider
 
         # Phase 4/5 cache policy for model calls (opt-in, approval-gated).
         opt_match = None
@@ -278,6 +287,7 @@ class Supervisor:
                     "match_type": opt_match.match_type,
                     "similarity": opt_match.similarity,
                     "cache_hit": True,
+                    "reuse_reason": "served:exact+approved",
                     "estimated_savings_usd": cached.get("cost_usd", 0.0),
                 },
             )
@@ -325,6 +335,7 @@ class Supervisor:
                         "match_type": opt_match.match_type,
                         "similarity": opt_match.similarity,
                         "cache_hit": cached is not None,
+                        "reuse_reason": f"recommended:{opt_match.match_type}",
                         "estimated_savings_usd": (cached or {}).get("cost_usd", 0.0)
                         if cached is not None
                         else 0.0,
@@ -507,8 +518,16 @@ class Supervisor:
         tool_version: str = "unversioned",
         auth_scope: str = "default",
         context_boundary: str = "default",
+        provider: str | None = None,
+        prompt_version: str = "unversioned",
     ) -> Any:
-        attributes: dict[str, Any] = {"input": input}
+        attributes: dict[str, Any] = {
+            "input": input,
+            "tool_version": tool_version,
+            "prompt_version": prompt_version,
+        }
+        if provider is not None:
+            attributes["provider"] = provider
         if duplicate:
             attributes["duplicate"] = True
         if normalized_input_hash is not None:
@@ -610,6 +629,7 @@ class Supervisor:
                     "match_type": opt_match.match_type if opt_match else "exact",
                     "similarity": opt_match.similarity if opt_match else 1.0,
                     "cache_hit": True,
+                    "reuse_reason": "served:exact+approved",
                     "estimated_savings_usd": cost_usd or 0.0,
                 },
             )
@@ -652,6 +672,7 @@ class Supervisor:
                             "match_type": opt_match.match_type,
                             "similarity": opt_match.similarity,
                             "cache_hit": cached_result is not None,
+                            "reuse_reason": f"recommended:{opt_match.match_type}",
                             "estimated_savings_usd": (cost_usd or 0.0)
                             if cached_result is not None
                             else 0.0,

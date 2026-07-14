@@ -43,3 +43,8 @@ Thumbs.db
 .coverage.*
 coverage.xml
 htmlcov/
+
+# Node / UI
+node_modules/
+ui/dist/
+ui/node_modules/

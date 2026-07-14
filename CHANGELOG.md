@@ -4,6 +4,24 @@ All notable changes are documented here. This project follows phase-based delive
 
 ## [Unreleased]
 
+### Local Integration Console (ADR-013)
+
+- **`veille` CLI**: `doctor`, `connections`, `workflows`, `run`, `runs`, `providers`, `adapters`, `demo`, `explore`, `serve` subcommands. Registered as `[project.scripts] veille` in `pyproject.toml`.
+- **Console backend** (`src/supervisor/console/`): `VeilleSettings` (VEILLE_* env namespace), `doctor_payload()`, `WorkflowInfo`/`AdapterInfo`/`ConnectionInfo` run registry, `explore()` multi-view projection over any `RunEventBatch`, `validate_connection()`, FastAPI server (`/api/health`, `/api/doctor`, `/api/connections`, `/api/workflows`, `/api/runs`, `/api/providers`, `/api/adapters`).
+- **Framework adapter ports** (`src/supervisor/adapters/ports.py`): `FrameworkAdapter` + `RunEventHook` protocols.
+- **Provider drivers** (`src/supervisor/adapters/providers/`): `ModelProvider` port + 8 concrete drivers (LiteLLM, OpenAI, Anthropic, Gemini, OpenRouter, Ollama, LM Studio, OpenAI-compatible). All default to mock; real mode gated behind `VEILLE_REAL_MODE=true`.
+- **Generic adapter** (`src/supervisor/adapters/generic.py`): wraps any callable into an `InstrumentedAgent`.
+- **OpenAI Agents SDK adapter** (`src/supervisor/adapters/openai_agents/`): skeleton with generic fallback.
+- **OpenAI Responses API adapter** (`src/supervisor/adapters/openai_responses/`): skeleton with generic fallback.
+- **SDK extensions**: `model()`/`tool()` accept optional `provider`, `prompt_version`; emit `provider`/`model`/`reuse_reason` attributes. `RoutingDecision` carries `provider` field. `_derive_provider()` maps model strings → provider identifiers.
+- **Run summary extensions**: `RunSummary` adds `providers`, `cache_reuse`, `policy_events`, `intervention_events`, `validation_checks`.
+- **Context diversification** (`src/supervisor/context/diversification.py`): `CompressionReport`/`DiversificationReport`, `compression_reports()`/`diversification_reports()` using `ShingleSemanticKey` + Jaccard.
+- **Router updates**: `_default()` seeds real model candidates (`gpt-4o`, `openrouter/gpt-4o`, `claude-3.5-sonnet`, `gemini-1.5-pro`, `ollama/llama3`, `lmstudio/local-model`) after mock candidates.
+- **React+TypeScript+Vite web UI** (`ui/`): 6 pages (Overview, Workflows, Run Explorer, Connections, Adapters, Policies) consuming FastAPI endpoints.
+- **`ui` optional dependency**: `fastapi`, `uvicorn`, `pydantic-settings` for the web server.
+- **Registered workflows**: `cited_market_research` (mock, langgraph), `real_world_demo` (real-capable, sdk), `langgraph_demo` (mock, langgraph with normalized events).
+- Tests: 34 new console tests (config, providers, adapters, explorer, connections); 165 total passing.
+
 ### Approved cache policy (post-0.2.0, ADR-012)
 
 - **`supervisor/optimize/policy.py`**: `CachePolicy` + `build_cache_key` encode the

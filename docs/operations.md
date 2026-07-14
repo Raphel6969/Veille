@@ -51,6 +51,7 @@ $env:SUPERVISOR_PLAN=1
 python -m examples.cited_market_research.agent --scenario all
 ```
 
+```powershell
 # Phase 4 adaptive optimization (semantic dedup + caching)
 $env:SUPERVISOR_OPTIMIZE=1                       # dry-run: recommends only
 $env:SUPERVISOR_OPTIMIZE_MODE=active             # serve idempotent cache hits
@@ -58,10 +59,65 @@ $env:SUPERVISOR_CACHE_APPROVED=1                 # partner-confirmation gate (3+
 python -m examples.cited_market_research.agent --scenario expensive
 ```
 
+```powershell
 # Phase 5 memory lifecycle & governance (memory-backed retrieval)
 $env:SUPERVISOR_MEMORY=1
 python -m examples.cited_market_research.agent --scenario all
 ```
+
+## Veille Console CLI
+
+The `veille` CLI bundles all console operations. Install with `pip install -e ".[ui]"` to get the web server.
+
+```powershell
+# Doctor — report environment + safe-config status
+veille doctor
+
+# List / validate provider connections
+veille connections
+veille connections validate openai
+veille connections validate openai --real
+
+# List registered workflows
+veille workflows
+veille workflows inspect cited_market_research
+
+# Execute a registered workflow through the runtime
+veille run cited_market_research --input '{"scenario":"success"}'
+veille run real_world_demo --input '{"scenario":"success"}' --yes
+
+# List / show saved runs
+veille runs
+veille runs show <run-id>
+
+# List registered providers
+veille providers list
+
+# List installed adapters
+veille adapters list
+
+# Run built-in demos
+veille demo mock
+veille demo real-world --cross-run
+
+# Start the FastAPI web server (serves the React UI on http://127.0.0.1:8000)
+veille serve
+
+# Inspect a trace fixture
+veille explore --run fixtures/traces/success_run.json
+veille explore --live --scenario expensive --policy
+```
+
+### Safety rules (built-in)
+
+- Secrets are never printed, committed, returned, or stored by the console.
+- Credentials are masked (`…abcd`), never revealed.
+- Confirmation is required before:
+  - Paid API calls (real mode asks `--yes`)
+  - Enabling enforcement / optimization / cross-run cache
+  - Persistent credential changes
+- Defaults are always **mock** providers, **mock** workflows, and **mock** tools.
+- Missing credentials print guidance and continue in mock — the console never fails at startup.
 
 ## CI
 
@@ -74,11 +130,14 @@ GitHub Actions runs on push/PR to `main` or `master`:
 ## Troubleshooting
 
 | Issue | Resolution |
-|---|---|
+|---|---|---|
 | `ModuleNotFoundError: examples` | Activate venv; run from repo root |
 | Docker compose fails | Use `-SkipDocker` or install Docker Desktop |
 | LangGraph import errors | `pip install -e ".[dev]"` |
 | Mypy errors on langgraph | Overrides ignore missing stubs |
+| `veille: command not found` | Run `pip install -e ".[ui]"` to register the console entry point |
+| `ModuleNotFoundError: fastapi` | Run `pip install -e ".[ui]"` to install web dependencies |
+| Web UI blank / API unreachable | Start the backend first (`veille serve`); the Vite dev server proxies `/api` to `127.0.0.1:8000` |
 
 ## Logging
 

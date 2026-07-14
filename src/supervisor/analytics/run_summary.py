@@ -65,6 +65,11 @@ class RunSummary:
     per_step: list[StepSummary] = field(default_factory=list)
     per_model: list[ModelSummary] = field(default_factory=list)
     per_tool: list[ToolSummary] = field(default_factory=list)
+    providers: list[str] = field(default_factory=list)
+    cache_reuse: list[dict[str, Any]] = field(default_factory=list)
+    policy_events: int = 0
+    intervention_events: int = 0
+    validation_checks: list[dict[str, Any]] = field(default_factory=list)
 
     def to_text(self) -> str:
         lines = [
@@ -148,23 +153,55 @@ def summarize(batch: RunEventBatch) -> RunSummary:
     memories_stale = 0
     memories_drift = 0
     memories_expired = 0
+    cache_reuse: list[dict[str, Any]] = []
+    providers: set[str] = set()
+    policy_events = 0
+    intervention_events = 0
+    validation_checks: list[dict[str, Any]] = []
     for e in events:
         if e.event_type in (EventType.TOOL_REQUESTED, EventType.MODEL_REQUESTED):
             if e.attributes.get("match_type"):
                 cache_hits += 1
                 if e.attributes.get("match_type") == "semantic":
                     semantic_duplicates += 1
+            prov = e.attributes.get("provider")
+            if prov:
+                providers.add(prov)
         elif e.event_type == EventType.OPTIMIZATION_APPLIED:
             cache_served += 1
             estimated_savings_usd += _as_float(e.attributes.get("estimated_savings_usd"))
+            cache_reuse.append(
+                {
+                    "cache_key": e.attributes.get("cache_key"),
+                    "match_type": e.attributes.get("match_type"),
+                    "reuse_reason": e.attributes.get("reuse_reason"),
+                    "estimated_savings_usd": _as_float(e.attributes.get("estimated_savings_usd")),
+                }
+            )
         elif e.event_type == EventType.OPTIMIZATION_RECOMMENDED:
             estimated_savings_usd += _as_float(e.attributes.get("estimated_savings_usd"))
+            cache_reuse.append(
+                {
+                    "cache_key": e.attributes.get("cache_key"),
+                    "match_type": e.attributes.get("match_type"),
+                    "reuse_reason": e.attributes.get("reuse_reason"),
+                    "estimated_savings_usd": _as_float(e.attributes.get("estimated_savings_usd")),
+                }
+            )
         elif e.event_type == EventType.MEMORY_RETRIEVED:
             memories_retrieved += len(e.attributes.get("included") or [])
             memories_stale += len(e.attributes.get("stale") or [])
             memories_drift += len(e.attributes.get("drift") or [])
         elif e.event_type == EventType.MEMORY_EXPIRED:
             memories_expired += 1
+        elif e.event_type == EventType.POLICY_TRIGGERED:
+            policy_events += 1
+        elif e.event_type == EventType.INTERVENTION_APPLIED:
+            intervention_events += 1
+        elif e.event_type == EventType.VALIDATION_COMPLETED:
+            checks = e.attributes.get("checks") or []
+            if isinstance(checks, list):
+                validation_checks.extend(checks)
 
     plan_tier = started.attributes.get("tier") if started is not None else None
     routing: list[dict[str, Any]] = []
@@ -175,6 +212,8 @@ def summarize(batch: RunEventBatch) -> RunSummary:
                     "capability": e.attributes.get("routing_capability"),
                     "model": e.model_name,
                     "tier": e.attributes.get("routing_tier"),
+                    "provider": e.attributes.get("routing_provider")
+                    or e.attributes.get("provider"),
                     "reason": e.attributes.get("routing_reason"),
                 }
             )
@@ -238,6 +277,11 @@ def summarize(batch: RunEventBatch) -> RunSummary:
         memories_drift=memories_drift,
         memories_expired=memories_expired,
         routing=routing,
+        providers=sorted(providers),
+        cache_reuse=cache_reuse,
+        policy_events=policy_events,
+        intervention_events=intervention_events,
+        validation_checks=validation_checks,
         per_step=list(steps.values()),
         per_model=list(models.values()),
         per_tool=list(tools.values()),

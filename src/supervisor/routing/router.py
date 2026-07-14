@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from supervisor.adapters.providers import _derive_provider
 from supervisor.contracts.plan import PlanTier
 
 
@@ -20,6 +21,7 @@ class RoutingDecision:
     model: str
     tier: PlanTier
     reason: str
+    provider: str | None = None
 
 
 class ModelRegistry:
@@ -30,12 +32,25 @@ class ModelRegistry:
 
     def _default(self) -> list[ModelCandidate]:
         all_tiers = list(PlanTier)
-        return [
+        # Mock models come first so the default (no-credential) selection never
+        # picks a real provider; real candidates are appended for routing display
+        # and opt-in real execution.
+        mock = [
             ModelCandidate("mock-research", ["research"], list(all_tiers)),
             ModelCandidate("mock-analysis", ["analysis"], list(all_tiers)),
             ModelCandidate("mock-synthesis", ["synthesis"], list(all_tiers)),
             ModelCandidate("mock-review", ["review"], list(all_tiers)),
         ]
+        caps = ["research", "analysis", "synthesis", "review"]
+        real = [
+            ModelCandidate("gpt-4o", caps, all_tiers),
+            ModelCandidate("openrouter/gpt-4o", caps, all_tiers),
+            ModelCandidate("claude-3.5-sonnet", caps, all_tiers),
+            ModelCandidate("gemini-1.5-pro", caps, all_tiers),
+            ModelCandidate("ollama/llama3", caps, all_tiers),
+            ModelCandidate("lmstudio/local-model", caps, all_tiers),
+        ]
+        return mock + real
 
 
 class ModelRouter:
@@ -75,5 +90,9 @@ class ModelRouter:
         elif not tier_match:
             reason += " No tier-exact match; used closest available."
         return RoutingDecision(
-            capability=capability, model=chosen.name, tier=tier, reason=reason
+            capability=capability,
+            model=chosen.name,
+            tier=tier,
+            reason=reason,
+            provider=_derive_provider(chosen.name),
         )

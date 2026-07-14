@@ -29,6 +29,14 @@ dev = [
 litellm = [
     "litellm>=1.55,<2",
 ]
+ui = [
+    "fastapi>=0.110,<1",
+    "uvicorn>=0.30,<1",
+    "pydantic-settings>=2.6,<3",
+]
+
+[project.scripts]
+veille = "supervisor.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/supervisor"]
@@ -53,5 +61,5 @@ packages = ["supervisor"]
 mypy_path = "src"
 
 [[tool.mypy.overrides]]
-module = ["langgraph.*", "langchain_core.*", "opentelemetry.*"]
+module = ["langgraph.*", "langchain_core.*", "opentelemetry.*", "litellm.*"]
 ignore_missing_imports = true

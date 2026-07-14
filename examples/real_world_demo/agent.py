@@ -20,6 +20,7 @@ from typing import Any
 from examples.real_world_demo.api import PER_CALL_COST_USD, CompetitorAPI
 from supervisor.contracts.task import RiskLevel, TaskContract
 from supervisor.contracts.validation import CheckResult, ValidationReport
+from supervisor.memory.store import MemoryTier
 from supervisor.optimize.cache import FileCacheBackend
 from supervisor.sdk import Supervisor
 
@@ -98,10 +99,13 @@ def run_scenario(scenario: str, cache_backend: Any = None) -> dict[str, Any]:
 
             if _flag("SUPERVISOR_MEMORY"):
                 supervisor.remember(
-                    content=f"Prior query context: {QUERY}", tier="long",
-                    role="researcher", provenance={"step_id": "research"},
+                    step_id="research", agent_id="researcher",
+                    content=f"Prior query context: {QUERY}", tier=MemoryTier.LONG,
                 )
-                supervisor.retrieve_memory(step_id="research", role="researcher", query=QUERY)
+                supervisor.retrieve_memory(
+                    step_id="research", agent_id="researcher",
+                    role="researcher", query=QUERY,
+                )
 
             competitors = (r1.get("results") or []) + (r3.get("results") or [])
             sources = [s1, s2]
