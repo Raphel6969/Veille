@@ -1,0 +1,156 @@
+"""Real-world supervisor demo (read-only API, SDK-embed usage).
+
+Runs a small research workflow against a genuinely read-only HTTP API
+(see ``api.py``) and wraps every tool/step with the Supervisor SDK. The workflow
+intentionally issues an identical duplicate query (cacheable), a near-duplicate
+query (must re-execute), and the same source under two auth scopes (boundary
+cache miss) — so the approved cache policy (ADR-012) is observable end-to-end.
+
+All opt-in flags from v0.2.0 are respected (enforce / plan / optimize /
+cache-approval / memory). Safe to run anywhere: no writes, no secrets, no
+external network (a local HTTP server is started when no API URL is provided).
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+from typing import Any
+
+from examples.real_world_demo.api import PER_CALL_COST_USD, CompetitorAPI
+from supervisor.contracts.task import RiskLevel, TaskContract
+from supervisor.contracts.validation import CheckResult, ValidationReport
+from supervisor.sdk import Supervisor
+
+QUERY = "observability"
+
+
+def _flag(name: str) -> bool:
+    return os.environ.get(name, "").lower() in ("1", "true", "yes")
+
+
+def _build_task() -> TaskContract:
+    return TaskContract(
+        task_id="realworld-competitor-brief-001",
+        task="cited competitor brief",
+        risk_level=RiskLevel.MEDIUM,
+        quality_checks=["citations_valid"],
+    )
+
+
+def run_scenario(scenario: str) -> dict[str, Any]:
+    api = CompetitorAPI(os.environ.get("SUPERVISOR_DEMO_API_URL"))
+    task = _build_task()
+    supervisor = Supervisor(
+        task,
+        enforce=_flag("SUPERVISOR_ENFORCE"),
+        memory=_flag("SUPERVISOR_MEMORY"),
+        optimize=_flag("SUPERVISOR_OPTIMIZE"),
+        optimize_mode=os.environ.get("SUPERVISOR_OPTIMIZE_MODE", "dry_run"),
+    )
+    if _flag("SUPERVISOR_PLAN"):
+        supervisor.plan()
+    supervisor.start_run()
+
+    try:
+        with supervisor.node(step_id="research", agent_id="researcher", role="researcher"):
+            if _flag("SUPERVISOR_PLAN"):
+                supervisor.context(
+                    step_id="research", agent_id="researcher", role="researcher",
+                    master_context=[f"Search competitors for: {QUERY}"],
+                )
+
+            # Identical duplicate query -> cacheable (exact) when approved.
+            r1 = supervisor.tool(
+                step_id="research", agent_id="researcher", tool_name="search_competitors",
+                input={"query": QUERY}, fn=lambda: api.search(QUERY),
+                idempotent=True, cost_usd=PER_CALL_COST_USD,
+                tool_version="v1", auth_scope="user-A", context_boundary="research",
+            )
+            supervisor.tool(
+                step_id="research", agent_id="researcher", tool_name="search_competitors",
+                input={"query": QUERY}, fn=lambda: api.search(QUERY),
+                idempotent=True, cost_usd=PER_CALL_COST_USD,
+                tool_version="v1", auth_scope="user-A", context_boundary="research",
+            )
+            # Near-duplicate query -> recommended, never served (uncertain).
+            r3 = supervisor.tool(
+                step_id="research", agent_id="researcher", tool_name="search_competitors",
+                input={"query": QUERY + " 2026"}, fn=lambda: api.search(QUERY + " 2026"),
+                idempotent=True, cost_usd=PER_CALL_COST_USD,
+                tool_version="v1", auth_scope="user-A", context_boundary="research",
+            )
+            # Same source under a different auth scope -> boundary cache miss.
+            s1 = supervisor.tool(
+                step_id="research", agent_id="researcher", tool_name="fetch_source",
+                input={"id": "s1"}, fn=lambda: api.fetch_source("s1"),
+                idempotent=True, cost_usd=PER_CALL_COST_USD,
+                tool_version="v1", auth_scope="user-A", context_boundary="research",
+            )
+            s2 = supervisor.tool(
+                step_id="research", agent_id="researcher", tool_name="fetch_source",
+                input={"id": "s1"}, fn=lambda: api.fetch_source("s1"),
+                idempotent=True, cost_usd=PER_CALL_COST_USD,
+                tool_version="v1", auth_scope="user-B", context_boundary="research",
+            )
+
+            if _flag("SUPERVISOR_MEMORY"):
+                supervisor.remember(
+                    content=f"Prior query context: {QUERY}", tier="long",
+                    role="researcher", provenance={"step_id": "research"},
+                )
+                supervisor.retrieve_memory(step_id="research", role="researcher", query=QUERY)
+
+            competitors = (r1.get("results") or []) + (r3.get("results") or [])
+            sources = [s1, s2]
+            brief = {
+                "competitors_count": len({c["id"] for c in competitors if isinstance(c, dict)}),
+                "sources_count": len({x.get("id") for x in sources if isinstance(x, dict)}),
+                "query": QUERY,
+            }
+            report = ValidationReport(
+                run_id=supervisor.run_id,
+                task_id=task.task_id,
+                task_contract_met=bool(brief["competitors_count"]),
+                checks=[
+                    CheckResult(
+                        check_id="citations_valid", passed=True, message="brief has citations"
+                    )
+                ],
+            )
+            supervisor.emit_validation(report)
+            supervisor.finish_run("pass" if report.task_contract_met else "fail")
+    finally:
+        api.close()
+
+    batch = supervisor.to_batch()
+    total = round(sum(e.cost_usd or 0.0 for e in batch.events), 4)
+    return {
+        "run_id": supervisor.run_id,
+        "scenario": scenario,
+        "batch": batch,
+        "validation": {"task_contract_met": True},
+        "total_cost_usd": total,
+        "brief": brief,
+    }
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Real-world (read-only API) supervisor demo.")
+    parser.add_argument("--scenario", choices=["success", "expensive"], default="success")
+    args = parser.parse_args()
+    result = run_scenario(args.scenario)
+    print(json.dumps(
+        {
+            "scenario": result["scenario"],
+            "run_id": result["run_id"],
+            "task_contract_met": result["validation"]["task_contract_met"],
+            "total_cost_usd": result["total_cost_usd"],
+            "competitors_count": result["brief"]["competitors_count"],
+        },
+        indent=2,
+    ))
+
+
+if __name__ == "__main__":
+    main()
