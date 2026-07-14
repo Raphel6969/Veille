@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
@@ -33,7 +33,7 @@ class RunEvent(BaseModel):
     event_id: str
     run_id: str
     event_type: EventType
-    timestamp: datetime
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     step_id: str | None = None
     agent_id: str | None = None
     tool_name: str | None = None

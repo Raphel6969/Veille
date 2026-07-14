@@ -1,6 +1,21 @@
 # Policy Engine
 
-> **Status:** Planned for Phase 2. Phase 0 defines the policy contract schema only.
+> **Status:** Phase 1 implements **observe-only** detection. Enforcement (`warn`/`enforce` actions) is Phase 2.
+
+## Phase 1 observe mode
+
+`src/supervisor/policy/engine.py` provides `evaluate_observe(batch)` which scans a `RunEventBatch` and returns `PolicyObservation` records. It never mutates execution or emits interventions.
+
+Built-in policies (`DEFAULT_OBSERVE_POLICIES`):
+
+| Policy id | Detects | Key |
+|---|---|---|
+| `duplicate_tool_call` | Same `tool_name` + `normalized_input_hash` seen after a prior **successful** call | `duplicate=True` on `tool.*` |
+| `retry_storm` | `retry.attempt` exceeds `RETRY_BUDGET` (default 5) | `policy.triggered` |
+| `cost_overrun` | `total_cost_usd` > `max_cost_usd` (from task contract) | `policy.triggered` |
+| `validation_failure` | `validation.completed` with `passed=False` | `policy.triggered` |
+
+Each observation carries `policy_id`, `mode="observe"`, `reason`, and an advisory `intervention` (e.g. `dedupe`, `backoff`, `review`). The CLI surfaces these via `explore --policy`.
 
 ## Policy modes
 

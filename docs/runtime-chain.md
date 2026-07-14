@@ -26,8 +26,8 @@ flowchart TD
 | Estimate Cost/Latency | **Planned Phase 3** | Plan, model pricing | Tier options (Min/Balanced/High/Max) | Exceeds policy budget |
 | Optimize Context | **Planned Phase 3** | Master context, step role | Context manifest | Conflict detected |
 | Route Model | **Planned Phase 3** | Step capabilities, registry | Routing decision + reason | No approved model |
-| Execute and Monitor | Manual capture | LangGraph graph, mock tools | `RunEvent` stream | Tool/model errors |
-| Detect Problems | **Planned Phase 2** | Event stream | Policy triggers (observe) | — |
+| Execute and Monitor | SDK + callbacks (Phase 1) | LangGraph graph, mock or live tools | `RunEvent` stream | Tool/model errors |
+| Detect Problems | Observe mode (Phase 1) | Event stream | Policy triggers (`observe`) | — |
 | Intervene | **Planned Phase 2** | Policy match | Intervention record | Unsafe to act |
 | Validate Outcome | Demo validation | Brief artifact, task contract | `ValidationReport` | Checks fail |
 | Return Result | Demo stdout | Report, events | JSON summary | Run failed |
@@ -37,9 +37,9 @@ flowchart TD
 The cited market-research workflow exercises a subset of the chain:
 
 1. Load task contract from YAML
-2. Run LangGraph: researcher → analyst → writer
-3. Capture events manually via `TraceCapture`
-4. Validate brief against quality checks
+2. Run LangGraph (instrumented via `LangGraphInstrumentedAdapter`): researcher → analyst → writer
+3. Events captured automatically by the SDK/callback handler
+4. Validate brief against quality checks (`validate_brief`)
 5. Emit `validation.completed` and `run.completed` events
 
 Embedded waste patterns (not blocked in Phase 0):
@@ -49,6 +49,17 @@ Embedded waste patterns (not blocked in Phase 0):
 
 These patterns exist to support Phase 2 policy fixtures.
 
-## Decision ledger (Phase 1+)
+## Phase 1 detection (observe)
 
-Generic traces do not capture supervisor policy rationale. A separate decision/intervention record will extend normalized events in Phase 1.
+Phase 1 detects waste patterns from the event stream without changing execution:
+
+- Duplicate tool calls via `normalized_input_hash` (only flags an equivalent *successful* prior call).
+- Retry storms via `retry.attempt` against `RETRY_BUDGET` (default 5).
+- Cost overruns via `total_cost_usd` vs `max_cost_usd`.
+- Validation failures via `validation.completed`.
+
+Each match emits a `policy.triggered` event with `policy_id`, `mode`, and `reason`. The recommended `intervention` field is advisory only—Phase 1 never acts.
+
+## Decision ledger
+
+Generic traces do not capture full supervisor policy rationale. `policy.triggered` events (Phase 1) carry `policy_id`/`mode`/`reason`; a structured decision/intervention record extends normalized events in Phase 2.

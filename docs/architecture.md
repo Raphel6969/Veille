@@ -49,11 +49,21 @@ flowchart TB
 | Execution plan skeleton | `src/supervisor/contracts/plan.py` | Schema only |
 | Policy definition skeleton | `src/supervisor/contracts/policy.py` | Schema only |
 | Validation report | `src/supervisor/contracts/validation.py` | Implemented (v0.1) |
-| LangGraph adapter port | `src/supervisor/adapters/langgraph/` | Interface + stub |
 | LiteLLM mock adapter | `src/supervisor/adapters/litellm/mock.py` | Implemented |
-| OTel export interface | `src/supervisor/telemetry/exporter.py` | Interface + no-op |
 | Demo workflow | `examples/cited_market_research/` | Implemented |
 | Trace fixtures | `fixtures/traces/` | Implemented |
+
+## Phase 1 components (Observe and explain)
+
+| Component | Path | Status |
+|---|---|---|
+| Python SDK (`Supervisor` + `RunCollector`) | `src/supervisor/sdk/` | Implemented (v0.1) |
+| LangGraph adapter (callback-based) | `src/supervisor/adapters/langgraph/adapter.py` | Implemented |
+| Run summary analytics | `src/supervisor/analytics/run_summary.py` | Implemented |
+| Observe-only policy engine | `src/supervisor/policy/engine.py` | Implemented (observe mode) |
+| OTel exporter (Console + OTLP) | `src/supervisor/telemetry/exporter.py` | Implemented |
+| Run-explorer CLI | `src/supervisor/cli.py` | Implemented |
+| Demo refactored to use SDK | `examples/cited_market_research/agent.py` | Implemented |
 
 ## Data boundaries
 
@@ -61,15 +71,15 @@ flowchart TB
 - **Safe metadata by default.** Raw prompts and tool payloads are not persisted in fixtures; only previews and hashes.
 - **Mock-first execution.** Demo and tests run without paid API credits unless explicitly opted in.
 
-## Integration points (planned)
+## Integration points
 
-| Port | Phase | Purpose |
-|---|---|---|
-| LangGraph adapter | 1 | Capture framework lifecycle events |
-| LiteLLM adapter | 1+ | Model access with pricing metadata |
-| OTel exporter | 1 | Portable telemetry export |
-| Postgres store | 1+ | Run metadata and audit |
-| Redis counters | 2+ | Budgets and rate windows |
+| Port | Phase | Purpose | Status |
+|---|---|---|---|
+| LangGraph adapter | 1 | Capture framework lifecycle events | Implemented (callback handler) |
+| LiteLLM adapter | 1+ | Model access with pricing metadata | Mock implemented |
+| OTel exporter | 1 | Portable telemetry export | Implemented (Console + OTLP) |
+| Postgres store | 1+ | Run metadata and audit | Scaffold only |
+| Redis counters | 2+ | Budgets and rate windows | Planned |
 
 ## Architecture rules
 

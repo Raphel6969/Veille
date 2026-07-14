@@ -4,24 +4,28 @@ Integration-first design: retain customer frameworks and connect via adapter por
 
 ## LangGraph adapter
 
-**Status:** Port defined; stub implementation in Phase 0. Full instrumentation in Phase 1.
+**Status:** Implemented (Phase 1). Callback-based instrumentation via a LangGraph `BaseCallbackHandler`.
 
 | Hook | Purpose |
 |---|---|
-| `on_run_started` / `on_run_finished` | Run lifecycle |
+| `on_run_started` / `on_run_finished` | Run lifecycle (derive run id from `config["configurable"]["thread_id"]`) |
 | `on_agent_event` | Agent step events |
 | `on_tool_event` | Tool call events with normalized input hash |
 | `on_model_event` | Model call events with token usage |
 | `flush` | Return collected `RunEvent` list |
 
 ```python
-# src/supervisor/adapters/langgraph/port.py
-class LangGraphAdapter(Protocol):
-    def attach(self, graph: Any, hook: LangGraphEventHook) -> Any: ...
-    def extract_run_id(self, config: dict[str, Any] | None) -> str: ...
+from supervisor.adapters.langgraph.adapter import LangGraphInstrumentedAdapter
+from supervisor.sdk import Supervisor
+
+supervisor = Supervisor(run_id="run-1", task_id="cited-competitor-brief-001")
+adapter = LangGraphInstrumentedAdapter(supervisor)
+app = adapter.attach(graph)
+app.invoke(inputs, config={"configurable": {"thread_id": "run-1"}})
+batch = supervisor.finish_run(task_contract_met=True)
 ```
 
-Phase 0 stub returns the graph unchanged.
+The adapter attaches a `LangGraphCallbackHandler` so the agent emits normalized events with no manual `TraceCapture` wiring. See [ADR-004](adr/004-langgraph-callback-instrumentation.md).
 
 ## LiteLLM adapter
 
@@ -37,14 +41,16 @@ Set `USE_MOCK_MODELS=false` and provide API keys to use real providers (Phase 1+
 
 ## OpenTelemetry export
 
-**Status:** Interface defined; vendor wiring deferred.
+**Status:** Implemented (Phase 1). `ConsoleOTelExporter` prints spans; `OtlpExporter` exports via OTLP/gRPC.
 
 ```python
-class OTelExporter(Protocol):
-    def export_events(self, events: list[RunEvent]) -> None: ...
+from supervisor.telemetry import ConsoleOTelExporter, OtlpExporter
+
+ConsoleOTelExporter().export_events(events)            # human-readable spans
+OtlpExporter(endpoint="http://localhost:4317").export_events(events)
 ```
 
-`NoOpOTelExporter` collects events in-memory for tests. Phase 1 will map `RunEvent` fields to OTel GenAI semantic conventions.
+`event_to_span(event)` maps each `RunEvent` to an OTel span following the GenAI semantic conventions (span name = `event_type`, span kind = CLIENT for tool/model, attributes carry `run_id`, `agent_id`, `tool_name`, `model`, `cost_usd`, `duration_ms`, and the event `attributes` object). See [ADR-005](adr/005-otel-mapping.md).
 
 ## Deferred integrations
 

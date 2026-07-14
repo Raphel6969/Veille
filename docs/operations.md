@@ -31,7 +31,7 @@ docker compose up -d
 | Redis | 6379 | Budgets/counters (Phase 2+) |
 | MinIO | 9000 / 9001 | Artifact storage (Phase 1+) |
 
-Phase 0 does not require these services for tests or the demo workflow.
+Phase 1 does not require these services for tests or the demo workflow (observability is local/OTel-export).
 
 ## Common commands
 
@@ -41,6 +41,10 @@ ruff check src tests examples
 ruff format src tests examples
 mypy src/supervisor
 python -m examples.cited_market_research.agent --scenario all --write-fixtures
+
+# Phase 1 run explorer
+python -m supervisor.cli explore --run fixtures/traces/expensive_run.json
+python -m supervisor.cli explore --live --scenario expensive --policy --otel
 ```
 
 ## CI
@@ -62,10 +66,10 @@ GitHub Actions runs on push/PR to `main` or `master`:
 
 ## Logging
 
-Set `LOG_LEVEL` in `.env`. Phase 0 demo prints JSON summaries to stdout.
+Set `LOG_LEVEL` in `.env`. The demo and `run-explorer` print summaries to stdout.
 
-## Runbooks (Phase 1+)
+## Runbooks
 
-- Enabling observe-mode policies
-- Switching a policy to enforce (requires approval)
-- Exporting traces to OTel backend
+- **Enabling observe-mode policies:** they run by default in `evaluate_observe`; use `python -m supervisor.cli explore --live --scenario expensive --policy` to view matches.
+- **Switching a policy to enforce (Phase 2):** requires explicit approval; not available in Phase 1.
+- **Exporting traces to OTel backend:** `OtlpExporter(endpoint=...).export_events(events)` or `--otel` on the explorer.

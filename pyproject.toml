@@ -35,7 +35,7 @@ packages = ["src/supervisor"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src", "examples"]
+pythonpath = ["src", "."]
 asyncio_mode = "auto"
 
 [tool.ruff]
@@ -53,5 +53,5 @@ packages = ["supervisor"]
 mypy_path = "src"
 
 [[tool.mypy.overrides]]
-module = ["langgraph.*", "langchain_core.*"]
+module = ["langgraph.*", "langchain_core.*", "opentelemetry.*"]
 ignore_missing_imports = true

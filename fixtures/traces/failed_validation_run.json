@@ -1,14 +1,14 @@
 {
   "schema_version": "0.1.0",
-  "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+  "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
   "task_id": "cited-competitor-brief-001",
   "events": [
     {
       "schema_version": "0.1.0",
-      "event_id": "f7f8f91f-30d6-419d-a95b-f2d5e83debe5",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "edb2c489-f8bb-4b47-a81f-90652f830902",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "run.started",
-      "timestamp": "2026-07-14T09:02:18.224798Z",
+      "timestamp": "2026-07-14T09:49:52.681338Z",
       "step_id": null,
       "agent_id": null,
       "tool_name": null,
@@ -20,16 +20,16 @@
       "status": null,
       "error_message": null,
       "attributes": {
-        "scenario": "failed_validation",
-        "task": "Produce a cited competitor brief"
+        "task": "Produce a cited competitor brief",
+        "scenario": "failed_validation"
       }
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "e0a151bf-d617-4053-b451-d82ac4e5b0b3",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "8aa1c985-8ea0-44bb-af6e-270ce6e740ee",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "agent.started",
-      "timestamp": "2026-07-14T09:02:18.274798Z",
+      "timestamp": "2026-07-14T09:49:52.731338Z",
       "step_id": "research",
       "agent_id": "researcher",
       "tool_name": null,
@@ -46,10 +46,44 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "6954b272-6e35-47ef-803c-10ea7ccb639f",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "9034cbbb-c77d-4691-a8f9-47dea78d9f3f",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
+      "event_type": "context.attached",
+      "timestamp": "2026-07-14T09:49:52.781338Z",
+      "step_id": "research",
+      "agent_id": "researcher",
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "role": "researcher",
+        "included": [
+          "question",
+          "source policy",
+          "open questions"
+        ],
+        "excluded": [
+          "UI choices",
+          "deployment logs"
+        ],
+        "compressed": [
+          "planning history -> decision summary"
+        ],
+        "estimated_tokens": 600,
+        "reason": "Researcher needs the question, sourcing rules, and open questions."
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "a9376bc7-44ee-4246-a3dd-5694027559e0",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.requested",
-      "timestamp": "2026-07-14T09:02:18.324798Z",
+      "timestamp": "2026-07-14T09:49:52.831338Z",
       "step_id": "research",
       "agent_id": "researcher",
       "tool_name": "search_competitors",
@@ -69,10 +103,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "8bf10efd-7a00-495e-b6ac-13963135c6b4",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "8bf1ffd9-4d9b-4033-b921-81238128cb9a",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.completed",
-      "timestamp": "2026-07-14T09:02:18.404798Z",
+      "timestamp": "2026-07-14T09:49:52.911338Z",
       "step_id": "research",
       "agent_id": "researcher",
       "tool_name": "search_competitors",
@@ -84,15 +118,18 @@
       "status": "ok",
       "error_message": null,
       "attributes": {
-        "call_count": 1
+        "input": {
+          "query": "AI runtime supervision competitors 2026"
+        },
+        "normalized_input_hash": "1978347513a3d3f68e689ad3b5a570deadb7458d96d4d802f4b5d24c2ea14e41"
       }
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "c247f70e-acff-413c-b262-4c73ec00ab52",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "dabe3faf-41a0-42fe-a762-b112566cc38f",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "model.requested",
-      "timestamp": "2026-07-14T09:02:18.454798Z",
+      "timestamp": "2026-07-14T09:49:52.961338Z",
       "step_id": "research",
       "agent_id": "researcher",
       "tool_name": null,
@@ -109,10 +146,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "f00f9443-d9f9-4097-8ea9-873230c97555",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "9989f59d-bd5a-49cf-be90-b52203f7068f",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "model.completed",
-      "timestamp": "2026-07-14T09:02:18.574798Z",
+      "timestamp": "2026-07-14T09:49:53.081338Z",
       "step_id": "research",
       "agent_id": "researcher",
       "tool_name": null,
@@ -127,10 +164,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "7938df07-1fef-471d-b225-714a611ce538",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "e08aa134-1253-41e9-b13a-c2736fd93ad5",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "agent.finished",
-      "timestamp": "2026-07-14T09:02:18.624798Z",
+      "timestamp": "2026-07-14T09:49:53.131338Z",
       "step_id": "research",
       "agent_id": "researcher",
       "tool_name": null,
@@ -145,10 +182,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "ef53d4d1-22b1-4d2b-bae5-9172c92e9fd6",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "29c8db99-640e-4c8f-b6b7-11992f7764fb",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "agent.started",
-      "timestamp": "2026-07-14T09:02:18.674798Z",
+      "timestamp": "2026-07-14T09:49:53.181338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": null,
@@ -165,10 +202,44 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "0965440b-c9f6-4387-aafd-eaea3512e751",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "55b776e9-812d-4ee2-8510-e4aa1ef35a3a",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
+      "event_type": "context.attached",
+      "timestamp": "2026-07-14T09:49:53.231338Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "role": "analyst",
+        "included": [
+          "verified evidence",
+          "rubric",
+          "constraints"
+        ],
+        "excluded": [
+          "duplicate pages",
+          "stale traces"
+        ],
+        "compressed": [
+          "raw browsing -> verified claims"
+        ],
+        "estimated_tokens": 1200,
+        "reason": "Analyst needs verified evidence and the acceptance rubric."
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "7a459525-c083-4cb1-8e01-e84897472b87",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.requested",
-      "timestamp": "2026-07-14T09:02:18.724798Z",
+      "timestamp": "2026-07-14T09:49:53.281338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -188,10 +259,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "ee87b6f4-886a-4571-9a4a-8793ddbf5406",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "8a4d8311-21aa-4674-bef8-d61c4403239b",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.completed",
-      "timestamp": "2026-07-14T09:02:18.769798Z",
+      "timestamp": "2026-07-14T09:49:53.326338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -202,14 +273,19 @@
       "cost_usd": 0.001,
       "status": "ok",
       "error_message": null,
-      "attributes": {}
+      "attributes": {
+        "input": {
+          "competitor_name": "AlphaCorp"
+        },
+        "normalized_input_hash": "47f1d2b2cfe180fece1f71b07248492004dc641ad1ab71979e565629a4b59af3"
+      }
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "fa97f799-9a25-4741-b77d-18296c6b6e10",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "599cad37-d137-49d8-b8e9-ad1595014484",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.requested",
-      "timestamp": "2026-07-14T09:02:18.819798Z",
+      "timestamp": "2026-07-14T09:49:53.376338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -229,10 +305,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "66c6783c-3ab2-4ffc-9943-1db459335c36",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "4def7b4a-40f7-4425-8c6b-2c001286f4f7",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.completed",
-      "timestamp": "2026-07-14T09:02:18.864798Z",
+      "timestamp": "2026-07-14T09:49:53.421338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -243,14 +319,19 @@
       "cost_usd": 0.001,
       "status": "ok",
       "error_message": null,
-      "attributes": {}
+      "attributes": {
+        "input": {
+          "competitor_name": "BetaStack"
+        },
+        "normalized_input_hash": "f3b2b1a9daf6062a0dc1861817039d05b50c7129e811db163f774800c97ed308"
+      }
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "97f45849-eef0-461b-8555-eb8bc49aefb9",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "a6ba2fbf-9a9c-4b53-bcdf-be3254f86091",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.requested",
-      "timestamp": "2026-07-14T09:02:18.914798Z",
+      "timestamp": "2026-07-14T09:49:53.471338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -270,10 +351,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "042309ca-fe52-4287-81c6-718aeac831b6",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "37379adc-4921-4d35-9a74-df6056a865ed",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.completed",
-      "timestamp": "2026-07-14T09:02:18.959798Z",
+      "timestamp": "2026-07-14T09:49:53.516338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -284,14 +365,19 @@
       "cost_usd": 0.001,
       "status": "ok",
       "error_message": null,
-      "attributes": {}
+      "attributes": {
+        "input": {
+          "competitor_name": "GammaFlow"
+        },
+        "normalized_input_hash": "a770f2f716f8a464ec36424549f18eb030767b1eb42360cca0076a1ffe436880"
+      }
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "f7c9d675-1217-4665-baa1-90c8108c4fd8",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "b2867ada-709b-4f8e-a146-9367128bcc81",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.requested",
-      "timestamp": "2026-07-14T09:02:19.009798Z",
+      "timestamp": "2026-07-14T09:49:53.566338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -311,10 +397,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "c80d8f2b-1a37-43ea-90f7-852b670d1d87",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "e0515860-357c-48b8-89e9-51e65a540080",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.completed",
-      "timestamp": "2026-07-14T09:02:19.054798Z",
+      "timestamp": "2026-07-14T09:49:53.611338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -325,14 +411,19 @@
       "cost_usd": 0.001,
       "status": "ok",
       "error_message": null,
-      "attributes": {}
+      "attributes": {
+        "input": {
+          "competitor_name": "DeltaMind"
+        },
+        "normalized_input_hash": "605fd11496d0f6ed1134f63744e89b155cf5cbd388b4fbc59c996313847dac0f"
+      }
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "b7a97e6c-46d1-4b29-a6f1-ac2c613a4938",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "b820d00d-8991-4a17-b2c8-ff74083cfd83",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.requested",
-      "timestamp": "2026-07-14T09:02:19.104798Z",
+      "timestamp": "2026-07-14T09:49:53.661338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -352,10 +443,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "9e0931df-8fcf-4c6d-aa4b-69343cadca6b",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "4f9da78d-12d6-4255-9985-1c9e66b49977",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.completed",
-      "timestamp": "2026-07-14T09:02:19.149798Z",
+      "timestamp": "2026-07-14T09:49:53.706338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -366,14 +457,19 @@
       "cost_usd": 0.001,
       "status": "ok",
       "error_message": null,
-      "attributes": {}
+      "attributes": {
+        "input": {
+          "competitor_name": "EpsilonAI"
+        },
+        "normalized_input_hash": "1b0a33ebf54bc898e19c1f2438b6befe89fadeb49d9c4bf3e0aae610d72241d3"
+      }
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "463739fc-ca8a-492b-b885-2ecce0d9dec6",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "ec7ca410-f716-471b-adeb-ba2c4501ce93",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.requested",
-      "timestamp": "2026-07-14T09:02:19.199798Z",
+      "timestamp": "2026-07-14T09:49:53.756338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -393,10 +489,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "c7b1176f-d2e5-4071-b9d6-fadd9ee354fe",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "651e1e17-6ff2-4288-89fd-3555663fa125",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.completed",
-      "timestamp": "2026-07-14T09:02:19.244798Z",
+      "timestamp": "2026-07-14T09:49:53.801338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -407,14 +503,19 @@
       "cost_usd": 0.001,
       "status": "ok",
       "error_message": null,
-      "attributes": {}
+      "attributes": {
+        "input": {
+          "competitor_name": "ZetaWorks"
+        },
+        "normalized_input_hash": "edcb99212d3c8747f111b39e1b2b88a816c11958cc514f5f20a5560eda5e73bb"
+      }
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "774e7a3e-e658-4cda-91ab-e0c2a84a67b8",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "3098e959-a9f9-43eb-9bf2-234acacaa715",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.requested",
-      "timestamp": "2026-07-14T09:02:19.294798Z",
+      "timestamp": "2026-07-14T09:49:53.851338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -434,10 +535,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "d2ac86da-9ab1-41c8-a640-9c135148e349",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "e7981367-8a25-430d-8467-85b09f227935",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.completed",
-      "timestamp": "2026-07-14T09:02:19.339798Z",
+      "timestamp": "2026-07-14T09:49:53.896338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -448,14 +549,19 @@
       "cost_usd": 0.001,
       "status": "ok",
       "error_message": null,
-      "attributes": {}
+      "attributes": {
+        "input": {
+          "competitor_name": "EtaCloud"
+        },
+        "normalized_input_hash": "f013e084cf49a35861a28d0106d30e23739dba21afe7ebbf4de3909806b61d85"
+      }
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "39b40bd5-2305-4ae3-acfd-bcc9822aa249",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "8038cfc2-80e8-44e5-8656-43d99f92ba70",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.requested",
-      "timestamp": "2026-07-14T09:02:19.389798Z",
+      "timestamp": "2026-07-14T09:49:53.946338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -475,10 +581,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "57cceb28-f7d3-4e39-b7e7-6541ed157531",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "f8382ea5-cf2a-4ade-8d1c-0b9ec2f35fc9",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.completed",
-      "timestamp": "2026-07-14T09:02:19.434798Z",
+      "timestamp": "2026-07-14T09:49:53.991338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": "fetch_source",
@@ -489,14 +595,19 @@
       "cost_usd": 0.001,
       "status": "ok",
       "error_message": null,
-      "attributes": {}
+      "attributes": {
+        "input": {
+          "competitor_name": "ThetaOps"
+        },
+        "normalized_input_hash": "3faec98a5cc6df05819d103608ac0dcd71dc73a3fdaacccd0d2840602a46b7b0"
+      }
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "c813900e-d209-4506-8daa-1ef6fd7414ea",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "860f1bd4-d18a-486d-8c07-b91e3e6ca526",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "model.requested",
-      "timestamp": "2026-07-14T09:02:19.484798Z",
+      "timestamp": "2026-07-14T09:49:54.041338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": null,
@@ -513,10 +624,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "03cacb7d-fd15-4f38-b05b-94db9bc62a1d",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "2151d565-75f6-47a7-abd5-83b23452ce26",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "model.completed",
-      "timestamp": "2026-07-14T09:02:19.604798Z",
+      "timestamp": "2026-07-14T09:49:54.161338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": null,
@@ -531,10 +642,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "5955ad94-febd-47e6-9bfc-b5e4f0baac6d",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "c11a6be8-f90d-4bb5-9c29-b7445056f372",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "agent.finished",
-      "timestamp": "2026-07-14T09:02:19.654798Z",
+      "timestamp": "2026-07-14T09:49:54.211338Z",
       "step_id": "analysis",
       "agent_id": "analyst",
       "tool_name": null,
@@ -549,10 +660,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "d13c85f9-316d-4081-bff9-2f69f640658f",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "63aa7df5-2365-4790-8d9a-3cd2a6055bf8",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "agent.started",
-      "timestamp": "2026-07-14T09:02:19.704798Z",
+      "timestamp": "2026-07-14T09:49:54.261338Z",
       "step_id": "writing",
       "agent_id": "writer",
       "tool_name": null,
@@ -569,10 +680,44 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "ea016fcb-4a1d-4dfb-8afc-3a2225658a36",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "56af0f80-0fc2-4150-95ce-23cbb8036054",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
+      "event_type": "context.attached",
+      "timestamp": "2026-07-14T09:49:54.311338Z",
+      "step_id": "writing",
+      "agent_id": "writer",
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "role": "writer",
+        "included": [
+          "verified facts",
+          "audience",
+          "format"
+        ],
+        "excluded": [
+          "tool errors",
+          "unused raw context"
+        ],
+        "compressed": [
+          "evidence -> draft sections"
+        ],
+        "estimated_tokens": 1400,
+        "reason": "Writer needs verified facts and the output format."
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "e519135a-31b3-4d36-9a79-3c3191592573",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.requested",
-      "timestamp": "2026-07-14T09:02:19.754798Z",
+      "timestamp": "2026-07-14T09:49:54.361338Z",
       "step_id": "writing",
       "agent_id": "writer",
       "tool_name": "synthesize_brief",
@@ -592,10 +737,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "0f90124e-4c69-4d3a-b4a2-ae409a5a1c4b",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "aeb4241f-8a61-44b5-b577-e42b35261c8c",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "tool.completed",
-      "timestamp": "2026-07-14T09:02:19.844798Z",
+      "timestamp": "2026-07-14T09:49:54.451338Z",
       "step_id": "writing",
       "agent_id": "writer",
       "tool_name": "synthesize_brief",
@@ -606,14 +751,19 @@
       "cost_usd": 0.003,
       "status": "ok",
       "error_message": null,
-      "attributes": {}
+      "attributes": {
+        "input": {
+          "evidence_count": 8
+        },
+        "normalized_input_hash": "8398d824fe0f9db67fc827c852f404cb9261aeca82d71d9a923932b98fe50dd3"
+      }
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "3a2f8df5-6f2a-46d2-94e1-049bc6c888e5",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "4781df05-6dca-4d2a-b5ad-787e4469bf05",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "model.requested",
-      "timestamp": "2026-07-14T09:02:19.894798Z",
+      "timestamp": "2026-07-14T09:49:54.501338Z",
       "step_id": "writing",
       "agent_id": "writer",
       "tool_name": null,
@@ -630,10 +780,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "415e5a4b-1c7f-478c-91ef-a8ad00cb1115",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "76934a40-dbb5-4914-a394-9d72c6626146",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "model.completed",
-      "timestamp": "2026-07-14T09:02:20.014798Z",
+      "timestamp": "2026-07-14T09:49:54.621338Z",
       "step_id": "writing",
       "agent_id": "writer",
       "tool_name": null,
@@ -648,10 +798,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "4ebb9b49-e8e1-4abe-83c8-055e80ccb1a7",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "41218b72-e97a-4236-ac2d-a7058138e3a0",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "agent.finished",
-      "timestamp": "2026-07-14T09:02:20.064798Z",
+      "timestamp": "2026-07-14T09:49:54.671338Z",
       "step_id": "writing",
       "agent_id": "writer",
       "tool_name": null,
@@ -666,10 +816,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "d48592b0-3846-49da-97d3-8fbbcdf4d150",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "43a21025-5c88-4f31-81b7-aef9f940d6dd",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "validation.completed",
-      "timestamp": "2026-07-14T09:02:20.114798Z",
+      "timestamp": "2026-07-14T09:49:54.721338Z",
       "step_id": null,
       "agent_id": null,
       "tool_name": null,
@@ -705,10 +855,10 @@
     },
     {
       "schema_version": "0.1.0",
-      "event_id": "736840bb-d942-4ced-9f3d-3886bd66c140",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "event_id": "b43fbf72-ca4d-446f-afbb-99b7fb1ce721",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "event_type": "run.completed",
-      "timestamp": "2026-07-14T09:02:20.164798Z",
+      "timestamp": "2026-07-14T09:49:54.771338Z",
       "step_id": null,
       "agent_id": null,
       "tool_name": null,
@@ -733,7 +883,7 @@
     "retry_count": 0,
     "validation": {
       "schema_version": "0.1.0",
-      "run_id": "ee711d9a-0a97-4ca6-8f7e-4223973e14ef",
+      "run_id": "55b455e6-7465-432a-a4a9-f65f215056a1",
       "task_id": "cited-competitor-brief-001",
       "task_contract_met": false,
       "checks": [

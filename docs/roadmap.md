@@ -1,11 +1,11 @@
 # Roadmap
 
-Phase-by-phase delivery per the [master prompt](AI_DEVELOPER_MASTER_PROMPT.md) and [blueprint](AI_RUNTIME_SUPERVISOR_BLUEPRINT.md).
+Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_PROMPT.md) and [blueprint](development/AI_RUNTIME_SUPERVISOR_BLUEPRINT.md).
 
 | Phase | Name | Status | Exit criteria summary |
 |---|---|---|---|
 | 0 | Discovery, repository setup, baseline | **Complete (verified)** | Contracts, docs, synthetic workflow, fixtures, metrics defined; `pytest`/ruff/mypy green |
-| 1 | Observe and explain | Proposed — plan ready | SDK, automatic events, timeline, observe-only policies ([plan](phase-1-plan.md)) |
+| 1 | Observe and explain | **Implemented (pending release)** | SDK, automatic events, timeline, observe-only policies ([plan](development/phase-1-plan.md)) |
 | 2 | Deterministic protection | Not started | Budgets, duplicate/loop detection, intervention modes |
 | 3 | Planner, context, routing | Not started | Cost tiers, context manifests, model routing, validation |
 | 4 | Adaptive optimization | Not started | Semantic detection, caching, experiments |
@@ -32,6 +32,25 @@ Phase-by-phase delivery per the [master prompt](AI_DEVELOPER_MASTER_PROMPT.md) a
 
 > **Baseline credibility:** Phase 0 baselines are synthetic. See `docs/evaluation.md`.
 
+## Phase 1 deliverables
+
+- [x] Python SDK (`Supervisor` + `RunCollector`) for zero-touch event emission
+- [x] LangGraph adapter implementation (callback-based instrumentation)
+- [x] Automatic event collection (model/tool/retry/context/node/validation)
+- [x] Cost and waste aggregation (`summarize` / `RunSummary`)
+- [x] Observe-only policy evaluation (duplicate, retry storm, cost overrun, validation)
+- [x] Minimal run-explorer CLI (`explore` for fixtures and live runs)
+- [x] OTel export implementation (Console + OTLP)
+- [x] Demo refactored to the SDK; docs (ADR-004, ADR-005, registry, architecture)
+
+### Phase 1 verification (2026-07-14)
+
+- `pytest` — **39 passed** (sdk, analytics, policy, telemetry mapping, langgraph adapter, cli, demo)
+- `ruff check` / `ruff format` — clean
+- `mypy src/supervisor` — clean (strict)
+- `python -m supervisor.cli explore --live --scenario expensive --policy` surfaces duplicate/retry/cost observations
+- Works without API keys on Python 3.14
+
 ## Confirmed decisions
 
 | Decision | Choice |
@@ -44,31 +63,26 @@ Phase-by-phase delivery per the [master prompt](AI_DEVELOPER_MASTER_PROMPT.md) a
 
 ## Explicit deferrals
 
-- SDK instrumentation (Phase 1)
-- Policy enforcement (Phase 2)
-- Cost tier planner and routing (Phase 3)
-- Next.js control plane UI (Phase 1 minimal API/CLI first)
+- Policy enforcement (warn/enforce actions) — Phase 2
+- Cost tier planner and routing — Phase 3
+- Next.js control plane UI (Phase 1 delivered CLI/API-first)
 - PostgreSQL/Redis/MinIO deep wiring (Phase 1+)
 - Real LiteLLM provider calls (opt-in)
-- Langfuse/Phoenix/LangSmith export (Phase 1+)
+- Langfuse/Phoenix/LangSmith export (Phase 1+; OTel export implemented)
 
-## Next: Phase 1 approval gate
+## Phase 1 approval gate — completed
 
 ```
-Phase 1 is ready to begin.
+Phase 1 implemented.
 
-Goal: Make an agent run inspectable without changing its behavior.
+Goal: Make an agent run inspectable without changing its behavior. ✓
 
-Scope: Python SDK, LangGraph adapter implementation, automatic event
+Scope delivered: Python SDK, LangGraph adapter implementation, automatic event
        collection, cost aggregation, observe-only policy evaluation,
-       minimal run explorer API/CLI, OTel export implementation.
+       minimal run explorer CLI, OTel export implementation.
 
-Not in scope: Enforcement, routing, context mutation, full UI.
-
-May I implement Phase 1 now?
+Not in scope (deferred): Enforcement, routing, context mutation, full UI.
 ```
-
-Approval required before starting Phase 1.
 
 ## Assumptions register
 

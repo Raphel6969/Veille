@@ -2,17 +2,20 @@
 
 Control plane for production AI-agent work. The Supervisor plans, contextualizes, routes, governs, and verifies each agent run—reducing wasted spend and unreliable outcomes without requiring teams to rebuild their applications.
 
-**Current phase:** Phase 0 — Discovery, repository setup, and baseline (complete and verified).
+**Current phase:** Phase 1 — Observe and explain (implemented, pending release).
 
 ## What exists today
 
 - Versioned data contracts (task, events, plan, policy, validation)
+- Python SDK (`Supervisor` + `RunCollector`) for zero-touch event emission
+- LangGraph adapter with automatic callback-based instrumentation
 - Synthetic cited market-research LangGraph demo workflow with mock tools
 - Representative trace fixtures for success, expensive, and failed-validation runs
-- Adapter port stubs for LangGraph, LiteLLM mock, and OpenTelemetry export
+- Observe-only policy engine (duplicate detection, retry budget, cost overrun, validation)
+- Run-explorer CLI and OpenTelemetry export (Console + OTLP)
 - Local development environment (Docker Compose + pytest)
 
-**Not yet implemented:** SDK instrumentation, policy enforcement, routing, context engine, control-plane UI.
+**Not yet implemented:** policy enforcement (warn/enforce), routing, context engine, control-plane UI.
 
 ## Quickstart
 
@@ -42,6 +45,12 @@ python -m examples.cited_market_research.agent --scenario success
 
 # All scenarios + write trace fixtures
 python -m examples.cited_market_research.agent --scenario all --write-fixtures
+
+# Phase 1 run explorer (inspect a captured run)
+python -m supervisor.cli explore --run fixtures/traces/expensive_run.json --policy
+
+# Live run with policy observations and OTel export
+python -m supervisor.cli explore --live --scenario expensive --policy --otel
 ```
 
 No API keys required. Mock models and tools are used by default.
@@ -49,10 +58,11 @@ No API keys required. Mock models and tools are used by default.
 ## Repository layout
 
 ```text
-src/supervisor/          Core contracts, adapters, telemetry
+src/supervisor/          Core contracts, SDK, adapters, analytics, policy, telemetry, CLI
 examples/                Runnable demo workflows
 fixtures/traces/         Synthetic trace JSON for tests and baselines
 docs/                    Architecture, contracts, roadmap, ADRs
+docs/development/        Source master prompt, blueprint, phase plans
 templates/               Baseline measurement templates
 ```
 
@@ -65,6 +75,8 @@ templates/               Baseline measurement templates
 | [Data contracts](docs/data-contracts.md) | Schema reference |
 | [Roadmap](docs/roadmap.md) | Phase status and deferrals |
 | [Integrations](docs/integrations.md) | Adapter contracts |
+| [Operations](docs/operations.md) | Local dev, commands, runbooks |
+| [Policy engine](docs/policy-engine.md) | Policy modes and Phase 1 observe policies |
 
 ## First workflow
 

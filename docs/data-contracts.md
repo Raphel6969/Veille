@@ -63,6 +63,35 @@ metadata: {}
 | `intervention.applied` | Action taken |
 | `validation.completed` | Outcome validation |
 
+### Event attributes registry
+
+The `attributes` object is open-ended. Phase 1 standardizes these keys (all optional unless noted):
+
+| Attribute | Type | Emitted on | Meaning |
+|---|---|---|---|
+| `task_id` | string | `run.started` | Task contract id |
+| `scenario` | string | `run.started` | Run tag (e.g. `success`, `expensive`) |
+| `risk_level` | string | `run.started` | `low` \| `medium` \| `high` |
+| `task_contract_met` | bool | `run.completed` / `run.failed` | Outcome validation result |
+| `total_cost_usd` | number | `run.completed` / `run.failed` | Aggregated run cost |
+| `duration_ms` | number | `run.completed` / `run.failed` | Total run wall time |
+| `tool_name` | string | `tool.*` | Tool identifier |
+| `normalized_input_hash` | string | `tool.*` | Stable hash of normalized tool input (dedup key) |
+| `duplicate` | bool | `tool.*` | `true` when an equivalent prior *successful* call exists in the run |
+| `failed` | bool | `tool.*` | `true` when the call errored |
+| `error_message` | string | `tool.completed` | Error detail when `failed` |
+| `model` | string | `model.*` | Model identifier |
+| `prompt` | string | `model.requested` | Prompt text |
+| `attempt` | int | `retry.*` | Current retry attempt (1-based) |
+| `max_attempts` | int | `retry.*` | Retry budget for the step |
+| `reason` | string | `retry.scheduled` / `policy.triggered` | Why the event fired |
+| `policy_id` | string | `policy.triggered` | Matched policy identifier |
+| `mode` | string | `policy.triggered` | `observe` \| `warn` \| `enforce` |
+| `manifest` | object | `context.attached` | Context manifest snapshot |
+| `check_id` | string | `validation.completed` | Quality check identifier |
+| `passed` | bool | `validation.completed` | Check result |
+| `message` | string | `validation.completed` | Check message |
+
 ## Run Event Batch
 
 Used for replay and fixtures:
