@@ -7,7 +7,7 @@ Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_
 | 0 | Discovery, repository setup, baseline | **Complete (verified)** | Contracts, docs, synthetic workflow, fixtures, metrics defined; `pytest`/ruff/mypy green |
 | 1 | Observe and explain | **Implemented (pending release)** | SDK, automatic events, timeline, observe-only policies ([plan](development/phase-1-plan.md)) |
 | 2 | Deterministic protection | **Implemented (pending release)** | Budgets, duplicate/loop detection, intervention modes ([plan](development/phase-2-plan.md)) |
-| 3 | Planner, context, routing | Not started | Cost tiers, context manifests, model routing, validation |
+| 3 | Planner, context, routing | **Proposed — plan ready** | Cost tiers, context manifests, model routing, validation ([plan](development/phase-3-plan.md)) |
 | 4 | Adaptive optimization | Not started | Semantic detection, caching, experiments |
 | 5 | Memory and enterprise | Not started | Multi-tenancy, RBAC, audit, retention |
 | 6 | Simulation and learned policies | Not started | Offline simulation, learned recommendations |
