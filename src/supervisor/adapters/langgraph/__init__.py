@@ -7,7 +7,7 @@ from supervisor.adapters.langgraph.adapter import (
     LangGraphCallbackHandler,
     LangGraphInstrumentedAdapter,
 )
-from supervisor.adapters.langgraph.port import LangGraphAdapter, LangGraphEventHook
+from supervisor.adapters.langgraph.port import LangGraphAdapter
 from supervisor.adapters.langgraph.stub import LangGraphAdapterStub
 
 __all__ = [
@@ -15,6 +15,5 @@ __all__ = [
     "LangGraphCallbackHandler",
     "LangGraphInstrumentedAdapter",
     "LangGraphAdapter",
-    "LangGraphEventHook",
     "LangGraphAdapterStub",
 ]

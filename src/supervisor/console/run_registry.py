@@ -80,6 +80,23 @@ def _register_builtins() -> None:
             run_fn=lambda scenario="success", **kw: rw_run(scenario, kw.get("cache_backend")),
         )
     )
+    try:  # real OpenAI integration agent (mock-first, real-opt-in)
+        from examples.real_openai_agent.agent import run_scenario as ro_run
+
+        register_workflow(
+            WorkflowInfo(
+                name="real_openai_agent",
+                description="End-to-end OpenAI provider integration test via Supervisor SDK.",
+                framework="sdk",
+                supports_real=True,
+                read_only_tools=True,
+                default_scenarios=["success"],
+                run_fn=lambda scenario="success", **kw: ro_run(scenario, **kw),
+            )
+        )
+    except Exception:  # noqa: BLE001
+        pass
+
     try:  # optional; only present after the langgraph_demo example is added
         from examples.langgraph_demo.agent import run_scenario as lg_run
 

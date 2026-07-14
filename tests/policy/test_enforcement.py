@@ -41,9 +41,7 @@ def test_enforcer_observe_policy_not_enforced() -> None:
 
 
 def test_stop_raises_stop_run() -> None:
-    decision = GuardDecision(
-        allow=False, action="stop", policy_id="cost_budget", reason="over"
-    )
+    decision = GuardDecision(allow=False, action="stop", policy_id="cost_budget", reason="over")
     with pytest.raises(StopRun) as exc:
         raise StopRun(decision)
     assert isinstance(exc.value, InterventionError)

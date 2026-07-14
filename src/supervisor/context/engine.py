@@ -33,9 +33,7 @@ class ContextEngine:
     slices are ``compressed``; short non-matching slices are ``excluded``.
     """
 
-    def build_manifest(
-        self, master_context: list[str], role: str, step_id: str
-    ) -> ContextManifest:
+    def build_manifest(self, master_context: list[str], role: str, step_id: str) -> ContextManifest:
         keywords = ROLE_KEYWORDS.get(role, ["question", "policy"])
         included: list[str] = []
         compressed: list[str] = []

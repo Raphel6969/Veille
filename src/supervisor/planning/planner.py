@@ -92,7 +92,8 @@ def estimate(tier: PlanTier, task: TaskContract) -> TierEstimate:
         estimated_tokens_min=int(base_tokens * cost_mult),
         estimated_tokens_max=int(base_tokens * cost_mult * 1.3),
         expected_quality_coverage=(
-            "Baseline coverage" if tier in (PlanTier.MINIMUM, PlanTier.BALANCED)
+            "Baseline coverage"
+            if tier in (PlanTier.MINIMUM, PlanTier.BALANCED)
             else "High coverage with review"
         ),
         explanation=f"Tier {tier.value} chosen for task risk={task.risk_level.value}.",

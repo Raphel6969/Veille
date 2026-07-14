@@ -15,6 +15,7 @@ freshness policy, with no material stale-result concern. This is encoded as the
 ``approved`` property; it can be satisfied by enough confirmations or an
 explicit override (e.g. ``SUPERVISOR_CACHE_APPROVED=1`` for demos/tests).
 """
+
 from __future__ import annotations
 
 import hashlib

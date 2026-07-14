@@ -95,8 +95,7 @@ class RunSummary:
             lines.append("  routing:")
             for r in self.routing:
                 lines.append(
-                    f"    - {r.get('capability')}: {r.get('model')} "
-                    f"(tier {r.get('tier')})"
+                    f"    - {r.get('capability')}: {r.get('model')} (tier {r.get('tier')})"
                 )
         if self.per_step:
             lines.append("  steps:")

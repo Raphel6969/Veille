@@ -52,9 +52,7 @@ def test_summary_reports_memories() -> None:
 def test_expire_surfaces_without_deleting() -> None:
     s = Supervisor(_task(), memory=True)
     s.start_run()
-    rec = s.remember(
-        step_id="s", agent_id="a", content="short-lived", ttl_seconds=0
-    )
+    rec = s.remember(step_id="s", agent_id="a", content="short-lived", ttl_seconds=0)
     due = s.expire_memory()
     assert rec.id in {r.id for r in due}
     expired_events = _events(s, EventType.MEMORY_EXPIRED)

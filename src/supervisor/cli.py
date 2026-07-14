@@ -76,15 +76,17 @@ def _doctor(args: argparse.Namespace) -> int:
     print(f"  policy mode:         {payload['policy_mode']} (warn/enforce via SUPERVISOR_ENFORCE)")
     print(f"  enforce enabled:     {payload['enforce_enabled']}")
     print(f"  optimize enabled:    {payload['optimize_enabled']}")
-    print(f"  cross-run cache:     approved={payload['cache_approved']} "
-          f"backend={payload['cache_backend']}")
+    print(
+        f"  cross-run cache:     approved={payload['cache_approved']} "
+        f"backend={payload['cache_backend']}"
+    )
     print(f"  litellm status:      {payload['litellm_status']}")
     print(f"  openrouter status:   {payload['openrouter_status']}")
     print(f"  openai router:       {payload['router_status']}")
     print("  safe configuration warnings:")
     if not payload["warnings"]:
         print("    none")
-        return
+        return 0
     for w in payload["warnings"]:
         print(f"    ! {w}")
     return 0
@@ -157,11 +159,15 @@ def _runs(args: argparse.Namespace) -> int:
         s = view["summary"]
         c = view["cache"]
         p = view["policy"]
-        print(f"  cost=${s['total_cost_usd']:.4f} "
-              f"tokens in/out {s['total_tokens_in']}/{s['total_tokens_out']}")
+        print(
+            f"  cost=${s['total_cost_usd']:.4f} "
+            f"tokens in/out {s['total_tokens_in']}/{s['total_tokens_out']}"
+        )
         print(f"  cache served={c['served']} misses={c['misses']}")
-        print(f"  policy events={len(p['policy_events'])} "
-              f"interventions={len(p['intervention_events'])}")
+        print(
+            f"  policy events={len(p['policy_events'])} "
+            f"interventions={len(p['intervention_events'])}"
+        )
         print(f"  validation: {view['validation']}")
         return 0
     for r in list_runs():
@@ -203,15 +209,19 @@ def _demo(args: argparse.Namespace) -> int:
             backend = FileCacheBackend(tempfile.mkdtemp(prefix="sup_cache_"))
             r1 = run_scenario("success", cache_backend=backend)
             r2 = run_scenario("success", cache_backend=backend)
-            print(json.dumps(
-                {
-                    "mode": "cross-run",
-                    "run1_cost_usd": r1["total_cost_usd"],
-                    "run2_cost_usd": r2["total_cost_usd"],
-                    "cross_run_saving_usd": round(r1["total_cost_usd"] - r2["total_cost_usd"], 4),
-                },
-                indent=2,
-            ))
+            print(
+                json.dumps(
+                    {
+                        "mode": "cross-run",
+                        "run1_cost_usd": r1["total_cost_usd"],
+                        "run2_cost_usd": r2["total_cost_usd"],
+                        "cross_run_saving_usd": round(
+                            r1["total_cost_usd"] - r2["total_cost_usd"], 4
+                        ),
+                    },
+                    indent=2,
+                )
+            )
             return 0
         result = run_scenario("success")
         return _print_summary(result["batch"], show_policy=args.policy, show_otel=False)
@@ -242,6 +252,7 @@ def _add_subparsers(sub: argparse._SubParsersAction[Any]) -> None:
     explore.add_argument("--scenario", default="success", help="Demo scenario (live only).")
     explore.add_argument("--policy", action="store_true", help="Show observe-only policy flags.")
     explore.add_argument("--otel", action="store_true", help="Print OTel-style spans.")
+
     def _explore_dispatch(a: argparse.Namespace) -> int:
         if a.live:
             return _run_live(a.scenario, a.policy, a.otel)

@@ -1,0 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "veille-demo-agent"
+version = "0.1.0"
+description = "2-minute demo: run an agent under Veille's runtime supervisor."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["veille-supervisor>=0.3.0"]
+
+[tool.veille]
+mock = true

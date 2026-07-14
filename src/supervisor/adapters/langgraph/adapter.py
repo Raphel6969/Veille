@@ -10,13 +10,15 @@ for any LangChain-based agent.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from langchain_core.callbacks import BaseCallbackHandler
 
 from supervisor.contracts.events import EventType
-from supervisor.sdk.supervisor import Supervisor
+
+if TYPE_CHECKING:
+    from supervisor.sdk.supervisor import Supervisor
 
 
 class LangGraphCallbackHandler(BaseCallbackHandler):

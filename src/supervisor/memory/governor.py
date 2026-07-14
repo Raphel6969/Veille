@@ -92,8 +92,6 @@ class MemoryGovernor:
         )
         return [rec for _, rec in chosen], manifest
 
-    def expire_due(
-        self, backend: MemoryBackend, now: datetime | None = None
-    ) -> list[MemoryRecord]:
+    def expire_due(self, backend: MemoryBackend, now: datetime | None = None) -> list[MemoryRecord]:
         # Surfaces candidates for audited removal; never deletes.
         return backend.due_for_expiry(now)

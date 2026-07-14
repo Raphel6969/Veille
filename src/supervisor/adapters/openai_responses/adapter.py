@@ -7,10 +7,12 @@ tool calls) is integrated here when the SDK is available.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from supervisor.adapters.generic import GenericFrameworkAdapter, InstrumentedAgent
-from supervisor.sdk import Supervisor
+
+if TYPE_CHECKING:
+    from supervisor.sdk import Supervisor
 
 
 class OpenAIResponsesAdapter(GenericFrameworkAdapter):

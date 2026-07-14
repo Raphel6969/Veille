@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from supervisor.adapters.providers import _derive_provider
+from supervisor._provider_util import _derive_provider
 from supervisor.context import ContextEngine, ContextManifest
 from supervisor.contracts.events import EventType, RunEventBatch
 from supervisor.contracts.plan import ExecutionPlan, PlanTier
@@ -98,8 +98,10 @@ class Supervisor:
         self.optimize = (
             optimize if optimize is not None else os.getenv("SUPERVISOR_OPTIMIZE") == "1"
         )
-        mode = optimize_mode if optimize_mode is not None else (
-            os.getenv("SUPERVISOR_OPTIMIZE_MODE") or "dry_run"
+        mode = (
+            optimize_mode
+            if optimize_mode is not None
+            else (os.getenv("SUPERVISOR_OPTIMIZE_MODE") or "dry_run")
         )
         self.optimize_mode = mode if self.optimize else "dry_run"
         self._detector = DuplicateDetector()
@@ -162,9 +164,7 @@ class Supervisor:
         allowed_models: list[str] | None = None,
     ) -> RoutingDecision:
         tier = self._plan_tier or PlanTier.BALANCED
-        allowed = allowed_models or (
-            self.task_contract.constraints.allowed_models or None
-        )
+        allowed = allowed_models or (self.task_contract.constraints.allowed_models or None)
         return self._router.select(capability, tier, allowed)
 
     def finish_run(self, status: str) -> None:
@@ -181,6 +181,12 @@ class Supervisor:
             status=status,
             attributes={"duplicate_search_count": duplicates, "retry_count": retries},
         )
+        if status in ("error", "fail"):
+            self._collector.emit(
+                EventType.RUN_FAILED,
+                status=status,
+                attributes={"duplicate_search_count": duplicates, "retry_count": retries},
+            )
 
     def emit_validation(self, report: Any) -> None:
         self._collector.emit(
@@ -667,16 +673,16 @@ class Supervisor:
                     step_id=step_id,
                     agent_id=agent_id,
                     tool_name=tool_name,
-                        attributes={
-                            "cache_key": composite_key or opt_match.cache_key,
-                            "match_type": opt_match.match_type,
-                            "similarity": opt_match.similarity,
-                            "cache_hit": cached_result is not None,
-                            "reuse_reason": f"recommended:{opt_match.match_type}",
-                            "estimated_savings_usd": (cost_usd or 0.0)
-                            if cached_result is not None
-                            else 0.0,
-                        },
+                    attributes={
+                        "cache_key": composite_key or opt_match.cache_key,
+                        "match_type": opt_match.match_type,
+                        "similarity": opt_match.similarity,
+                        "cache_hit": cached_result is not None,
+                        "reuse_reason": f"recommended:{opt_match.match_type}",
+                        "estimated_savings_usd": (cost_usd or 0.0)
+                        if cached_result is not None
+                        else 0.0,
+                    },
                 )
 
         self._collector.emit(
@@ -704,6 +710,15 @@ class Supervisor:
             )
             self._apply_decision(decision)
         return result
+
+    def _apply_safe(self, decision: GuardDecision) -> None:
+        """Apply a guard decision; PauseForApproval is logged but non-fatal."""
+        from supervisor.policy.enforcement import PauseForApproval
+
+        try:
+            self._apply_decision(decision)
+        except PauseForApproval:
+            pass
 
     # -- retry -------------------------------------------------------------
 

@@ -32,9 +32,7 @@ def list_connections(real_mode: bool = False) -> list[ConnectionInfo]:
             status = "mock"
         # supported models: derive from the real candidate list in the registry
         models = [
-            c.name
-            for c in _registry_candidates()
-            if _provider_for_model(c.name) == name
+            c.name for c in _registry_candidates() if _provider_for_model(c.name) == name
         ] or [f"{name}/<model>"]
         out.append(
             ConnectionInfo(
@@ -56,7 +54,7 @@ def _registry_candidates() -> list[ModelCandidate]:
 
 
 def _provider_for_model(model: str) -> str:
-    from supervisor.adapters.providers import _derive_provider
+    from supervisor._provider_util import _derive_provider
 
     return _derive_provider(model)
 

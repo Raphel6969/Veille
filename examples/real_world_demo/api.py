@@ -9,6 +9,7 @@ The point is to exercise the Supervisor against *real* HTTP tool calls with real
 latency and a real cost model, so cache hits and savings are meaningful — while
 remaining safe to run anywhere (CI, laptop, design-partner laptop).
 """
+
 from __future__ import annotations
 
 import json
@@ -21,22 +22,41 @@ from typing import Any
 DATASET: dict[str, Any] = {
     "competitors": [
         {"id": "langchain", "name": "LangChain", "focus": "orchestration", "vendor_neutral": True},
-        {"id": "langgraph", "name": "LangGraph", "focus": "stateful orchestration",
-         "vendor_neutral": True},
-        {"id": "agentops", "name": "AgentOps", "focus": "agent observability",
-         "vendor_neutral": True},
-        {"id": "langsmith", "name": "LangSmith", "focus": "tracing/eval",
-         "vendor_neutral": False},
-        {"id": "arize_phoenix", "name": "Arize Phoenix", "focus": "LLM observability",
-         "vendor_neutral": True},
+        {
+            "id": "langgraph",
+            "name": "LangGraph",
+            "focus": "stateful orchestration",
+            "vendor_neutral": True,
+        },
+        {
+            "id": "agentops",
+            "name": "AgentOps",
+            "focus": "agent observability",
+            "vendor_neutral": True,
+        },
+        {"id": "langsmith", "name": "LangSmith", "focus": "tracing/eval", "vendor_neutral": False},
+        {
+            "id": "arize_phoenix",
+            "name": "Arize Phoenix",
+            "focus": "LLM observability",
+            "vendor_neutral": True,
+        },
     ],
     "sources": {
-        "s1": {"id": "s1", "title": "2026 State of Agent Ops", "url": "https://example.com/s1",
-               "published": "2026-03-01",
-               "content": "Vendor-neutral survey of agent supervision tooling."},
-        "s2": {"id": "s2", "title": "Runtime Guardrails Comparison", "url": "https://example.com/s2",
-               "published": "2026-05-12",
-               "content": "Comparison of runtime guardrail approaches."},
+        "s1": {
+            "id": "s1",
+            "title": "2026 State of Agent Ops",
+            "url": "https://example.com/s1",
+            "published": "2026-03-01",
+            "content": "Vendor-neutral survey of agent supervision tooling.",
+        },
+        "s2": {
+            "id": "s2",
+            "title": "Runtime Guardrails Comparison",
+            "url": "https://example.com/s2",
+            "published": "2026-05-12",
+            "content": "Comparison of runtime guardrail approaches.",
+        },
     },
 }
 
@@ -61,7 +81,8 @@ class _Handler(BaseHTTPRequestHandler):
         if parsed.path == "/search":
             q = (params.get("q", [""])[0] or "").lower()
             results = [
-                c for c in DATASET["competitors"]
+                c
+                for c in DATASET["competitors"]
                 if q in c["name"].lower() or q in c["focus"].lower()
             ]
             self._json({"query": q, "results": results})

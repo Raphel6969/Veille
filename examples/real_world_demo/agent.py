@@ -10,6 +10,7 @@ All opt-in flags from v0.2.0 are respected (enforce / plan / optimize /
 cache-approval / memory). Safe to run anywhere: no writes, no secrets, no
 external network (a local HTTP server is started when no API URL is provided).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -59,52 +60,88 @@ def run_scenario(scenario: str, cache_backend: Any = None) -> dict[str, Any]:
         with supervisor.node(step_id="research", agent_id="researcher", role="researcher"):
             if _flag("SUPERVISOR_PLAN"):
                 supervisor.context(
-                    step_id="research", agent_id="researcher", role="researcher",
+                    step_id="research",
+                    agent_id="researcher",
+                    role="researcher",
                     master_context=[f"Search competitors for: {QUERY}"],
                 )
 
             # Identical duplicate query -> cacheable (exact) when approved.
             r1 = supervisor.tool(
-                step_id="research", agent_id="researcher", tool_name="search_competitors",
-                input={"query": QUERY}, fn=lambda: api.search(QUERY),
-                idempotent=True, cost_usd=PER_CALL_COST_USD,
-                tool_version="v1", auth_scope="user-A", context_boundary="research",
+                step_id="research",
+                agent_id="researcher",
+                tool_name="search_competitors",
+                input={"query": QUERY},
+                fn=lambda: api.search(QUERY),
+                idempotent=True,
+                cost_usd=PER_CALL_COST_USD,
+                tool_version="v1",
+                auth_scope="user-A",
+                context_boundary="research",
             )
             supervisor.tool(
-                step_id="research", agent_id="researcher", tool_name="search_competitors",
-                input={"query": QUERY}, fn=lambda: api.search(QUERY),
-                idempotent=True, cost_usd=PER_CALL_COST_USD,
-                tool_version="v1", auth_scope="user-A", context_boundary="research",
+                step_id="research",
+                agent_id="researcher",
+                tool_name="search_competitors",
+                input={"query": QUERY},
+                fn=lambda: api.search(QUERY),
+                idempotent=True,
+                cost_usd=PER_CALL_COST_USD,
+                tool_version="v1",
+                auth_scope="user-A",
+                context_boundary="research",
             )
             # Near-duplicate query -> recommended, never served (uncertain).
             r3 = supervisor.tool(
-                step_id="research", agent_id="researcher", tool_name="search_competitors",
-                input={"query": QUERY + " 2026"}, fn=lambda: api.search(QUERY + " 2026"),
-                idempotent=True, cost_usd=PER_CALL_COST_USD,
-                tool_version="v1", auth_scope="user-A", context_boundary="research",
+                step_id="research",
+                agent_id="researcher",
+                tool_name="search_competitors",
+                input={"query": QUERY + " 2026"},
+                fn=lambda: api.search(QUERY + " 2026"),
+                idempotent=True,
+                cost_usd=PER_CALL_COST_USD,
+                tool_version="v1",
+                auth_scope="user-A",
+                context_boundary="research",
             )
             # Same source under a different auth scope -> boundary cache miss.
             s1 = supervisor.tool(
-                step_id="research", agent_id="researcher", tool_name="fetch_source",
-                input={"id": "s1"}, fn=lambda: api.fetch_source("s1"),
-                idempotent=True, cost_usd=PER_CALL_COST_USD,
-                tool_version="v1", auth_scope="user-A", context_boundary="research",
+                step_id="research",
+                agent_id="researcher",
+                tool_name="fetch_source",
+                input={"id": "s1"},
+                fn=lambda: api.fetch_source("s1"),
+                idempotent=True,
+                cost_usd=PER_CALL_COST_USD,
+                tool_version="v1",
+                auth_scope="user-A",
+                context_boundary="research",
             )
             s2 = supervisor.tool(
-                step_id="research", agent_id="researcher", tool_name="fetch_source",
-                input={"id": "s1"}, fn=lambda: api.fetch_source("s1"),
-                idempotent=True, cost_usd=PER_CALL_COST_USD,
-                tool_version="v1", auth_scope="user-B", context_boundary="research",
+                step_id="research",
+                agent_id="researcher",
+                tool_name="fetch_source",
+                input={"id": "s1"},
+                fn=lambda: api.fetch_source("s1"),
+                idempotent=True,
+                cost_usd=PER_CALL_COST_USD,
+                tool_version="v1",
+                auth_scope="user-B",
+                context_boundary="research",
             )
 
             if _flag("SUPERVISOR_MEMORY"):
                 supervisor.remember(
-                    step_id="research", agent_id="researcher",
-                    content=f"Prior query context: {QUERY}", tier=MemoryTier.LONG,
+                    step_id="research",
+                    agent_id="researcher",
+                    content=f"Prior query context: {QUERY}",
+                    tier=MemoryTier.LONG,
                 )
                 supervisor.retrieve_memory(
-                    step_id="research", agent_id="researcher",
-                    role="researcher", query=QUERY,
+                    step_id="research",
+                    agent_id="researcher",
+                    role="researcher",
+                    query=QUERY,
                 )
 
             competitors = (r1.get("results") or []) + (r3.get("results") or [])
@@ -151,7 +188,8 @@ def _metrics(result: dict[str, Any]) -> dict[str, Any]:
     """
     events = result["batch"].events
     cache_hits = [
-        e for e in events
+        e
+        for e in events
         if e.event_type == "optimization.applied" and e.attributes.get("cache_hit")
     ]
     tool_calls = [e for e in events if e.event_type == "tool.completed" and e.status != "blocked"]
@@ -180,32 +218,38 @@ def main() -> None:
         backend = FileCacheBackend(tempfile.mkdtemp(prefix="sup_cache_"))
         run1 = run_scenario(args.scenario, cache_backend=backend)
         run2 = run_scenario(args.scenario, cache_backend=backend)
-        print(json.dumps(
-            {
-                "mode": "cross-run",
-                "scenario": args.scenario,
-                "run1_cost_usd": run1["total_cost_usd"],
-                "run2_cost_usd": run2["total_cost_usd"],
-                "cross_run_saving_usd": round(run1["total_cost_usd"] - run2["total_cost_usd"], 4),
-                "run1_metrics": _metrics(run1),
-                "run2_metrics": _metrics(run2),
-            },
-            indent=2,
-        ))
+        print(
+            json.dumps(
+                {
+                    "mode": "cross-run",
+                    "scenario": args.scenario,
+                    "run1_cost_usd": run1["total_cost_usd"],
+                    "run2_cost_usd": run2["total_cost_usd"],
+                    "cross_run_saving_usd": round(
+                        run1["total_cost_usd"] - run2["total_cost_usd"], 4
+                    ),
+                    "run1_metrics": _metrics(run1),
+                    "run2_metrics": _metrics(run2),
+                },
+                indent=2,
+            )
+        )
         return
 
     result = run_scenario(args.scenario)
-    print(json.dumps(
-        {
-            "scenario": result["scenario"],
-            "run_id": result["run_id"],
-            "task_contract_met": result["validation"]["task_contract_met"],
-            "total_cost_usd": result["total_cost_usd"],
-            "competitors_count": result["brief"]["competitors_count"],
-            "metrics": _metrics(result),
-        },
-        indent=2,
-    ))
+    print(
+        json.dumps(
+            {
+                "scenario": result["scenario"],
+                "run_id": result["run_id"],
+                "task_contract_met": result["validation"]["task_contract_met"],
+                "total_cost_usd": result["total_cost_usd"],
+                "competitors_count": result["brief"]["competitors_count"],
+                "metrics": _metrics(result),
+            },
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

@@ -44,9 +44,7 @@ class DuplicateDetector:
         self._threshold = threshold
         self._entries: list[_Entry] = []
 
-    def check(
-        self, tool_name: str, normalized_input: str, exact_key: str
-    ) -> DuplicateMatch | None:
+    def check(self, tool_name: str, normalized_input: str, exact_key: str) -> DuplicateMatch | None:
         for entry in self._entries:
             if entry.tool_name == tool_name and entry.exact_key == exact_key:
                 self._entries.append(_Entry(tool_name, exact_key, normalized_input))

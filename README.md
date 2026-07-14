@@ -2,7 +2,18 @@
 
 Control plane for production AI-agent work. The Supervisor plans, contextualizes, routes, governs, and verifies each agent run—reducing wasted spend and unreliable outcomes without requiring teams to rebuild their applications.
 
-**Current release:** [0.2.0](docs/release-notes/0.2.0.md) — Phases 1–5 + **Local Integration Console**. Event schema `0.2.0`. All capabilities are opt-in and off by default.
+**Current release:** [0.3.1](https://pypi.org/project/veille-supervisor/0.3.1/) — Phases 1–5 + **Local Integration Console**. Event schema `0.2.0`. All capabilities are opt-in and off by default.
+
+## Quickstart (2 minutes)
+
+```bash
+pip install veille-supervisor
+veille demo              # run the mock demo agent
+veille explore           # browse timeline + graphs
+veille serve             # web UI at http://localhost:8010
+```
+
+No API keys. No config. Just works.
 
 ## What exists today
 

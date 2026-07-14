@@ -1,10 +1,9 @@
 from supervisor.console.config import (
+    VeilleSettings,
     mask_secret,
     provider_env_var,
     secret_for_provider,
-    PROVIDER_ENV_VARS,
 )
-from supervisor.console.config import VeilleSettings
 
 
 class TestMaskSecret:
@@ -28,6 +27,13 @@ class TestProviderEnvVar:
         assert provider_env_var("ollama") == "OLLAMA_BASE_URL"
 
     def test_unknown_returns_fallback(self) -> None:
+        assert provider_env_var("nonexistent") == "NONEXISTENT_API_KEY"
+
+    def test_dynamic_lookup_matches_static(self) -> None:
+        """Dynamic env-var mapping should return expected values."""
+        assert provider_env_var("openai") == "OPENAI_API_KEY"
+        assert provider_env_var("anthropic") == "ANTHROPIC_API_KEY"
+        assert provider_env_var("ollama") == "OLLAMA_BASE_URL"
         assert provider_env_var("nonexistent") == "NONEXISTENT_API_KEY"
 
 
@@ -57,10 +63,3 @@ class TestVeilleSettingsDefaults:
     def test_model_default(self) -> None:
         s = VeilleSettings()
         assert s.model == ""
-
-
-class TestProviderEnvVarsDict:
-    def test_contains_expected_keys(self) -> None:
-        assert "openai" in PROVIDER_ENV_VARS
-        assert "anthropic" in PROVIDER_ENV_VARS
-        assert "ollama" in PROVIDER_ENV_VARS

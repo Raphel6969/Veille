@@ -1,18 +1,19 @@
-"""LangGraph adapter stub — returns graph unchanged until Phase 1."""
+"""LangGraph adapter stub — returns graph unchanged until full instrumentation."""
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
-from supervisor.adapters.langgraph.port import LangGraphEventHook
+if TYPE_CHECKING:
+    from supervisor.sdk.supervisor import Supervisor
 
 
 class LangGraphAdapterStub:
-    """Phase 0 stub: documents the adapter contract without modifying execution."""
+    """Stub: returns the graph unchanged. Placeholder until full instrumentation."""
 
-    def attach(self, graph: Any, hook: LangGraphEventHook) -> Any:
-        _ = hook
+    def attach(self, graph: Any, supervisor: Supervisor) -> Any:
+        _ = supervisor
         return graph
 
     def extract_run_id(self, config: dict[str, Any] | None) -> str:

@@ -5,6 +5,7 @@ Covers the three explicit rules:
   2. Cache key includes tenant/project/tool+policy version/auth+context boundaries.
   3. Serving requires partner confirmation (gate); expired/uncertain re-execute.
 """
+
 from __future__ import annotations
 
 from supervisor.contracts.events import EventType
@@ -39,10 +40,22 @@ def test_rule1_exact_normalized_input_served() -> None:
         calls["n"] += 1
         return "r"
 
-    s.tool(step_id="s", agent_id="a", tool_name="search_competitors",
-           input={"q": "same query"}, fn=fn, idempotent=True)
-    s.tool(step_id="s", agent_id="a", tool_name="search_competitors",
-           input={"q": "same query"}, fn=fn, idempotent=True)
+    s.tool(
+        step_id="s",
+        agent_id="a",
+        tool_name="search_competitors",
+        input={"q": "same query"},
+        fn=fn,
+        idempotent=True,
+    )
+    s.tool(
+        step_id="s",
+        agent_id="a",
+        tool_name="search_competitors",
+        input={"q": "same query"},
+        fn=fn,
+        idempotent=True,
+    )
     assert calls["n"] == 1  # identical normalized input -> served
 
 
@@ -58,12 +71,24 @@ def test_rule1_semantic_near_duplicate_not_served() -> None:
         calls["n"] += 1
         return "r"
 
-    s.tool(step_id="s", agent_id="a", tool_name="search_competitors",
-           input={"q": "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi"},
-           fn=fn, idempotent=True)
-    s.tool(step_id="s", agent_id="a", tool_name="search_competitors",
-           input={"q": "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron"},  # noqa: E501
-           fn=fn, idempotent=True)
+    s.tool(
+        step_id="s",
+        agent_id="a",
+        tool_name="search_competitors",
+        input={"q": "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi"},
+        fn=fn,
+        idempotent=True,
+    )
+    s.tool(
+        step_id="s",
+        agent_id="a",
+        tool_name="search_competitors",
+        input={
+            "q": "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron"
+        },  # noqa: E501
+        fn=fn,
+        idempotent=True,
+    )
     # Near-duplicate is recommended but NEVER served (uncertain -> re-execute).
     assert calls["n"] == 2
     recs = _events(s, EventType.OPTIMIZATION_RECOMMENDED)
@@ -72,8 +97,14 @@ def test_rule1_semantic_near_duplicate_not_served() -> None:
 
 
 def test_rule2_boundary_change_is_a_miss() -> None:
-    s = Supervisor(_task(), optimize=True, optimize_mode="active", cache_policy=_approved(),
-                   tenant="acme", project="p1")
+    s = Supervisor(
+        _task(),
+        optimize=True,
+        optimize_mode="active",
+        cache_policy=_approved(),
+        tenant="acme",
+        project="p1",
+    )
     s.start_run()
     calls = {"n": 0}
 
@@ -81,20 +112,39 @@ def test_rule2_boundary_change_is_a_miss() -> None:
         calls["n"] += 1
         return "r"
 
-    s.tool(step_id="s", agent_id="a", tool_name="search_competitors",
-           input={"q": "same query"}, fn=fn, idempotent=True,
-           auth_scope="user-A", context_boundary="ctx-1")
-    s.tool(step_id="s", agent_id="a", tool_name="search_competitors",
-           input={"q": "same query"}, fn=fn, idempotent=True,
-           auth_scope="user-B", context_boundary="ctx-1")
+    s.tool(
+        step_id="s",
+        agent_id="a",
+        tool_name="search_competitors",
+        input={"q": "same query"},
+        fn=fn,
+        idempotent=True,
+        auth_scope="user-A",
+        context_boundary="ctx-1",
+    )
+    s.tool(
+        step_id="s",
+        agent_id="a",
+        tool_name="search_competitors",
+        input={"q": "same query"},
+        fn=fn,
+        idempotent=True,
+        auth_scope="user-B",
+        context_boundary="ctx-1",
+    )
     assert calls["n"] == 2  # different auth scope -> distinct cache key -> miss
 
 
 def test_rule2_key_contains_boundaries() -> None:
     k = build_cache_key(
-        "search_competitors", "query",
-        tenant="acme", project="p1", tool_version="v2",
-        policy_version="pol3", auth_scope="user-A", context_boundary="ctx-1",
+        "search_competitors",
+        "query",
+        tenant="acme",
+        project="p1",
+        tool_version="v2",
+        policy_version="pol3",
+        auth_scope="user-A",
+        context_boundary="ctx-1",
     )
     assert "tenant=acme" in k
     assert "project=p1" in k
@@ -116,10 +166,22 @@ def test_rule3_gate_blocks_serving_without_confirmation() -> None:
         calls["n"] += 1
         return "r"
 
-    s.tool(step_id="s", agent_id="a", tool_name="search_competitors",
-           input={"q": "same query"}, fn=fn, idempotent=True)
-    s.tool(step_id="s", agent_id="a", tool_name="search_competitors",
-           input={"q": "same query"}, fn=fn, idempotent=True)
+    s.tool(
+        step_id="s",
+        agent_id="a",
+        tool_name="search_competitors",
+        input={"q": "same query"},
+        fn=fn,
+        idempotent=True,
+    )
+    s.tool(
+        step_id="s",
+        agent_id="a",
+        tool_name="search_competitors",
+        input={"q": "same query"},
+        fn=fn,
+        idempotent=True,
+    )
     assert calls["n"] == 2  # gate not met -> not served
     assert not _events(s, EventType.OPTIMIZATION_APPLIED)
 
@@ -135,8 +197,20 @@ def test_rule3_confirmation_threshold_met() -> None:
         calls["n"] += 1
         return "r"
 
-    s.tool(step_id="s", agent_id="a", tool_name="search_competitors",
-           input={"q": "same query"}, fn=fn, idempotent=True)
-    s.tool(step_id="s", agent_id="a", tool_name="search_competitors",
-           input={"q": "same query"}, fn=fn, idempotent=True)
+    s.tool(
+        step_id="s",
+        agent_id="a",
+        tool_name="search_competitors",
+        input={"q": "same query"},
+        fn=fn,
+        idempotent=True,
+    )
+    s.tool(
+        step_id="s",
+        agent_id="a",
+        tool_name="search_competitors",
+        input={"q": "same query"},
+        fn=fn,
+        idempotent=True,
+    )
     assert calls["n"] == 1  # confirmed -> served

@@ -12,7 +12,10 @@ import os
 import time
 from typing import Protocol
 
-from supervisor.adapters.litellm.mock import MockCompletionResult
+from supervisor._provider_util import (
+    _derive_provider,  # noqa: F401  re-exported for backward compat
+)
+from supervisor.adapters.litellm.mock import LiteLLMMockAdapter, MockCompletionResult
 
 
 class ModelProvider(Protocol):
@@ -32,27 +35,6 @@ class ModelProvider(Protocol):
     def is_configured(self, use_mock: bool | None = None) -> bool:
         """True when the provider can serve (mock always; real needs a credential)."""
         ...
-
-
-def _derive_provider(model: str) -> str:
-    m = model.lower()
-    if m.startswith("openrouter/"):
-        return "openrouter"
-    if m.startswith("ollama/") or m.startswith("ollama"):
-        return "ollama"
-    if m.startswith("lmstudio"):
-        return "lmstudio"
-    if "claude" in m or "anthropic" in m:
-        return "anthropic"
-    if "gemini" in m:
-        return "gemini"
-    if m.startswith("litellm/"):
-        return "litellm"
-    if m.startswith("gpt") or "openai" in m:
-        return "openai"
-    if m.startswith("mock"):
-        return "mock"
-    return "openai"
 
 
 class BaseModelProvider:
@@ -86,7 +68,7 @@ class BaseModelProvider:
             api_base=self.api_base,
             api_key=api_key,
         )
-        usage = (resp.usage or {})
+        usage = resp.usage or {}
         in_t = int(getattr(usage, "prompt_tokens", 0) or 0)
         out_t = int(getattr(usage, "completion_tokens", 0) or 0)
         cost = (in_t * 0.000001) + (out_t * 0.000002)
@@ -109,7 +91,7 @@ class BaseModelProvider:
     ) -> MockCompletionResult:
         mock = self.use_mock if use_mock is None else use_mock
         if mock or model.startswith("mock"):
-            return _mock_complete(model, prompt, max_output_tokens)
+            return LiteLLMMockAdapter(use_mock=True).complete(model, prompt, max_output_tokens)
         return self._real(model, prompt, max_output_tokens)
 
     def is_configured(self, use_mock: bool | None = None) -> bool:
@@ -119,26 +101,6 @@ class BaseModelProvider:
         if not self.api_key_env:
             return True  # e.g. Ollama/LM Studio are local
         return bool(os.getenv(self.api_key_env))
-
-
-def _mock_complete(model: str, prompt: str, max_output_tokens: int) -> MockCompletionResult:
-    input_tokens = max(50, len(prompt) // 4)
-    output_tokens = min(max_output_tokens, max(80, len(prompt) // 8))
-    pricing = {
-        "mock-research": (0.000001, 0.000002),
-        "mock-synthesis": (0.000002, 0.000004),
-        "mock-review": (0.000003, 0.000005),
-    }
-    rate_in, rate_out = pricing.get(model, (0.000001, 0.000002))
-    cost = (input_tokens * rate_in) + (output_tokens * rate_out)
-    return MockCompletionResult(
-        model=model,
-        content=f"[mock response from {model}]",
-        input_tokens=input_tokens,
-        output_tokens=output_tokens,
-        cost_usd=round(cost, 6),
-        latency_ms=120.0,
-    )
 
 
 class LiteLLMProvider(BaseModelProvider):

@@ -17,9 +17,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class VeilleSettings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     real_mode: bool = False
     provider: str = "litellm"
@@ -46,19 +44,26 @@ def mask_secret(value: str | None) -> str:
 
 
 # Provider -> environment variable that holds its credential.
-PROVIDER_ENV_VARS: dict[str, str] = {
-    "openai": "OPENAI_API_KEY",
-    "openrouter": "OPENROUTER_API_KEY",
-    "anthropic": "ANTHROPIC_API_KEY",
-    "gemini": "GEMINI_API_KEY",
-    "litellm": "OPENAI_API_KEY",  # litellm routes through OpenAI-compatible creds by default
-    "ollama": "OLLAMA_BASE_URL",
-    "lmstudio": "LMSTUDIO_BASE_URL",
-}
+# Generated dynamically from provider class attributes to avoid drift.
+_PROVIDER_ENV_VARS: dict[str, str] | None = None
+
+
+def _build_provider_env_vars() -> dict[str, str]:
+    from supervisor.adapters.providers import get_provider, list_providers
+
+    result: dict[str, str] = {}
+    for name in list_providers():
+        inst = get_provider(name)
+        env_key = getattr(inst, "api_key_env", None)
+        result[name] = env_key or f"{name.upper()}_API_KEY"
+    return result
 
 
 def provider_env_var(provider: str) -> str:
-    return PROVIDER_ENV_VARS.get(provider.lower(), f"{provider.upper()}_API_KEY")
+    global _PROVIDER_ENV_VARS
+    if _PROVIDER_ENV_VARS is None:
+        _PROVIDER_ENV_VARS = _build_provider_env_vars()
+    return _PROVIDER_ENV_VARS.get(provider.lower(), f"{provider.upper()}_API_KEY")
 
 
 @lru_cache(maxsize=1)

@@ -9,9 +9,10 @@ integration points layered on top of ``InstrumentedAgent``.
 from __future__ import annotations
 
 import uuid
-from typing import Any, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
-from supervisor.sdk import Supervisor
+if TYPE_CHECKING:
+    from supervisor.sdk import Supervisor
 
 
 @runtime_checkable
@@ -30,9 +31,12 @@ class InstrumentedAgent:
     def run(self, input: Any, **kwargs: Any) -> Any:
         self._supervisor.start_run()
         try:
-            return self._agent_fn(input, self._supervisor)
-        finally:
-            self._supervisor.finish_run("pass")
+            result = self._agent_fn(input, self._supervisor)
+        except Exception:
+            self._supervisor.finish_run("error")
+            raise
+        self._supervisor.finish_run("pass")
+        return result
 
     def invoke(self, input: Any, **kwargs: Any) -> Any:
         return self.run(input, **kwargs)

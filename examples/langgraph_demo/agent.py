@@ -116,9 +116,7 @@ def _validate(supervisor: Supervisor) -> Any:
         task_id="langgraph-demo-001",
         task_contract_met=True,
         checks=[
-            CheckResult(
-                check_id="citations_valid", passed=True, message="brief has citations"
-            )
+            CheckResult(check_id="citations_valid", passed=True, message="brief has citations")
         ],
         confidence=0.9,
         unresolved_issues=[],

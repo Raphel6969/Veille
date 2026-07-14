@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from supervisor.adapters.providers import _derive_provider
+from supervisor._provider_util import _derive_provider
 from supervisor.contracts.plan import PlanTier
 
 

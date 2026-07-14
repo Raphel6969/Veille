@@ -61,9 +61,7 @@ def _agent_graph(batch: RunEventBatch) -> dict[str, Any]:
     agents: dict[str, dict[str, Any]] = {}
     for e in batch.events:
         if e.agent_id:
-            a = agents.setdefault(
-                e.agent_id, {"agent_id": e.agent_id, "steps": [], "events": 0}
-            )
+            a = agents.setdefault(e.agent_id, {"agent_id": e.agent_id, "steps": [], "events": 0})
             a["events"] += 1
             if e.step_id and e.step_id not in a["steps"]:
                 a["steps"].append(e.step_id)
@@ -156,9 +154,7 @@ def _estimated_vs_actual(batch: RunEventBatch, task: Any = None) -> dict[str, An
     if task is None:
         return {"actual": actual, "estimated": None}
     try:
-        started = next(
-            (e for e in batch.events if e.event_type == EventType.RUN_STARTED), None
-        )
+        started = next((e for e in batch.events if e.event_type == EventType.RUN_STARTED), None)
         tier = started.attributes.get("tier") if started is not None else None
         from supervisor.contracts.plan import PlanTier
 

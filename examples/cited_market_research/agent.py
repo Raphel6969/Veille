@@ -207,6 +207,7 @@ def analyst_node(
                     competitor=competitor["name"],
                     attempt=1,
                 )
+
                 def _fetch_failed(f: Any = first) -> Any:
                     return f
 
@@ -439,9 +440,7 @@ def main() -> None:
     if args.scenario == "all":
         scenarios = ["success", "expensive", "failed_validation"]
     else:
-        scenarios = [
-            cast("Literal['success', 'expensive', 'failed_validation']", args.scenario)
-        ]
+        scenarios = [cast("Literal['success', 'expensive', 'failed_validation']", args.scenario)]
 
     for scenario in scenarios:
         result = run_scenario(scenario)

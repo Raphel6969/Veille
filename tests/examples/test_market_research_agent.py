@@ -73,5 +73,3 @@ def test_memory_enabled_governs_retrieval() -> None:
         os.environ.pop("SUPERVISOR_MEMORY", None)
 
     assert counts.get("memory.retrieved", 0) >= 1
-
-

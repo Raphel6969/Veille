@@ -1,8 +1,8 @@
 from supervisor.adapters.providers import (
     BaseModelProvider,
+    _derive_provider,
     get_provider,
     list_providers,
-    _derive_provider,
 )
 
 
@@ -59,3 +59,53 @@ class TestBaseProviderMock:
         result = p.complete("gpt-4o", "Hello", max_output_tokens=10)
         assert isinstance(result.content, str)
         assert len(result.content) > 0
+
+
+class TestIndividualProviderClasses:
+    """Every provider class should have correct name, api_key_env, and mock mode."""
+
+    def _check_provider(self, name: str, expected_env: str) -> None:
+        from supervisor.adapters.providers import (
+            AnthropicProvider,
+            GeminiProvider,
+            LiteLLMProvider,
+            LMStudioProvider,
+            OpenAIProvider,
+            OpenRouterProvider,
+        )
+
+        cls_map = {
+            "openai": OpenAIProvider,
+            "litellm": LiteLLMProvider,
+            "openrouter": OpenRouterProvider,
+            "anthropic": AnthropicProvider,
+            "gemini": GeminiProvider,
+            "lmstudio": LMStudioProvider,
+        }
+        cls = cls_map.get(name)
+        if cls is None:
+            return
+        inst = cls(use_mock=True)
+        assert inst.name == name
+        assert inst.api_key_env == expected_env
+        assert inst.use_mock is True
+        result = inst.complete("mock-synthesis", "test prompt")
+        assert result.content.startswith("[mock response from")
+
+    def test_openai_provider(self) -> None:
+        self._check_provider("openai", "OPENAI_API_KEY")
+
+    def test_litellm_provider(self) -> None:
+        self._check_provider("litellm", "OPENAI_API_KEY")
+
+    def test_openrouter_provider(self) -> None:
+        self._check_provider("openrouter", "OPENROUTER_API_KEY")
+
+    def test_anthropic_provider(self) -> None:
+        self._check_provider("anthropic", "ANTHROPIC_API_KEY")
+
+    def test_gemini_provider(self) -> None:
+        self._check_provider("gemini", "GEMINI_API_KEY")
+
+    def test_lmstudio_provider(self) -> None:
+        self._check_provider("lmstudio", "LMSTUDIO_BASE_URL")

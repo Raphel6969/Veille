@@ -26,11 +26,7 @@ def test_enforce_dedupes_duplicate_tool_call() -> None:
     assert calls["n"] == 1
     assert r2 == "value"
     events = s.collector.events()
-    assert any(
-        e.status == "blocked"
-        for e in events
-        if e.event_type == EventType.TOOL_COMPLETED
-    )
+    assert any(e.status == "blocked" for e in events if e.event_type == EventType.TOOL_COMPLETED)
     assert any(e.event_type == EventType.INTERVENTION_APPLIED for e in events)
 
 
@@ -47,11 +43,7 @@ def test_safe_default_does_not_change_behavior() -> None:
     assert calls["n"] == 2
     events = s.collector.events()
     assert not any(e.event_type == EventType.INTERVENTION_APPLIED for e in events)
-    assert all(
-        e.status == "ok"
-        for e in events
-        if e.event_type == EventType.TOOL_COMPLETED
-    )
+    assert all(e.status == "ok" for e in events if e.event_type == EventType.TOOL_COMPLETED)
 
 
 def test_enforce_retry_budget_stops_run() -> None:

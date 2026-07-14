@@ -4,6 +4,7 @@ Verifies the demo runs fully offline (local read-only HTTP server), and that the
 approved cache policy serves the identical duplicate query while the gate blocks
 serving until confirmation.
 """
+
 from __future__ import annotations
 
 import os

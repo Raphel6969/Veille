@@ -1,0 +1,274 @@
+{
+  "schema_version": "0.2.0",
+  "run_id": "167807b5-9d6c-4627-b52a-dbba35318df7",
+  "task_id": "real-openai-integration-001",
+  "events": [
+    {
+      "schema_version": "0.2.0",
+      "event_id": "ff3430de-f591-4b09-9017-d25d91389807",
+      "run_id": "167807b5-9d6c-4627-b52a-dbba35318df7",
+      "event_type": "run.started",
+      "timestamp": "2026-07-14T21:19:58.750912Z",
+      "step_id": null,
+      "agent_id": null,
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "task": "Verify real OpenAI provider plumbing through Supervisor SDK."
+      }
+    },
+    {
+      "schema_version": "0.2.0",
+      "event_id": "e40b4786-4ec1-41cf-95d5-5c563f158034",
+      "run_id": "167807b5-9d6c-4627-b52a-dbba35318df7",
+      "event_type": "agent.started",
+      "timestamp": "2026-07-14T21:19:58.800912Z",
+      "step_id": "research",
+      "agent_id": "researcher",
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "role": "researcher"
+      }
+    },
+    {
+      "schema_version": "0.2.0",
+      "event_id": "b29dba88-fd2d-4cd7-9f05-609afc57b04e",
+      "run_id": "167807b5-9d6c-4627-b52a-dbba35318df7",
+      "event_type": "context.attached",
+      "timestamp": "2026-07-14T21:19:58.850912Z",
+      "step_id": "research",
+      "agent_id": "researcher",
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "role": "researcher",
+        "included": [
+          "top_llm_providers"
+        ],
+        "excluded": [],
+        "compressed": [],
+        "estimated_tokens": 200,
+        "reason": "Researcher needs the competitor landscape."
+      }
+    },
+    {
+      "schema_version": "0.2.0",
+      "event_id": "72eb3d87-e342-4bfe-91e4-04c9d2ff3b74",
+      "run_id": "167807b5-9d6c-4627-b52a-dbba35318df7",
+      "event_type": "tool.requested",
+      "timestamp": "2026-07-14T21:19:58.900912Z",
+      "step_id": "research",
+      "agent_id": "researcher",
+      "tool_name": "list_competitors",
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "input": {
+          "market": "AI models"
+        },
+        "tool_version": "v1",
+        "prompt_version": "unversioned"
+      }
+    },
+    {
+      "schema_version": "0.2.0",
+      "event_id": "4115ee99-dc94-4fd4-af08-4c4bf54cdd79",
+      "run_id": "167807b5-9d6c-4627-b52a-dbba35318df7",
+      "event_type": "tool.completed",
+      "timestamp": "2026-07-14T21:19:58.950912Z",
+      "step_id": "research",
+      "agent_id": "researcher",
+      "tool_name": "list_competitors",
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": 0.0005,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {
+        "input": {
+          "market": "AI models"
+        },
+        "tool_version": "v1",
+        "prompt_version": "unversioned"
+      }
+    },
+    {
+      "schema_version": "0.2.0",
+      "event_id": "b6ce1621-3ee2-42d8-be15-e6625d2d6fb5",
+      "run_id": "167807b5-9d6c-4627-b52a-dbba35318df7",
+      "event_type": "agent.finished",
+      "timestamp": "2026-07-14T21:19:59.000912Z",
+      "step_id": "research",
+      "agent_id": "researcher",
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.2.0",
+      "event_id": "a669fda0-23a5-4770-a1e0-af3844cbba93",
+      "run_id": "167807b5-9d6c-4627-b52a-dbba35318df7",
+      "event_type": "agent.started",
+      "timestamp": "2026-07-14T21:19:59.050912Z",
+      "step_id": "synthesize",
+      "agent_id": "writer",
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "role": "writer"
+      }
+    },
+    {
+      "schema_version": "0.2.0",
+      "event_id": "09571ea5-cf6d-40e2-989f-29e20e73b53e",
+      "run_id": "167807b5-9d6c-4627-b52a-dbba35318df7",
+      "event_type": "model.requested",
+      "timestamp": "2026-07-14T21:19:59.100912Z",
+      "step_id": "synthesize",
+      "agent_id": "writer",
+      "tool_name": null,
+      "model_name": "mock-synthesis",
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "prompt_preview": "List the top 3 AI model providers and their flagship products.\n\nCompetitors: [{\"id\": \"openai\", \"name\": \"OpenAI\", \"produc",
+        "model": "mock-synthesis",
+        "provider": "openai",
+        "prompt_version": "v1"
+      }
+    },
+    {
+      "schema_version": "0.2.0",
+      "event_id": "e711e912-15fb-4316-906d-b6995f5b1077",
+      "run_id": "167807b5-9d6c-4627-b52a-dbba35318df7",
+      "event_type": "model.completed",
+      "timestamp": "2026-07-14T21:19:59.220912Z",
+      "step_id": "synthesize",
+      "agent_id": "writer",
+      "tool_name": null,
+      "model_name": "mock-synthesis",
+      "duration_ms": 120.0,
+      "input_tokens": 75,
+      "output_tokens": 80,
+      "cost_usd": 0.00047,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.2.0",
+      "event_id": "78da5be0-db55-4364-9ae0-768ef8a607c6",
+      "run_id": "167807b5-9d6c-4627-b52a-dbba35318df7",
+      "event_type": "agent.finished",
+      "timestamp": "2026-07-14T21:19:59.270912Z",
+      "step_id": "synthesize",
+      "agent_id": "writer",
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.2.0",
+      "event_id": "76c5f7b3-987c-47d4-95c7-3a03e8d1195e",
+      "run_id": "167807b5-9d6c-4627-b52a-dbba35318df7",
+      "event_type": "validation.completed",
+      "timestamp": "2026-07-14T21:19:59.320912Z",
+      "step_id": null,
+      "agent_id": null,
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": "pass",
+      "error_message": null,
+      "attributes": {
+        "checks": [
+          {
+            "check_id": "cost_tracked",
+            "passed": true,
+            "message": "model call cost tracked",
+            "details": {}
+          },
+          {
+            "check_id": "provider_detected",
+            "passed": true,
+            "message": "provider=mock",
+            "details": {}
+          }
+        ]
+      }
+    },
+    {
+      "schema_version": "0.2.0",
+      "event_id": "8899a19e-3463-40b0-8c39-5c98e445b7f1",
+      "run_id": "167807b5-9d6c-4627-b52a-dbba35318df7",
+      "event_type": "run.completed",
+      "timestamp": "2026-07-14T21:19:59.370912Z",
+      "step_id": null,
+      "agent_id": null,
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": "pass",
+      "error_message": null,
+      "attributes": {
+        "duplicate_search_count": 0,
+        "retry_count": 0
+      }
+    }
+  ],
+  "metadata": {}
+}
