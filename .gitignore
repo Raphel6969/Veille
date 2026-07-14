@@ -48,3 +48,4 @@ htmlcov/
 node_modules/
 ui/dist/
 ui/node_modules/
+*.tsbuildinfo
