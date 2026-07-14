@@ -2,7 +2,7 @@
 
 Control plane for production AI-agent work. The Supervisor plans, contextualizes, routes, governs, and verifies each agent run—reducing wasted spend and unreliable outcomes without requiring teams to rebuild their applications.
 
-**Current phase:** Phase 5 — Memory lifecycle & retrieval governance (implemented, pending release).
+**Current release:** [0.2.0](docs/release-notes/0.2.0.md) — Phases 1–5 (observe, enforce, plan, optimize, govern memory). Event schema `0.2.0`. All capabilities are opt-in and off by default.
 
 ## What exists today
 

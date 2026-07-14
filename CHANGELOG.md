@@ -4,7 +4,9 @@ All notable changes are documented here. This project follows phase-based delive
 
 ## [Unreleased]
 
-### Phase 5 — Memory lifecycle & retrieval governance (implemented, pending release)
+## [0.2.0] — Phases 1–5 (2026-07-14)
+
+### Phase 5 — Memory lifecycle & retrieval governance (implemented)
 
 - **Memory store** (`src/supervisor/memory/store.py`): `MemoryBackend` port + `InMemoryMemoryStore` (tenant-isolated, no deps); `MemoryRecord` with tier (working/short/long/archive), provenance, confidence, TTL, and baseline hash for drift; `content_hash` util. Mem0/Letta/customer RAG attach behind the port.
 - **Scoring** (`src/supervisor/memory/scoring.py`): `score(record, now, role_weights)` combines recency (exponential decay), usage, provenance quality, and confidence; metadata-driven, no embeddings by default. `default_role_weights` nudge tier preference by role.
@@ -16,7 +18,7 @@ All notable changes are documented here. This project follows phase-based delive
 - **Tests:** store, scoring, governor, SDK memory, demo memory — 119 total.
 - **Docs:** ADR-011 (memory governance), data-contracts / architecture / runtime-chain / integrations / operations / roadmap / README updates.
 
-### Phase 4 — Semantic dedup and adaptive caching (implemented, pending release)
+### Phase 4 — Semantic dedup and adaptive caching (implemented)
 
 - **Semantic key** (`src/supervisor/optimize/keys.py`): `ShingleSemanticKey` tokenizes input into word-shingles and compares with Jaccard similarity (default threshold 0.85). Embedding backend is a future `SemanticKey` port.
 - **Near-duplicate detector** (`src/supervisor/optimize/dedup.py`): `DuplicateDetector` returns `DuplicateMatch` (`exact` | `semantic`, `similarity`, `cache_key`) for in-run `(tool, input)` calls.
@@ -28,7 +30,7 @@ All notable changes are documented here. This project follows phase-based delive
 - **Tests:** keys, dedup, cache, SDK dry-run/active, demo optimization — 99 total.
 - **Docs:** ADR-010 (semantic dedup + caching + dry-run opt-in), data-contracts / architecture / runtime-chain / integrations / operations / roadmap / README updates.
 
-### Phase 3 — Planner, context, routing (implemented, pending release)
+### Phase 3 — Planner, context, routing (implemented)
 
 - **Plan tiers** (`src/supervisor/contracts/plan.py`): `PlanTier` (minimum / balanced /
   high_quality / maximum_assurance), `TierEstimate`, `PlanStep`, `ExecutionPlan`.
@@ -54,7 +56,7 @@ All notable changes are documented here. This project follows phase-based delive
 - **Docs:** ADR-008 (tier/cost model), ADR-009 (routing), data-contracts / architecture /
   runtime-chain / integrations / operations / roadmap / README updates.
 
-### Phase 2 — Deterministic protection (implemented, pending release)
+### Phase 2 — Deterministic protection (implemented)
 
 - **Enforcement engine** (`src/supervisor/policy/enforcement.py`): `Enforcer` +
   `GuardDecision`; exceptions `InterventionError` / `StopRun` / `PauseForApproval` /
@@ -76,7 +78,7 @@ All notable changes are documented here. This project follows phase-based delive
 - **Docs:** ADR-006 (enforcement model), ADR-007 (budget backend), policy-engine /
   data-contracts / roadmap updates.
 
-### Phase 1 — Observe and explain (implemented, pending release)
+### Phase 1 — Observe and explain (implemented)
 
 - **Python SDK** (`src/supervisor/sdk/`): `Supervisor` emission helpers
   (`start_run`, `finish_run`, `model`, `tool`, `retry`, `context`, `node`,
