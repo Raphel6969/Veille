@@ -6,7 +6,7 @@ Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_
 |---|---|---|---|
 | 0 | Discovery, repository setup, baseline | **Complete (verified)** | Contracts, docs, synthetic workflow, fixtures, metrics defined; `pytest`/ruff/mypy green |
 | 1 | Observe and explain | **Implemented (pending release)** | SDK, automatic events, timeline, observe-only policies ([plan](development/phase-1-plan.md)) |
-| 2 | Deterministic protection | **Proposed — plan ready** | Budgets, duplicate/loop detection, intervention modes ([plan](../docs/development/phase-2-plan.md)) |
+| 2 | Deterministic protection | **Implemented (pending release)** | Budgets, duplicate/loop detection, intervention modes ([plan](development/phase-2-plan.md)) |
 | 3 | Planner, context, routing | Not started | Cost tiers, context manifests, model routing, validation |
 | 4 | Adaptive optimization | Not started | Semantic detection, caching, experiments |
 | 5 | Memory and enterprise | Not started | Multi-tenancy, RBAC, audit, retention |
@@ -68,6 +68,25 @@ Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_
 - PostgreSQL/Redis/MinIO deep wiring (Phase 2+; Redis counters optional behind a port)
 - Real LiteLLM provider calls (opt-in)
 - Langfuse/Phoenix/LangSmith export (Phase 1+; OTel export implemented)
+
+## Phase 2 deliverables
+
+- [x] Enforcement engine: detection (`evaluate`) separated from action (`Enforcer`)
+- [x] Guard points in `Supervisor.tool()` / `Supervisor.retry()` (call-site, framework-agnostic)
+- [x] Deterministic policies: `duplicate_tool_protection`, `retry_budget`, `cost_budget`, `stall_protection`, `loop_protection`
+- [x] Actions: `warn`, `block` (dedupe), `retry`, `pause`, `stop` (preserves trace + `run.failed`)
+- [x] `BudgetTracker` with `CounterBackend` port (in-memory default, Redis optional)
+- [x] Full audit trail: `intervention.applied` + `human_review_required`
+- [x] Safe default: observe unless `SUPERVISOR_ENFORCE=true` / `Supervisor(enforce=True)`
+- [x] Demo opt-in via `SUPERVISOR_ENFORCE`; CLI/OTel/audit observable
+- [x] Tests: policy evaluate, enforcement, budgets, SDK enforcement, adapter
+
+### Phase 2 verification (2026-07-14)
+
+- `pytest` — **60 passed** (policy, enforcement, budgets, sdk, analytics, adapters, cli, demo)
+- `ruff check` / `ruff format` — clean
+- `mypy src/supervisor` — clean (strict)
+- Under `SUPERVISOR_ENFORCE=true` the expensive demo scenario is stopped on retry-budget exhaustion; success scenario is unaffected (non-interference).
 
 ## Phase 1 approval gate — completed
 

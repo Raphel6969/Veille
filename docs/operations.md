@@ -71,5 +71,6 @@ Set `LOG_LEVEL` in `.env`. The demo and `run-explorer` print summaries to stdout
 ## Runbooks
 
 - **Enabling observe-mode policies:** they run by default in `evaluate_observe`; use `python -m supervisor.cli explore --live --scenario expensive --policy` to view matches.
-- **Switching a policy to enforce (Phase 2):** requires explicit approval; not available in Phase 1.
+- **Enabling enforcement (Phase 2):** set `SUPERVISOR_ENFORCE=true` (or construct `Supervisor(enforce=True)`). Policies act per their configured action (`block`/`stop`/`pause`). Default is observe — enforcement never changes behavior unless explicitly enabled.
+- **Reading the audit trail:** every action emits an `intervention.applied` event (with `action`, `policy_id`, `reason`, `human_review_required`); the run-explorer `--policy` flag surfaces them, and OTel export forwards them as span attributes.
 - **Exporting traces to OTel backend:** `OtlpExporter(endpoint=...).export_events(events)` or `--otel` on the explorer.

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import Any, Literal, TypedDict, cast
 
@@ -27,8 +28,12 @@ from supervisor.adapters.langgraph.adapter import LangGraphInstrumentedAdapter
 from supervisor.adapters.litellm.mock import LiteLLMMockAdapter
 from supervisor.contracts.events import EventType
 from supervisor.io import load_task_contract, save_trace_fixture
-from supervisor.policy import evaluate_observe
+from supervisor.policy import StopRun, evaluate, evaluate_observe
 from supervisor.sdk import Supervisor
+
+
+def _enforcement_enabled() -> bool:
+    return os.environ.get("SUPERVISOR_ENFORCE", "").lower() in ("1", "true", "yes")
 
 TASK_CONTRACT_PATH = Path(__file__).parent / "task_contract.yaml"
 FIXTURES_OUT = Path(__file__).resolve().parents[2] / "fixtures" / "traces"
@@ -232,7 +237,8 @@ def build_graph(supervisor: Supervisor, adapter: LiteLLMMockAdapter) -> Any:
 
 def run_scenario(scenario: Literal["success", "expensive", "failed_validation"]) -> dict[str, Any]:
     task = load_task_contract(TASK_CONTRACT_PATH)
-    supervisor = Supervisor(task)
+    enforce = _enforcement_enabled()
+    supervisor = Supervisor(task, enforce=enforce)
     supervisor.scenario = scenario
     adapter = LiteLLMMockAdapter(use_mock=True)
 
@@ -252,24 +258,42 @@ def run_scenario(scenario: Literal["success", "expensive", "failed_validation"])
         "duplicate_search_count": 0,
         "retry_count": 0,
     }
-    final = instrumented.invoke(initial)
+    final: AgentState = initial
+    stopped = False
+    try:
+        final = instrumented.invoke(initial)
+    except StopRun:
+        stopped = True
 
-    report = validate_brief(supervisor.run_id, task.task_id, final["brief"])
-    supervisor.emit_validation(report)
-    supervisor.finish_run("pass" if report.task_contract_met else "fail")
+    if stopped:
+        report = validate_brief(supervisor.run_id, task.task_id, {})
+        supervisor.finish_run("error")
+    else:
+        report = validate_brief(supervisor.run_id, task.task_id, final["brief"])
+        supervisor.emit_validation(report)
+        supervisor.finish_run("pass" if report.task_contract_met else "fail")
 
     batch = supervisor.to_batch()
-    triggers, policy_events = evaluate_observe(batch)
+    if enforce:
+        _, policy_events = evaluate(
+            batch,
+            enforce=True,
+            max_cost_usd=task.constraints.max_cost_usd,
+            max_latency_seconds=task.constraints.max_latency_seconds,
+        )
+    else:
+        _, policy_events = evaluate_observe(batch)
     for event in policy_events:
         supervisor.collector.append(event)
     batch = supervisor.to_batch(
         metadata={
             "scenario": scenario,
+            "enforcement_enabled": enforce,
             "task_contract_met": report.task_contract_met,
             "total_cost_usd": round(
                 sum(e.cost_usd or 0.0 for e in supervisor.collector.events()), 4
             ),
-            "duplicate_search_count": final["duplicate_search_count"],
+            "duplicate_search_count": final.get("duplicate_search_count", 0),
             "retry_count": sum(
                 1
                 for e in supervisor.collector.events()
@@ -278,11 +302,10 @@ def run_scenario(scenario: Literal["success", "expensive", "failed_validation"])
             "validation": report.model_dump(),
         }
     )
-    _ = triggers
     return {
         "run_id": supervisor.run_id,
         "scenario": scenario,
-        "brief": final["brief"],
+        "brief": final.get("brief", {}),
         "batch": batch,
         "validation": report,
         "total_cost_usd": sum(e.cost_usd or 0.0 for e in batch.events),

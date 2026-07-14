@@ -91,6 +91,9 @@ The `attributes` object is open-ended. Phase 1 standardizes these keys (all opti
 | `check_id` | string | `validation.completed` | Quality check identifier |
 | `passed` | bool | `validation.completed` | Check result |
 | `message` | string | `validation.completed` | Check message |
+| `action` | string | `intervention.applied` | `observe` \| `warn` \| `block` \| `pause` \| `retry` \| `stop` |
+| `human_review_required` | bool | `intervention.applied` | `true` for `pause`/`handoff` |
+| `reason` | string | `policy.triggered` / `intervention.applied` | Why the policy matched/acted |
 
 ## Run Event Batch
 

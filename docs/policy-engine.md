@@ -1,6 +1,6 @@
 # Policy Engine
 
-> **Status:** Phase 1 implements **observe-only** detection. Enforcement (`warn`/`enforce` actions) is Phase 2.
+> **Status:** Phase 2 implements **enforcement** (block / retry / pause / stop) opt-in via `Supervisor(enforce=True)` or `SUPERVISOR_ENFORCE=true`. Default remains observe-only.
 
 ## Phase 1 observe mode
 
@@ -39,13 +39,37 @@ All policies **default to observe** until explicitly approved for warn or enforc
 | `handoff` | Escalate to human review |
 | `stop` | Stop run while preserving trace |
 
+## Phase 2 deterministic policies (implemented)
+
+Policies live in `src/supervisor/policy/engine.py` (`DEFAULT_ENFORCE_POLICIES`). Each
+defaults to `enforce` mode with a configured action; they only act when the runtime
+is in enforcement mode.
+
+| Policy id | Detects | Enforce action |
+|---|---|---|
+| `duplicate_tool_protection` | Same `tool_name` + `normalized_input_hash` after a prior **successful** call | `block` (dedupe) |
+| `retry_budget` | `retry.scheduled` count exceeds `RETRY_BUDGET` (default 5) | `stop` |
+| `cost_budget` | `total_cost_usd` > `max_cost_usd` (task contract) | `stop` |
+| `stall_protection` | `tool.completed` `duration_ms` > `max_latency_seconds` | `stop` |
+| `loop_protection` | identical `(tool_name, hash)` call repeats > `LOOP_LIMIT` (3) | `stop` |
+
+`evaluate(batch, enforce=..., max_cost_usd=..., max_latency_seconds=...)` returns
+`PolicyDecision` records. With `enforce=False` every decision is `action="observe"`
+and the runtime is unchanged. With `enforce=True`, `ENFORCE`-mode matches carry their
+configured action and `applied=True`.
+
+The runtime applies decisions through `Supervisor.act(decision)`:
+`block` → dedupe (return prior result), `stop` → raise `StopRun`, `pause` → raise
+`PauseForApproval`, `warn`/`observe` → record only. See [ADR-006](adr/006-enforcement-model.md).
+
+Budgets are tracked per run by `BudgetTracker` (`src/supervisor/policy/budgets.py`)
+behind a `CounterBackend` port (in-memory default; Redis optional). See
+[ADR-007](adr/007-budget-backend-port.md).
+
 ## Phase 2 deterministic policies (planned)
 
-1. Cost budget
-2. Timeout / stall protection
-3. Retry budget
-4. Duplicate tool call (tool name + normalized input hash)
-5. Exact cycle / loop detection
+1. Cost tier planner integration (Phase 3)
+2. Semantic / learned detection (Phase 4+)
 
 ## Safety rules
 

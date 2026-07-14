@@ -4,6 +4,28 @@ All notable changes are documented here. This project follows phase-based delive
 
 ## [Unreleased]
 
+### Phase 2 — Deterministic protection (implemented, pending release)
+
+- **Enforcement engine** (`src/supervisor/policy/enforcement.py`): `Enforcer` +
+  `GuardDecision`; exceptions `InterventionError` / `StopRun` / `PauseForApproval` /
+  `BlockedByPolicy`. Detection (`evaluate`) separated from action.
+- **Deterministic policies** (`src/supervisor/policy/engine.py`): `duplicate_tool_protection`
+  (block/dedupe), `retry_budget` (stop), `cost_budget` (stop), `stall_protection` (stop),
+  `loop_protection` (stop). Default mode `enforce`; gated by `Supervisor(enforce=True)`
+  or `SUPERVISOR_ENFORCE=true`.
+- **Budgets** (`src/supervisor/policy/budgets.py`): `BudgetTracker` behind a
+  `CounterBackend` port (in-memory default, Redis optional).
+- **SDK guards** (`src/supervisor/sdk/supervisor.py`): `tool()` dedupes blocked duplicates,
+  `retry()` stops on budget exhaustion; `emit_intervention` / `consult` / `act` helpers.
+- **Audit:** every action emits `intervention.applied` with `action`, `policy_id`, `reason`,
+  and `human_review_required`.
+- **Safe default:** observe mode is byte-for-byte identical to Phase 1.
+- **Demo:** opt-in enforcement via `SUPERVISOR_ENFORCE`; the expensive scenario is stopped
+  on retry-budget exhaustion.
+- **Tests:** policy evaluate, enforcement, budgets, SDK enforcement, adapter — 60 total.
+- **Docs:** ADR-006 (enforcement model), ADR-007 (budget backend), policy-engine /
+  data-contracts / roadmap updates.
+
 ### Phase 1 — Observe and explain (implemented, pending release)
 
 - **Python SDK** (`src/supervisor/sdk/`): `Supervisor` emission helpers
