@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Environment
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project artifacts
+*.log
+.mypy_cache/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+
+# Coverage outputs
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/

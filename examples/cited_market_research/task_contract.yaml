@@ -1,0 +1,20 @@
+schema_version: "0.1.0"
+task_id: cited-competitor-brief-001
+task: Produce a cited competitor brief
+required_outcome:
+  - eight competitors
+  - comparison table
+  - current linked evidence for material claims
+constraints:
+  max_cost_usd: 1.00
+  max_latency_seconds: 120
+  allowed_models: []
+  data_residency: null
+quality_checks:
+  - required_fields_present
+  - citations_valid
+  - no_duplicate_competitors
+risk_level: medium
+metadata:
+  workflow: cited_market_research
+  demo: true

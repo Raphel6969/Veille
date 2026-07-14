@@ -1,0 +1,75 @@
+# AI Runtime Supervisor
+
+Control plane for production AI-agent work. The Supervisor plans, contextualizes, routes, governs, and verifies each agent run—reducing wasted spend and unreliable outcomes without requiring teams to rebuild their applications.
+
+**Current phase:** Phase 0 — Discovery, repository setup, and baseline (complete and verified).
+
+## What exists today
+
+- Versioned data contracts (task, events, plan, policy, validation)
+- Synthetic cited market-research LangGraph demo workflow with mock tools
+- Representative trace fixtures for success, expensive, and failed-validation runs
+- Adapter port stubs for LangGraph, LiteLLM mock, and OpenTelemetry export
+- Local development environment (Docker Compose + pytest)
+
+**Not yet implemented:** SDK instrumentation, policy enforcement, routing, context engine, control-plane UI.
+
+## Quickstart
+
+### Prerequisites
+
+- Python 3.12+
+- Docker Desktop (optional, for Postgres/Redis/MinIO scaffold)
+
+### Setup (Windows)
+
+```powershell
+.\scripts\dev.ps1
+.\.venv\Scripts\Activate.ps1
+```
+
+### Run tests
+
+```powershell
+pytest -v
+```
+
+### Run the demo workflow
+
+```powershell
+# Successful run
+python -m examples.cited_market_research.agent --scenario success
+
+# All scenarios + write trace fixtures
+python -m examples.cited_market_research.agent --scenario all --write-fixtures
+```
+
+No API keys required. Mock models and tools are used by default.
+
+## Repository layout
+
+```text
+src/supervisor/          Core contracts, adapters, telemetry
+examples/                Runnable demo workflows
+fixtures/traces/         Synthetic trace JSON for tests and baselines
+docs/                    Architecture, contracts, roadmap, ADRs
+templates/               Baseline measurement templates
+```
+
+## Documentation
+
+| Document | Description |
+|---|---|
+| [Architecture](docs/architecture.md) | System components and boundaries |
+| [Runtime chain](docs/runtime-chain.md) | Stage-by-stage runtime flow |
+| [Data contracts](docs/data-contracts.md) | Schema reference |
+| [Roadmap](docs/roadmap.md) | Phase status and deferrals |
+| [Integrations](docs/integrations.md) | Adapter contracts |
+
+## First workflow
+
+**Cited market-research agent** — produces a competitor brief with citations, comparison table, and validation against a task contract. See `examples/cited_market_research/`.
+
+## License
+
+MIT

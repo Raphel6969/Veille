@@ -1,0 +1,764 @@
+{
+  "schema_version": "0.1.0",
+  "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+  "task_id": "cited-competitor-brief-001",
+  "events": [
+    {
+      "schema_version": "0.1.0",
+      "event_id": "2b0ac609-017f-422a-8045-7439f2b554eb",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "run.started",
+      "timestamp": "2026-07-14T09:02:18.207078Z",
+      "step_id": null,
+      "agent_id": null,
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "scenario": "success",
+        "task": "Produce a cited competitor brief"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "4ace17b8-8848-45f8-98a5-1a8d4236fbd6",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "agent.started",
+      "timestamp": "2026-07-14T09:02:18.257078Z",
+      "step_id": "research",
+      "agent_id": "researcher",
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "role": "researcher"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "238e42d0-f021-4eda-876e-cbe1976db2a5",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.requested",
+      "timestamp": "2026-07-14T09:02:18.307078Z",
+      "step_id": "research",
+      "agent_id": "researcher",
+      "tool_name": "search_competitors",
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "input": {
+          "query": "AI runtime supervision competitors 2026"
+        },
+        "normalized_input_hash": "1978347513a3d3f68e689ad3b5a570deadb7458d96d4d802f4b5d24c2ea14e41"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "0f47b53e-9c10-460c-923a-0a0978cc9fde",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.completed",
+      "timestamp": "2026-07-14T09:02:18.387078Z",
+      "step_id": "research",
+      "agent_id": "researcher",
+      "tool_name": "search_competitors",
+      "model_name": null,
+      "duration_ms": 80.0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": 0.002,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {
+        "call_count": 1
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "fcdea71d-6359-4458-bc29-d15241f58eeb",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "model.requested",
+      "timestamp": "2026-07-14T09:02:18.437078Z",
+      "step_id": "research",
+      "agent_id": "researcher",
+      "tool_name": null,
+      "model_name": "mock-research",
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "prompt_preview": "Plan evidence collection for: AI runtime supervision competitors 2026"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "6a3209ac-ff5d-4839-b7e7-3eb704ed8b15",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "model.completed",
+      "timestamp": "2026-07-14T09:02:18.557078Z",
+      "step_id": "research",
+      "agent_id": "researcher",
+      "tool_name": null,
+      "model_name": "mock-research",
+      "duration_ms": 120.0,
+      "input_tokens": 50,
+      "output_tokens": 80,
+      "cost_usd": 0.00021,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "4ad5e739-8052-4ec5-86a2-433686a68577",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "agent.finished",
+      "timestamp": "2026-07-14T09:02:18.607078Z",
+      "step_id": "research",
+      "agent_id": "researcher",
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "e443e316-95fd-45b5-8324-db4ac23751b9",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "agent.started",
+      "timestamp": "2026-07-14T09:02:18.657078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "role": "analyst"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "d7b2aa4f-48ff-4387-8d93-994f9eed2e84",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.requested",
+      "timestamp": "2026-07-14T09:02:18.707078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "input": {
+          "competitor_name": "AlphaCorp"
+        },
+        "normalized_input_hash": "47f1d2b2cfe180fece1f71b07248492004dc641ad1ab71979e565629a4b59af3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "75af7243-7498-46a9-8c28-cb41d0512162",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.completed",
+      "timestamp": "2026-07-14T09:02:18.752078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": 45.0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": 0.001,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "16d4a5f0-445f-4ddb-8ef9-9b7dd7994e72",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.requested",
+      "timestamp": "2026-07-14T09:02:18.802078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "input": {
+          "competitor_name": "BetaStack"
+        },
+        "normalized_input_hash": "f3b2b1a9daf6062a0dc1861817039d05b50c7129e811db163f774800c97ed308"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "1b6d1c5f-9bea-4c73-8349-5bd7d8441c64",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.completed",
+      "timestamp": "2026-07-14T09:02:18.847078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": 45.0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": 0.001,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "6ba0b44d-e586-4da1-8292-ccd70af16da7",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.requested",
+      "timestamp": "2026-07-14T09:02:18.897078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "input": {
+          "competitor_name": "GammaFlow"
+        },
+        "normalized_input_hash": "a770f2f716f8a464ec36424549f18eb030767b1eb42360cca0076a1ffe436880"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "7b5fd555-7d1b-4808-9111-3bde7a260853",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.completed",
+      "timestamp": "2026-07-14T09:02:18.942078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": 45.0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": 0.001,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "6cb40fa9-ff10-47b9-ac6e-1d588581631b",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.requested",
+      "timestamp": "2026-07-14T09:02:18.992078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "input": {
+          "competitor_name": "DeltaMind"
+        },
+        "normalized_input_hash": "605fd11496d0f6ed1134f63744e89b155cf5cbd388b4fbc59c996313847dac0f"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "cc63e65f-b70c-4319-8252-d6b1250a346a",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.completed",
+      "timestamp": "2026-07-14T09:02:19.037078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": 45.0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": 0.001,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "fa0b801f-1213-4b88-9034-5d19c345e8a8",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.requested",
+      "timestamp": "2026-07-14T09:02:19.087078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "input": {
+          "competitor_name": "EpsilonAI"
+        },
+        "normalized_input_hash": "1b0a33ebf54bc898e19c1f2438b6befe89fadeb49d9c4bf3e0aae610d72241d3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "a727c865-b451-40bd-9e3f-c8f4ba232f77",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.completed",
+      "timestamp": "2026-07-14T09:02:19.132078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": 45.0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": 0.001,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "7bd108e0-c7b0-4c8f-9066-f040e5d00963",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.requested",
+      "timestamp": "2026-07-14T09:02:19.182078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "input": {
+          "competitor_name": "ZetaWorks"
+        },
+        "normalized_input_hash": "edcb99212d3c8747f111b39e1b2b88a816c11958cc514f5f20a5560eda5e73bb"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "407b9898-207c-4ba0-80bc-fe2e897d6ae1",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.completed",
+      "timestamp": "2026-07-14T09:02:19.227078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": 45.0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": 0.001,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "bd840be5-a1e8-496a-b8bf-7b27cb2f1512",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.requested",
+      "timestamp": "2026-07-14T09:02:19.277078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "input": {
+          "competitor_name": "EtaCloud"
+        },
+        "normalized_input_hash": "f013e084cf49a35861a28d0106d30e23739dba21afe7ebbf4de3909806b61d85"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "a0790d28-e858-4cfc-ae10-16f9ac1bce1c",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.completed",
+      "timestamp": "2026-07-14T09:02:19.322078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": 45.0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": 0.001,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "9178e6fb-2c78-4d7a-9e9b-a6cf5fd8a73b",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.requested",
+      "timestamp": "2026-07-14T09:02:19.372078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "input": {
+          "competitor_name": "ThetaOps"
+        },
+        "normalized_input_hash": "3faec98a5cc6df05819d103608ac0dcd71dc73a3fdaacccd0d2840602a46b7b0"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "a7719d44-c432-4158-922c-2a7e157fd064",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.completed",
+      "timestamp": "2026-07-14T09:02:19.417078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": "fetch_source",
+      "model_name": null,
+      "duration_ms": 45.0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": 0.001,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "0fe52a4d-e97b-4948-a482-54dfdecb90a5",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "model.requested",
+      "timestamp": "2026-07-14T09:02:19.467078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": null,
+      "model_name": "mock-research",
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "prompt_preview": "Verify evidence coverage and open questions."
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "09794ee7-d5c3-4770-81a3-a7f4496d201a",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "model.completed",
+      "timestamp": "2026-07-14T09:02:19.587078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": null,
+      "model_name": "mock-research",
+      "duration_ms": 120.0,
+      "input_tokens": 50,
+      "output_tokens": 80,
+      "cost_usd": 0.00021,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "fca221af-5727-425b-818c-3d1f6c16392d",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "agent.finished",
+      "timestamp": "2026-07-14T09:02:19.637078Z",
+      "step_id": "analysis",
+      "agent_id": "analyst",
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "163c0143-291a-41d9-8c96-3eb7e3811f8d",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "agent.started",
+      "timestamp": "2026-07-14T09:02:19.687078Z",
+      "step_id": "writing",
+      "agent_id": "writer",
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "role": "writer"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "1e0d6bc2-0341-41cd-b4c0-d4057d072f43",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.requested",
+      "timestamp": "2026-07-14T09:02:19.737078Z",
+      "step_id": "writing",
+      "agent_id": "writer",
+      "tool_name": "synthesize_brief",
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "input": {
+          "evidence_count": 8
+        },
+        "normalized_input_hash": "8398d824fe0f9db67fc827c852f404cb9261aeca82d71d9a923932b98fe50dd3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "ac96fca5-ded4-4a4a-ad15-374bbec04a7b",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "tool.completed",
+      "timestamp": "2026-07-14T09:02:19.827078Z",
+      "step_id": "writing",
+      "agent_id": "writer",
+      "tool_name": "synthesize_brief",
+      "model_name": null,
+      "duration_ms": 90.0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": 0.003,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "5ab0916d-4e7f-45f0-bf72-4197af054a59",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "model.requested",
+      "timestamp": "2026-07-14T09:02:19.877078Z",
+      "step_id": "writing",
+      "agent_id": "writer",
+      "tool_name": null,
+      "model_name": "mock-synthesis",
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": null,
+      "error_message": null,
+      "attributes": {
+        "prompt_preview": "Draft cited competitor brief."
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "3777884e-0e67-4be2-adcc-f3ad01e910fe",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "model.completed",
+      "timestamp": "2026-07-14T09:02:19.997078Z",
+      "step_id": "writing",
+      "agent_id": "writer",
+      "tool_name": null,
+      "model_name": "mock-synthesis",
+      "duration_ms": 120.0,
+      "input_tokens": 50,
+      "output_tokens": 80,
+      "cost_usd": 0.00042,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "d697eb00-999c-4f18-bf9c-7db6b3fd3c66",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "agent.finished",
+      "timestamp": "2026-07-14T09:02:20.047078Z",
+      "step_id": "writing",
+      "agent_id": "writer",
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": "ok",
+      "error_message": null,
+      "attributes": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "20123baa-36d0-47a9-84f8-9efb1af94fcd",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "validation.completed",
+      "timestamp": "2026-07-14T09:02:20.097078Z",
+      "step_id": null,
+      "agent_id": null,
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": "pass",
+      "error_message": null,
+      "attributes": {
+        "checks": [
+          {
+            "check_id": "required_fields_present",
+            "passed": true,
+            "message": "Eight competitors and comparison table required.",
+            "details": {}
+          },
+          {
+            "check_id": "citations_valid",
+            "passed": true,
+            "message": "Every material claim must have a linked source.",
+            "details": {}
+          },
+          {
+            "check_id": "no_duplicate_competitors",
+            "passed": true,
+            "message": "Competitor list must not contain duplicates.",
+            "details": {}
+          }
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "2d3a6b79-2972-4755-b55a-20dfc4420341",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "event_type": "run.completed",
+      "timestamp": "2026-07-14T09:02:20.147078Z",
+      "step_id": null,
+      "agent_id": null,
+      "tool_name": null,
+      "model_name": null,
+      "duration_ms": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": null,
+      "status": "pass",
+      "error_message": null,
+      "attributes": {
+        "duplicate_search_count": 0,
+        "retry_count": 0
+      }
+    }
+  ],
+  "metadata": {
+    "scenario": "success",
+    "task_contract_met": true,
+    "total_cost_usd": 0.0138,
+    "duplicate_search_count": 0,
+    "retry_count": 0,
+    "validation": {
+      "schema_version": "0.1.0",
+      "run_id": "732bce24-8f81-4fc0-b9f9-d4dd5871e133",
+      "task_id": "cited-competitor-brief-001",
+      "task_contract_met": true,
+      "checks": [
+        {
+          "check_id": "required_fields_present",
+          "passed": true,
+          "message": "Eight competitors and comparison table required.",
+          "details": {}
+        },
+        {
+          "check_id": "citations_valid",
+          "passed": true,
+          "message": "Every material claim must have a linked source.",
+          "details": {}
+        },
+        {
+          "check_id": "no_duplicate_competitors",
+          "passed": true,
+          "message": "Competitor list must not contain duplicates.",
+          "details": {}
+        }
+      ],
+      "confidence": 1.0,
+      "unresolved_issues": [],
+      "human_review_required": false
+    }
+  }
+}
