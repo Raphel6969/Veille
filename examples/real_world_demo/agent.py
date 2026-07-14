@@ -137,6 +137,29 @@ def run_scenario(scenario: str, cache_backend: Any = None) -> dict[str, Any]:
     }
 
 
+def _metrics(result: dict[str, Any]) -> dict[str, Any]:
+    """Measurable cache metrics from a run's event batch.
+
+    `cache_hits` / `est_savings_usd` are computed from `optimization.applied`
+    events. `stale_result_rate` is intentionally NOT auto-computed: a served
+    result is only considered safe after the ADR-012 confirmation gate, so the
+    stale-result rate is measured via partner feedback, not assumed zero.
+    """
+    events = result["batch"].events
+    cache_hits = [
+        e for e in events
+        if e.event_type == "optimization.applied" and e.attributes.get("cache_hit")
+    ]
+    tool_calls = [e for e in events if e.event_type == "tool.completed" and e.status != "blocked"]
+    savings = sum(e.attributes.get("estimated_savings_usd", 0.0) or 0.0 for e in cache_hits)
+    return {
+        "tool_calls_executed": len(tool_calls),
+        "cache_hits": len(cache_hits),
+        "est_savings_usd": round(savings, 4),
+        "stale_result_rate": "gated (ADR-012 confirmation required before serving)",
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Real-world (read-only API) supervisor demo.")
     parser.add_argument("--scenario", choices=["success", "expensive"], default="success")
@@ -160,6 +183,8 @@ def main() -> None:
                 "run1_cost_usd": run1["total_cost_usd"],
                 "run2_cost_usd": run2["total_cost_usd"],
                 "cross_run_saving_usd": round(run1["total_cost_usd"] - run2["total_cost_usd"], 4),
+                "run1_metrics": _metrics(run1),
+                "run2_metrics": _metrics(run2),
             },
             indent=2,
         ))
@@ -173,6 +198,7 @@ def main() -> None:
             "task_contract_met": result["validation"]["task_contract_met"],
             "total_cost_usd": result["total_cost_usd"],
             "competitors_count": result["brief"]["competitors_count"],
+            "metrics": _metrics(result),
         },
         indent=2,
     ))
