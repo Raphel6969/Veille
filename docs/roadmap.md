@@ -5,7 +5,7 @@ Phase-by-phase delivery per the [master prompt](AI_DEVELOPER_MASTER_PROMPT.md) a
 | Phase | Name | Status | Exit criteria summary |
 |---|---|---|---|
 | 0 | Discovery, repository setup, baseline | **Complete (verified)** | Contracts, docs, synthetic workflow, fixtures, metrics defined; `pytest`/ruff/mypy green |
-| 1 | Observe and explain | Not started | SDK, automatic events, timeline, observe-only policies |
+| 1 | Observe and explain | Proposed — plan ready | SDK, automatic events, timeline, observe-only policies ([plan](phase-1-plan.md)) |
 | 2 | Deterministic protection | Not started | Budgets, duplicate/loop detection, intervention modes |
 | 3 | Planner, context, routing | Not started | Cost tiers, context manifests, model routing, validation |
 | 4 | Adaptive optimization | Not started | Semantic detection, caching, experiments |
