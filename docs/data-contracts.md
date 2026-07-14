@@ -1,8 +1,11 @@
 # Data Contracts
 
-All contracts are versioned. Current schema version: **0.1.0**.
+All contracts are versioned. Current schema version: **0.2.0**.
 
 Python models live in `src/supervisor/contracts/`. This document mirrors their shape for non-Python consumers.
+
+> **0.2.0 (Phase 4)** is additive over 0.1.0: new `optimization.*` event types and
+> optional attributes on `tool.requested` / `model.requested`. 0.1.0 events remain valid.
 
 ## Task Contract
 
@@ -61,6 +64,8 @@ metadata: {}
 | `retry.scheduled` / `retry.completed` | Retry lifecycle |
 | `policy.triggered` | Policy evaluation match |
 | `intervention.applied` | Action taken |
+| `optimization.recommended` | Cache hit that *would* have served (dry-run) |
+| `optimization.applied` | Cache hit that *was* served (active) |
 | `validation.completed` | Outcome validation |
 
 ### Event attributes registry
@@ -97,6 +102,11 @@ The `attributes` object is open-ended. Phase 1 standardizes these keys (all opti
 | `policy_id` | string | `policy.triggered` | Matched policy identifier |
 | `mode` | string | `policy.triggered` | `observe` \| `warn` \| `enforce` |
 | `manifest` | object | `context.attached` | Context manifest snapshot |
+| `match_type` | string | `tool.requested` / `model.requested` | `exact` \| `semantic` when a near-duplicate is detected |
+| `similarity` | float | `tool.requested` / `model.requested` | Jaccard/diff similarity (0–1) |
+| `cache_key` | string | `optimization.*` | Semantic cache key of the served/near-duplicate call |
+| `cache_hit` | bool | `optimization.*` / `tool.completed`(served) | `true` when a cache entry matched |
+| `estimated_savings_usd` | number | `optimization.*` | Cost avoided by serving from cache |
 | `check_id` | string | `validation.completed` | Quality check identifier |
 | `passed` | bool | `validation.completed` | Check result |
 | `message` | string | `validation.completed` | Check message |

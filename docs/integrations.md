@@ -66,6 +66,16 @@ supervisor.context(
 
 The `ModelRegistry` is seeded with mock candidates (`mock-research`, `mock-analysis`, `mock-synthesis`, `mock-review`). Replace the registry to route to real providers without changing call sites. See [ADR-008](adr/008-plan-tier-cost-model.md) and [ADR-009](adr/009-model-routing.md).
 
+## Optimization (Phase 4, opt-in)
+
+**Status:** Implemented (Phase 4). Gated behind `SUPERVISOR_OPTIMIZE=1` (default sub-mode `dry_run`; `SUPERVISOR_OPTIMIZE_MODE=active` to serve from cache). Never changes execution unless explicitly activated.
+
+- `SemanticKey` port (`src/supervisor/optimize/keys.py`): `ShingleSemanticKey` tokenizes input into word-shingles and compares with Jaccard similarity (default threshold 0.85). An embedding backend is a future port behind this interface.
+- `CacheBackend` port (`src/supervisor/optimize/cache.py`): `InMemoryCache` (bounded LRU-ish FIFO + per-entry TTL) is the default; Redis is a later backend behind the same port.
+- `Supervisor.tool(..., idempotent=True)` / `Supervisor.model(..., cacheable=True)` consult `DuplicateDetector` and the cache; dry-run recommends, active serves idempotent hits.
+
+See [ADR-010](adr/010-semantic-dedup-caching.md).
+
 ## OpenTelemetry export
 
 **Status:** Implemented (Phase 1). `ConsoleOTelExporter` prints spans; `OtlpExporter` exports via OTLP/gRPC.

@@ -110,6 +110,7 @@ def researcher_node(
             normalized_input_hash=query_hash,
             duration_ms=80.0,
             cost_usd=0.002,
+            idempotent=True,
         )
         if include_duplicates:
             supervisor.tool(
@@ -122,6 +123,7 @@ def researcher_node(
                 duplicate=True,
                 duration_ms=80.0,
                 cost_usd=0.002,
+                idempotent=True,
             )
         if routing is not None:
             supervisor.model(
@@ -201,6 +203,7 @@ def analyst_node(
                     failed=True,
                     duration_ms=60.0,
                     cost_usd=0.001,
+                    idempotent=True,
                     status="error",
                     error_message="transient_fetch_error",
                 )
@@ -228,6 +231,7 @@ def analyst_node(
                 normalized_input_hash=h,
                 duration_ms=45.0,
                 cost_usd=0.001,
+                idempotent=True,
             )
             evidence.append(result)
         if analysis_routing is not None:
@@ -289,6 +293,7 @@ def writer_node(
             ),
             duration_ms=90.0,
             cost_usd=0.003,
+            idempotent=True,
         )
         if writing_routing is not None:
             supervisor.model(

@@ -6,6 +6,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+SCHEMA_VERSION = "0.2.0"
+
 
 class EventType(StrEnum):
     RUN_STARTED = "run.started"
@@ -23,13 +25,15 @@ class EventType(StrEnum):
     RETRY_COMPLETED = "retry.completed"
     POLICY_TRIGGERED = "policy.triggered"
     INTERVENTION_APPLIED = "intervention.applied"
+    OPTIMIZATION_RECOMMENDED = "optimization.recommended"
+    OPTIMIZATION_APPLIED = "optimization.applied"
     VALIDATION_COMPLETED = "validation.completed"
 
 
 class RunEvent(BaseModel):
     """Normalized, replayable run fact. OTel-aligned attribute names in payload."""
 
-    schema_version: str = Field(default="0.1.0")
+    schema_version: str = Field(default=SCHEMA_VERSION)
     event_id: str
     run_id: str
     event_type: EventType
@@ -53,7 +57,7 @@ class RunEvent(BaseModel):
 class RunEventBatch(BaseModel):
     """Collection of events for a single run, used for replay and fixtures."""
 
-    schema_version: str = Field(default="0.1.0")
+    schema_version: str = Field(default=SCHEMA_VERSION)
     run_id: str
     task_id: str
     events: list[RunEvent]

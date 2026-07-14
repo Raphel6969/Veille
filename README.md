@@ -2,7 +2,7 @@
 
 Control plane for production AI-agent work. The Supervisor plans, contextualizes, routes, governs, and verifies each agent run—reducing wasted spend and unreliable outcomes without requiring teams to rebuild their applications.
 
-**Current phase:** Phase 3 — Planner, context, routing (implemented, pending release).
+**Current phase:** Phase 4 — Semantic dedup + adaptive caching (implemented, pending release).
 
 ## What exists today
 
@@ -16,9 +16,10 @@ Control plane for production AI-agent work. The Supervisor plans, contextualizes
 - Budget tracking (`BudgetTracker`, in-memory default, Redis backend port)
 - Run-explorer CLI and OpenTelemetry export (Console + OTLP)
 - **Advisory planning** (Phase 3): tier selection, per-step context manifests, capability+tier model routing
+- **Adaptive optimization** (Phase 4): semantic near-duplicate detection + idempotent result caching (`SUPERVISOR_OPTIMIZE`, dry-run default)
 - Local development environment (Docker Compose + pytest)
 
-**Not yet implemented:** control-plane UI (planning/routing are opt-in by default via `SUPERVISOR_PLAN=1`).
+**Not yet implemented:** control-plane UI (planning/routing/optimization are opt-in by default).
 
 ## Quickstart
 
@@ -58,6 +59,11 @@ python -m supervisor.cli explore --live --scenario expensive --policy --otel
 # Phase 3 advisory planning (plan tier + context manifests + model routing)
 $env:SUPERVISOR_PLAN=1
 python -m examples.cited_market_research.agent --scenario all
+
+# Phase 4 adaptive optimization (semantic dedup + caching)
+$env:SUPERVISOR_OPTIMIZE=1                       # dry-run: recommend only
+$env:SUPERVISOR_OPTIMIZE_MODE=active             # serve idempotent cache hits
+python -m examples.cited_market_research.agent --scenario expensive
 ```
 
 No API keys required. Mock models and tools are used by default.

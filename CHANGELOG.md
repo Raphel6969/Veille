@@ -4,6 +4,18 @@ All notable changes are documented here. This project follows phase-based delive
 
 ## [Unreleased]
 
+### Phase 4 — Semantic dedup and adaptive caching (implemented, pending release)
+
+- **Semantic key** (`src/supervisor/optimize/keys.py`): `ShingleSemanticKey` tokenizes input into word-shingles and compares with Jaccard similarity (default threshold 0.85). Embedding backend is a future `SemanticKey` port.
+- **Near-duplicate detector** (`src/supervisor/optimize/dedup.py`): `DuplicateDetector` returns `DuplicateMatch` (`exact` | `semantic`, `similarity`, `cache_key`) for in-run `(tool, input)` calls.
+- **Cache backend** (`src/supervisor/optimize/cache.py`): `CacheBackend` port with `InMemoryCache` (bounded LRU-ish FIFO + per-entry TTL). Redis is a later backend behind the same port.
+- **Event schema 0.2.0** (`src/supervisor/contracts/events.py`): new `optimization.recommended` / `optimization.applied`; `tool.requested` / `model.requested` gain `match_type` + `similarity`; `optimization.*` carry `cache_key`, `cache_hit`, `estimated_savings_usd`. Additive over 0.1.0.
+- **SDK wiring** (`src/supervisor/sdk/supervisor.py`): `Supervisor.tool(idempotent=)` / `model(cacheable=)` consult detector + cache. Dry-run recommends; active serves idempotent cache hits and skips re-execution. Gated by `SUPERVISOR_OPTIMIZE` (`dry_run` default, `SUPERVISOR_OPTIMIZE_MODE=active`).
+- **Run summary** (`src/supervisor/analytics/run_summary.py`): `cache_hits`, `cache_served`, `semantic_duplicates`, `estimated_savings_usd`.
+- **Demo:** idempotent tool calls are cached when optimization is enabled; expensive scenario serves the duplicate `search_competitors` from cache in active mode.
+- **Tests:** keys, dedup, cache, SDK dry-run/active, demo optimization — 99 total.
+- **Docs:** ADR-010 (semantic dedup + caching + dry-run opt-in), data-contracts / architecture / runtime-chain / integrations / operations / roadmap / README updates.
+
 ### Phase 3 — Planner, context, routing (implemented, pending release)
 
 - **Plan tiers** (`src/supervisor/contracts/plan.py`): `PlanTier` (minimum / balanced /

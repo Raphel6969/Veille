@@ -54,6 +54,10 @@ class RunSummary:
     validation_status: str | None
     plan_tier: str | None = None
     routing: list[dict[str, Any]] = field(default_factory=list)
+    cache_hits: int = 0
+    cache_served: int = 0
+    semantic_duplicates: int = 0
+    estimated_savings_usd: float = 0.0
     per_step: list[StepSummary] = field(default_factory=list)
     per_model: list[ModelSummary] = field(default_factory=list)
     per_tool: list[ToolSummary] = field(default_factory=list)
@@ -71,6 +75,9 @@ class RunSummary:
             f"  retries:          {self.retries}",
             f"  context attached: {self.context_attached}",
             f"  validation:       {self.validation_status}",
+            f"  cache hits:       {self.cache_hits} (served: {self.cache_served})",
+            f"  semantic dups:    {self.semantic_duplicates}",
+            f"  est. savings:     ${self.estimated_savings_usd:.4f}",
         ]
         if self.routing:
             lines.append("  routing:")
@@ -125,6 +132,22 @@ def summarize(batch: RunEventBatch) -> RunSummary:
     context_attached = sum(1 for e in events if e.event_type == EventType.CONTEXT_ATTACHED)
     validation = next((e for e in events if e.event_type == EventType.VALIDATION_COMPLETED), None)
     validation_status = validation.status if validation is not None else None
+
+    cache_hits = 0
+    semantic_duplicates = 0
+    cache_served = 0
+    estimated_savings_usd = 0.0
+    for e in events:
+        if e.event_type in (EventType.TOOL_REQUESTED, EventType.MODEL_REQUESTED):
+            if e.attributes.get("match_type"):
+                cache_hits += 1
+                if e.attributes.get("match_type") == "semantic":
+                    semantic_duplicates += 1
+        elif e.event_type == EventType.OPTIMIZATION_APPLIED:
+            cache_served += 1
+            estimated_savings_usd += _as_float(e.attributes.get("estimated_savings_usd"))
+        elif e.event_type == EventType.OPTIMIZATION_RECOMMENDED:
+            estimated_savings_usd += _as_float(e.attributes.get("estimated_savings_usd"))
 
     plan_tier = started.attributes.get("tier") if started is not None else None
     routing: list[dict[str, Any]] = []
@@ -189,6 +212,10 @@ def summarize(batch: RunEventBatch) -> RunSummary:
         context_attached=context_attached,
         validation_status=validation_status,
         plan_tier=plan_tier,
+        cache_hits=cache_hits,
+        cache_served=cache_served,
+        semantic_duplicates=semantic_duplicates,
+        estimated_savings_usd=round(estimated_savings_usd, 6),
         routing=routing,
         per_step=list(steps.values()),
         per_model=list(models.values()),

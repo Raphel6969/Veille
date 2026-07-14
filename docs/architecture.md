@@ -76,6 +76,18 @@ flowchart TB
 | Run summary `plan_tier` + `routing` | `src/supervisor/analytics/run_summary.py` | Implemented |
 | Demo wired with `SUPERVISOR_PLAN=1` opt-in | `examples/cited_market_research/agent.py` | Implemented |
 
+## Phase 4 components (Adaptive optimization: semantic dedup + caching)
+
+| Component | Path | Status |
+|---|---|---|
+| Semantic key (shingle/Jaccard) | `src/supervisor/optimize/keys.py` | Implemented |
+| Near-duplicate detector (exact + semantic) | `src/supervisor/optimize/dedup.py` | Implemented |
+| Cache backend port + in-memory LRU/TTL | `src/supervisor/optimize/cache.py` | Implemented |
+| SDK `tool()` / `model()` dry-run + active modes | `src/supervisor/sdk/supervisor.py` | Implemented |
+| `optimization.recommended` / `optimization.applied` events (schema 0.2.0) | `src/supervisor/contracts/events.py` | Implemented |
+| `RunSummary` cache/savings accounting | `src/supervisor/analytics/run_summary.py` | Implemented |
+| Demo idempotent-tool caching opt-in | `examples/cited_market_research/agent.py` | Implemented |
+
 ## Data boundaries
 
 - **Contracts are vendor-neutral.** Event and task schemas do not depend on LangGraph, LiteLLM, or any observability vendor.

@@ -26,6 +26,7 @@ flowchart TD
 | Estimate Cost/Latency | Implemented (Phase 3, relative multipliers) | Plan, tier model | Tier options (Min/Balanced/High/Max) | Exceeds policy budget |
 | Optimize Context | Implemented (Phase 3) | Master context, step role | Context manifest | Conflict detected |
 | Route Model | Implemented (Phase 3) | Step capabilities, registry, tier | Routing decision + reason | No approved model |
+| Detect Near-Duplicates / Cache | Implemented (Phase 4, opt-in) | Tool/model input + semantic key | `optimization.recommended` / `optimization.applied` | Cache miss / non-idempotent |
 | Execute and Monitor | SDK + callbacks (Phase 1) | LangGraph graph, mock or live tools | `RunEvent` stream | Tool/model errors |
 | Detect Problems | Observe mode (Phase 1) | Event stream | Policy triggers (`observe`) | — |
 | Intervene | **Planned Phase 2** | Policy match | Intervention record | Unsafe to act |
@@ -70,6 +71,26 @@ Phase 3 is **advisory-only**, gated behind `SUPERVISOR_PLAN=1` (mirroring `SUPER
 - `RunSummary` surfaces the plan tier (`plan_tier`) and every routed model call (`routing`).
 
 See [ADR-008](adr/008-plan-tier-cost-model.md) and [ADR-009](adr/009-model-routing.md).
+
+## Phase 4 adaptive optimization (semantic dedup + caching)
+
+Phase 4 is **opt-in**, gated behind `SUPERVISOR_OPTIMIZE=1` with sub-mode
+`SUPERVISOR_OPTIMIZE_MODE` (`dry_run` default, `active` to serve). It never changes
+a business outcome unless explicitly activated.
+
+- `Supervisor.tool(..., idempotent=True)` / `Supervisor.model(..., cacheable=True)`
+  compute an exact key (`normalized_input_hash`) and a semantic key, then consult
+  `DuplicateDetector`. A near-duplicate sets `match_type` / `similarity` on the
+  `*.requested` event.
+- **dry-run:** a cache hit emits `optimization.recommended` (estimated savings) but
+  execution proceeds unchanged — observability only.
+- **active:** an idempotent cache hit serves the prior result (`optimization.applied`,
+  `cache_hit` on `*.completed`, cost recorded as 0) and skips re-execution.
+- Caching is restricted to idempotent tools (`idempotent=False` default) and
+  model calls (`cacheable=True`); write/unsafe tools are never cached. Phase 2
+  policies still enforce on top.
+
+See [ADR-010](adr/010-semantic-dedup-caching.md).
 
 ## Decision ledger
 

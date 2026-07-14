@@ -8,7 +8,7 @@ Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_
 | 1 | Observe and explain | **Implemented (pending release)** | SDK, automatic events, timeline, observe-only policies ([plan](development/phase-1-plan.md)) |
 | 2 | Deterministic protection | **Implemented (pending release)** | Budgets, duplicate/loop detection, intervention modes ([plan](development/phase-2-plan.md)) |
 | 3 | Planner, context, routing | **Implemented (pending release)** | Cost tiers, context manifests, model routing, validation ([plan](development/phase-3-plan.md)) |
-| 4 | Adaptive optimization | Not started | Semantic detection, caching, experiments |
+| 4 | Adaptive optimization | **Implemented (pending release)** | Semantic dedup, adaptive caching, dry-run opt-in ([plan](development/phase-4-plan.md)) |
 | 5 | Memory and enterprise | Not started | Multi-tenancy, RBAC, audit, retention |
 | 6 | Simulation and learned policies | Not started | Offline simulation, learned recommendations |
 
@@ -64,6 +64,9 @@ Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_
 ## Explicit deferrals
 
 - Next.js control plane UI (Phase 1 delivered CLI-first; Phase 2 enforcement observable via CLI/OTel/audit)
+- Learned/adaptive tier rerouting and cost-latency auto-tune loop (deferred Phase 4 workstream)
+- Embedding-API semantic key backend (deferred; default is cheap shingle/Jaccard)
+- Durable (Redis) cache backend (deferred; in-memory default behind `CacheBackend` port)
 - PostgreSQL/Redis/MinIO deep wiring (Phase 2+; Redis counters optional behind a port)
 - Real LiteLLM provider calls (opt-in)
 - Langfuse/Phoenix/LangSmith export (Phase 1+; OTel export implemented)
@@ -104,6 +107,25 @@ Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_
 - `ruff check` — clean
 - `mypy src/supervisor` — clean (strict)
 - `SUPERVISOR_PLAN=1` demo emits `tier` on `run.started`, per-step `context.attached` manifests, and `routing_tier` on routed `model.requested`; `RunSummary` reports `plan_tier` and `routing`.
+
+## Phase 4 deliverables
+
+- [x] `SemanticKey` port + `ShingleSemanticKey` (word-shingle Jaccard, dependency-free)
+- [x] `DuplicateDetector` (exact + semantic near-duplicate, configurable threshold)
+- [x] `CacheBackend` port + `InMemoryCache` (bounded LRU-ish FIFO + per-entry TTL)
+- [x] Event schema **0.2.0**: `optimization.recommended` / `optimization.applied`; `match_type` / `similarity` on `tool.requested` / `model.requested`
+- [x] SDK `Supervisor.tool(idempotent=)` / `model(cacheable=)` with dry-run + active modes (`SUPERVISOR_OPTIMIZE`, `SUPERVISOR_OPTIMIZE_MODE`)
+- [x] `RunSummary` cache/savings accounting (`cache_hits`, `cache_served`, `semantic_duplicates`, `estimated_savings_usd`)
+- [x] Demo idempotent tools cached when optimization is enabled
+- [x] Tests: keys, dedup, cache, SDK dry-run/active, demo optimization; ADR-010
+
+### Phase 4 verification (2026-07-14)
+
+- `pytest` — **99 passed** (optimize keys/dedup/cache, SDK dry-run/active, demo optimization, planning, context, routing, policy, enforcement, budgets, adapters, cli)
+- `ruff check` — clean
+- `mypy src/supervisor` — clean (strict)
+- Under `SUPERVISOR_OPTIMIZE=1 SUPERVISOR_OPTIMIZE_MODE=active` the expensive demo scenario serves the duplicate `search_competitors` call from cache (`optimization.applied`), reducing measured cost (0.0238 → 0.0218); dry-run emits `optimization.recommended` and leaves execution unchanged.
+- Works without API keys on Python 3.14.
 
 ## Phase 1 approval gate — completed
 

@@ -19,4 +19,4 @@ def test_run_event_round_trip() -> None:
 
 def test_run_event_batch_schema_version() -> None:
     batch = RunEventBatch(run_id="r1", task_id="t1", events=[])
-    assert batch.schema_version == "0.1.0"
+    assert batch.schema_version == "0.2.0"
