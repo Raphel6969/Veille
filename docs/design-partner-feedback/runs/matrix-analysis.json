@@ -1,0 +1,1076 @@
+[
+  {
+    "schema": "design-partner-packet/1",
+    "generated_at": "2026-07-14T11:57:30.292513+00:00",
+    "supervisor_version": "0.2.0",
+    "scenario": "expensive",
+    "flag_preset": "all",
+    "flags": {
+      "SUPERVISOR_PLAN": "1",
+      "SUPERVISOR_OPTIMIZE": "1",
+      "SUPERVISOR_OPTIMIZE_MODE": "active",
+      "SUPERVISOR_MEMORY": "1"
+    },
+    "task_contract_met": true,
+    "total_cost_usd": 0.0218,
+    "cost_tiers": {
+      "plan_enabled": true,
+      "plan_tier": "high_quality",
+      "tier_on_run_started": "high_quality",
+      "total_cost_usd": 0.0218,
+      "per_model_cost": [
+        {
+          "step": "research",
+          "agent": "researcher",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": "high_quality"
+        },
+        {
+          "step": "analysis",
+          "agent": "analyst",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": "high_quality"
+        },
+        {
+          "step": "writing",
+          "agent": "writer",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": "high_quality"
+        }
+      ],
+      "note": "Tier is advisory and only emitted when SUPERVISOR_PLAN=1. Tier estimate multipliers live in the planner, not the event stream."
+    },
+    "interventions": {
+      "interventions_applied": [
+        {
+          "action": "observe",
+          "policy_id": "duplicate_tool_protection",
+          "reason": "Equivalent tool request already occurred in this run.",
+          "human_review_required": false
+        },
+        {
+          "action": "observe",
+          "policy_id": "retry_budget",
+          "reason": "Retry count exceeds the configured budget. Observed 16 retries (budget 5).",
+          "human_review_required": false
+        }
+      ],
+      "policies_triggered_observe": [
+        {
+          "policy_id": "duplicate_tool_protection",
+          "reason": "Equivalent tool request already occurred in this run.",
+          "severity": null
+        },
+        {
+          "policy_id": "retry_budget",
+          "reason": "Retry count exceeds the configured budget. Observed 16 retries (budget 5).",
+          "severity": null
+        }
+      ],
+      "count_applied": 2,
+      "count_triggered": 2,
+      "note": "With enforcement off (default), interventions are observe-only policy.triggered events; SUPERVISOR_ENFORCE=true emits intervention.applied."
+    },
+    "cacheable_calls": {
+      "distinct_tool_inputs": 10,
+      "repeated_groups": [
+        {
+          "tool": "search_competitors",
+          "input": {
+            "query": "AI runtime supervision competitors 2026"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": [
+            "exact"
+          ]
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "AlphaCorp"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "BetaStack"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "GammaFlow"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "DeltaMind"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "EpsilonAI"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "ZetaWorks"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "EtaCloud"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "ThetaOps"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        }
+      ],
+      "cacheable_candidates": [
+        {
+          "tool": "search_competitors",
+          "input": {
+            "query": "AI runtime supervision competitors 2026"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": [
+            "exact"
+          ]
+        }
+      ],
+      "summary_semantic_duplicates": 0,
+      "summary_cache_hits": 1,
+      "summary_cache_served": 1,
+      "summary_estimated_savings_usd": 0.002
+    },
+    "freshness": {
+      "cache_default_ttl_seconds": 300.0,
+      "memory_default_ttl_seconds": null,
+      "memory_enabled": true,
+      "memory_retrieved": [
+        {
+          "role": "researcher",
+          "included": [
+            "0477eb6c-67f3-4e90-9760-297e6998be00"
+          ],
+          "excluded": [],
+          "stale": [],
+          "drift": [],
+          "reason": "Role 'researcher' retrieved 1 of 1 candidate memories (stale=0, drift=0)."
+        }
+      ],
+      "proposed_cache_rule": "Serve idempotent hits up to cache TTL (default 300s); do not serve across runs unless a durable backend is enabled.",
+      "proposed_memory_rule": "working/short tiers expire ~session; long tier persists with optional TTL; drift (content hash change) excludes from retrieval, never auto-deletes."
+    },
+    "rerouting": {
+      "plan_enabled": true,
+      "routed_calls": [
+        {
+          "step": "research",
+          "agent": "researcher",
+          "model": null,
+          "routing_tier": "high_quality",
+          "routing_capability": "research",
+          "routing_reason": "Selected mock-research for capability 'research' at tier high_quality."
+        },
+        {
+          "step": "analysis",
+          "agent": "analyst",
+          "model": null,
+          "routing_tier": "high_quality",
+          "routing_capability": "analysis",
+          "routing_reason": "Selected mock-analysis for capability 'analysis' at tier high_quality."
+        },
+        {
+          "step": "writing",
+          "agent": "writer",
+          "model": null,
+          "routing_tier": "high_quality",
+          "routing_capability": "synthesis",
+          "routing_reason": "Selected mock-synthesis for capability 'synthesis' at tier high_quality."
+        }
+      ],
+      "note": "Routing is advisory today: it annotates model.requested with routing_tier; it never rewrites or blocks execution. Enforcement would be a separate opt-in."
+    },
+    "partner_responses": {
+      "cost_tiers": null,
+      "intervention_safety": null,
+      "cacheable_calls": null,
+      "cache_freshness": null,
+      "rerouting": null
+    }
+  },
+  {
+    "schema": "design-partner-packet/1",
+    "generated_at": "2026-07-14T11:57:30.297900+00:00",
+    "supervisor_version": "0.2.0",
+    "scenario": "expensive",
+    "flag_preset": "optimize_active",
+    "flags": {
+      "SUPERVISOR_OPTIMIZE": "1",
+      "SUPERVISOR_OPTIMIZE_MODE": "active"
+    },
+    "task_contract_met": true,
+    "total_cost_usd": 0.0218,
+    "cost_tiers": {
+      "plan_enabled": false,
+      "plan_tier": null,
+      "tier_on_run_started": null,
+      "total_cost_usd": 0.0218,
+      "per_model_cost": [
+        {
+          "step": "research",
+          "agent": "researcher",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": null
+        },
+        {
+          "step": "analysis",
+          "agent": "analyst",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": null
+        },
+        {
+          "step": "writing",
+          "agent": "writer",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": null
+        }
+      ],
+      "note": "Tier is advisory and only emitted when SUPERVISOR_PLAN=1. Tier estimate multipliers live in the planner, not the event stream."
+    },
+    "interventions": {
+      "interventions_applied": [
+        {
+          "action": "observe",
+          "policy_id": "duplicate_tool_protection",
+          "reason": "Equivalent tool request already occurred in this run.",
+          "human_review_required": false
+        },
+        {
+          "action": "observe",
+          "policy_id": "retry_budget",
+          "reason": "Retry count exceeds the configured budget. Observed 16 retries (budget 5).",
+          "human_review_required": false
+        }
+      ],
+      "policies_triggered_observe": [
+        {
+          "policy_id": "duplicate_tool_protection",
+          "reason": "Equivalent tool request already occurred in this run.",
+          "severity": null
+        },
+        {
+          "policy_id": "retry_budget",
+          "reason": "Retry count exceeds the configured budget. Observed 16 retries (budget 5).",
+          "severity": null
+        }
+      ],
+      "count_applied": 2,
+      "count_triggered": 2,
+      "note": "With enforcement off (default), interventions are observe-only policy.triggered events; SUPERVISOR_ENFORCE=true emits intervention.applied."
+    },
+    "cacheable_calls": {
+      "distinct_tool_inputs": 10,
+      "repeated_groups": [
+        {
+          "tool": "search_competitors",
+          "input": {
+            "query": "AI runtime supervision competitors 2026"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": [
+            "exact"
+          ]
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "AlphaCorp"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "BetaStack"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "GammaFlow"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "DeltaMind"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "EpsilonAI"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "ZetaWorks"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "EtaCloud"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "ThetaOps"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        }
+      ],
+      "cacheable_candidates": [
+        {
+          "tool": "search_competitors",
+          "input": {
+            "query": "AI runtime supervision competitors 2026"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": [
+            "exact"
+          ]
+        }
+      ],
+      "summary_semantic_duplicates": 0,
+      "summary_cache_hits": 1,
+      "summary_cache_served": 1,
+      "summary_estimated_savings_usd": 0.002
+    },
+    "freshness": {
+      "cache_default_ttl_seconds": 300.0,
+      "memory_default_ttl_seconds": null,
+      "memory_enabled": false,
+      "memory_retrieved": [],
+      "proposed_cache_rule": "Serve idempotent hits up to cache TTL (default 300s); do not serve across runs unless a durable backend is enabled.",
+      "proposed_memory_rule": "working/short tiers expire ~session; long tier persists with optional TTL; drift (content hash change) excludes from retrieval, never auto-deletes."
+    },
+    "rerouting": {
+      "plan_enabled": false,
+      "routed_calls": [],
+      "note": "Routing is advisory today: it annotates model.requested with routing_tier; it never rewrites or blocks execution. Enforcement would be a separate opt-in."
+    },
+    "partner_responses": {
+      "cost_tiers": null,
+      "intervention_safety": null,
+      "cacheable_calls": null,
+      "cache_freshness": null,
+      "rerouting": null
+    }
+  },
+  {
+    "schema": "design-partner-packet/1",
+    "generated_at": "2026-07-14T11:57:30.303733+00:00",
+    "supervisor_version": "0.2.0",
+    "scenario": "expensive",
+    "flag_preset": "plan",
+    "flags": {
+      "SUPERVISOR_PLAN": "1"
+    },
+    "task_contract_met": true,
+    "total_cost_usd": 0.0238,
+    "cost_tiers": {
+      "plan_enabled": true,
+      "plan_tier": "high_quality",
+      "tier_on_run_started": "high_quality",
+      "total_cost_usd": 0.0238,
+      "per_model_cost": [
+        {
+          "step": "research",
+          "agent": "researcher",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": "high_quality"
+        },
+        {
+          "step": "analysis",
+          "agent": "analyst",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": "high_quality"
+        },
+        {
+          "step": "writing",
+          "agent": "writer",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": "high_quality"
+        }
+      ],
+      "note": "Tier is advisory and only emitted when SUPERVISOR_PLAN=1. Tier estimate multipliers live in the planner, not the event stream."
+    },
+    "interventions": {
+      "interventions_applied": [
+        {
+          "action": "observe",
+          "policy_id": "duplicate_tool_protection",
+          "reason": "Equivalent tool request already occurred in this run.",
+          "human_review_required": false
+        },
+        {
+          "action": "observe",
+          "policy_id": "retry_budget",
+          "reason": "Retry count exceeds the configured budget. Observed 16 retries (budget 5).",
+          "human_review_required": false
+        }
+      ],
+      "policies_triggered_observe": [
+        {
+          "policy_id": "duplicate_tool_protection",
+          "reason": "Equivalent tool request already occurred in this run.",
+          "severity": null
+        },
+        {
+          "policy_id": "retry_budget",
+          "reason": "Retry count exceeds the configured budget. Observed 16 retries (budget 5).",
+          "severity": null
+        }
+      ],
+      "count_applied": 2,
+      "count_triggered": 2,
+      "note": "With enforcement off (default), interventions are observe-only policy.triggered events; SUPERVISOR_ENFORCE=true emits intervention.applied."
+    },
+    "cacheable_calls": {
+      "distinct_tool_inputs": 10,
+      "repeated_groups": [
+        {
+          "tool": "search_competitors",
+          "input": {
+            "query": "AI runtime supervision competitors 2026"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "AlphaCorp"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "BetaStack"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "GammaFlow"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "DeltaMind"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "EpsilonAI"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "ZetaWorks"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "EtaCloud"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "ThetaOps"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        }
+      ],
+      "cacheable_candidates": [],
+      "summary_semantic_duplicates": 0,
+      "summary_cache_hits": 0,
+      "summary_cache_served": 0,
+      "summary_estimated_savings_usd": 0.0
+    },
+    "freshness": {
+      "cache_default_ttl_seconds": 300.0,
+      "memory_default_ttl_seconds": null,
+      "memory_enabled": false,
+      "memory_retrieved": [],
+      "proposed_cache_rule": "Serve idempotent hits up to cache TTL (default 300s); do not serve across runs unless a durable backend is enabled.",
+      "proposed_memory_rule": "working/short tiers expire ~session; long tier persists with optional TTL; drift (content hash change) excludes from retrieval, never auto-deletes."
+    },
+    "rerouting": {
+      "plan_enabled": true,
+      "routed_calls": [
+        {
+          "step": "research",
+          "agent": "researcher",
+          "model": null,
+          "routing_tier": "high_quality",
+          "routing_capability": "research",
+          "routing_reason": "Selected mock-research for capability 'research' at tier high_quality."
+        },
+        {
+          "step": "analysis",
+          "agent": "analyst",
+          "model": null,
+          "routing_tier": "high_quality",
+          "routing_capability": "analysis",
+          "routing_reason": "Selected mock-analysis for capability 'analysis' at tier high_quality."
+        },
+        {
+          "step": "writing",
+          "agent": "writer",
+          "model": null,
+          "routing_tier": "high_quality",
+          "routing_capability": "synthesis",
+          "routing_reason": "Selected mock-synthesis for capability 'synthesis' at tier high_quality."
+        }
+      ],
+      "note": "Routing is advisory today: it annotates model.requested with routing_tier; it never rewrites or blocks execution. Enforcement would be a separate opt-in."
+    },
+    "partner_responses": {
+      "cost_tiers": null,
+      "intervention_safety": null,
+      "cacheable_calls": null,
+      "cache_freshness": null,
+      "rerouting": null
+    }
+  },
+  {
+    "schema": "design-partner-packet/1",
+    "generated_at": "2026-07-14T11:57:30.310681+00:00",
+    "supervisor_version": "0.2.0",
+    "scenario": "success",
+    "flag_preset": "all",
+    "flags": {
+      "SUPERVISOR_PLAN": "1",
+      "SUPERVISOR_OPTIMIZE": "1",
+      "SUPERVISOR_OPTIMIZE_MODE": "active",
+      "SUPERVISOR_MEMORY": "1"
+    },
+    "task_contract_met": true,
+    "total_cost_usd": 0.0138,
+    "cost_tiers": {
+      "plan_enabled": true,
+      "plan_tier": "high_quality",
+      "tier_on_run_started": "high_quality",
+      "total_cost_usd": 0.0138,
+      "per_model_cost": [
+        {
+          "step": "research",
+          "agent": "researcher",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": "high_quality"
+        },
+        {
+          "step": "analysis",
+          "agent": "analyst",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": "high_quality"
+        },
+        {
+          "step": "writing",
+          "agent": "writer",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": "high_quality"
+        }
+      ],
+      "note": "Tier is advisory and only emitted when SUPERVISOR_PLAN=1. Tier estimate multipliers live in the planner, not the event stream."
+    },
+    "interventions": {
+      "interventions_applied": [],
+      "policies_triggered_observe": [],
+      "count_applied": 0,
+      "count_triggered": 0,
+      "note": "With enforcement off (default), interventions are observe-only policy.triggered events; SUPERVISOR_ENFORCE=true emits intervention.applied."
+    },
+    "cacheable_calls": {
+      "distinct_tool_inputs": 10,
+      "repeated_groups": [],
+      "cacheable_candidates": [],
+      "summary_semantic_duplicates": 0,
+      "summary_cache_hits": 0,
+      "summary_cache_served": 0,
+      "summary_estimated_savings_usd": 0.0
+    },
+    "freshness": {
+      "cache_default_ttl_seconds": 300.0,
+      "memory_default_ttl_seconds": null,
+      "memory_enabled": true,
+      "memory_retrieved": [
+        {
+          "role": "researcher",
+          "included": [
+            "586d5bee-5fbc-450e-91cf-ac14779e2b49"
+          ],
+          "excluded": [],
+          "stale": [],
+          "drift": [],
+          "reason": "Role 'researcher' retrieved 1 of 1 candidate memories (stale=0, drift=0)."
+        }
+      ],
+      "proposed_cache_rule": "Serve idempotent hits up to cache TTL (default 300s); do not serve across runs unless a durable backend is enabled.",
+      "proposed_memory_rule": "working/short tiers expire ~session; long tier persists with optional TTL; drift (content hash change) excludes from retrieval, never auto-deletes."
+    },
+    "rerouting": {
+      "plan_enabled": true,
+      "routed_calls": [
+        {
+          "step": "research",
+          "agent": "researcher",
+          "model": null,
+          "routing_tier": "high_quality",
+          "routing_capability": "research",
+          "routing_reason": "Selected mock-research for capability 'research' at tier high_quality."
+        },
+        {
+          "step": "analysis",
+          "agent": "analyst",
+          "model": null,
+          "routing_tier": "high_quality",
+          "routing_capability": "analysis",
+          "routing_reason": "Selected mock-analysis for capability 'analysis' at tier high_quality."
+        },
+        {
+          "step": "writing",
+          "agent": "writer",
+          "model": null,
+          "routing_tier": "high_quality",
+          "routing_capability": "synthesis",
+          "routing_reason": "Selected mock-synthesis for capability 'synthesis' at tier high_quality."
+        }
+      ],
+      "note": "Routing is advisory today: it annotates model.requested with routing_tier; it never rewrites or blocks execution. Enforcement would be a separate opt-in."
+    },
+    "partner_responses": {
+      "cost_tiers": null,
+      "intervention_safety": null,
+      "cacheable_calls": null,
+      "cache_freshness": null,
+      "rerouting": null
+    }
+  },
+  {
+    "schema": "design-partner-packet/1",
+    "generated_at": "2026-07-14T11:57:30.317256+00:00",
+    "supervisor_version": "0.2.0",
+    "scenario": "failed_validation",
+    "flag_preset": "all",
+    "flags": {
+      "SUPERVISOR_PLAN": "1",
+      "SUPERVISOR_OPTIMIZE": "1",
+      "SUPERVISOR_OPTIMIZE_MODE": "active",
+      "SUPERVISOR_MEMORY": "1"
+    },
+    "task_contract_met": false,
+    "total_cost_usd": 0.0138,
+    "cost_tiers": {
+      "plan_enabled": true,
+      "plan_tier": "high_quality",
+      "tier_on_run_started": "high_quality",
+      "total_cost_usd": 0.0138,
+      "per_model_cost": [
+        {
+          "step": "research",
+          "agent": "researcher",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": "high_quality"
+        },
+        {
+          "step": "analysis",
+          "agent": "analyst",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": "high_quality"
+        },
+        {
+          "step": "writing",
+          "agent": "writer",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": "high_quality"
+        }
+      ],
+      "note": "Tier is advisory and only emitted when SUPERVISOR_PLAN=1. Tier estimate multipliers live in the planner, not the event stream."
+    },
+    "interventions": {
+      "interventions_applied": [],
+      "policies_triggered_observe": [],
+      "count_applied": 0,
+      "count_triggered": 0,
+      "note": "With enforcement off (default), interventions are observe-only policy.triggered events; SUPERVISOR_ENFORCE=true emits intervention.applied."
+    },
+    "cacheable_calls": {
+      "distinct_tool_inputs": 10,
+      "repeated_groups": [],
+      "cacheable_candidates": [],
+      "summary_semantic_duplicates": 0,
+      "summary_cache_hits": 0,
+      "summary_cache_served": 0,
+      "summary_estimated_savings_usd": 0.0
+    },
+    "freshness": {
+      "cache_default_ttl_seconds": 300.0,
+      "memory_default_ttl_seconds": null,
+      "memory_enabled": true,
+      "memory_retrieved": [
+        {
+          "role": "researcher",
+          "included": [
+            "ace57b66-0bd2-4c3b-93fa-6e0e8ff9a75f"
+          ],
+          "excluded": [],
+          "stale": [],
+          "drift": [],
+          "reason": "Role 'researcher' retrieved 1 of 1 candidate memories (stale=0, drift=0)."
+        }
+      ],
+      "proposed_cache_rule": "Serve idempotent hits up to cache TTL (default 300s); do not serve across runs unless a durable backend is enabled.",
+      "proposed_memory_rule": "working/short tiers expire ~session; long tier persists with optional TTL; drift (content hash change) excludes from retrieval, never auto-deletes."
+    },
+    "rerouting": {
+      "plan_enabled": true,
+      "routed_calls": [
+        {
+          "step": "research",
+          "agent": "researcher",
+          "model": null,
+          "routing_tier": "high_quality",
+          "routing_capability": "research",
+          "routing_reason": "Selected mock-research for capability 'research' at tier high_quality."
+        },
+        {
+          "step": "analysis",
+          "agent": "analyst",
+          "model": null,
+          "routing_tier": "high_quality",
+          "routing_capability": "analysis",
+          "routing_reason": "Selected mock-analysis for capability 'analysis' at tier high_quality."
+        },
+        {
+          "step": "writing",
+          "agent": "writer",
+          "model": null,
+          "routing_tier": "high_quality",
+          "routing_capability": "synthesis",
+          "routing_reason": "Selected mock-synthesis for capability 'synthesis' at tier high_quality."
+        }
+      ],
+      "note": "Routing is advisory today: it annotates model.requested with routing_tier; it never rewrites or blocks execution. Enforcement would be a separate opt-in."
+    },
+    "partner_responses": {
+      "cost_tiers": null,
+      "intervention_safety": null,
+      "cacheable_calls": null,
+      "cache_freshness": null,
+      "rerouting": null
+    }
+  },
+  {
+    "schema": "design-partner-packet/1",
+    "generated_at": "2026-07-14T11:57:30.323248+00:00",
+    "supervisor_version": "0.2.0",
+    "scenario": "expensive",
+    "flag_preset": "memory",
+    "flags": {
+      "SUPERVISOR_MEMORY": "1"
+    },
+    "task_contract_met": true,
+    "total_cost_usd": 0.0238,
+    "cost_tiers": {
+      "plan_enabled": false,
+      "plan_tier": null,
+      "tier_on_run_started": null,
+      "total_cost_usd": 0.0238,
+      "per_model_cost": [
+        {
+          "step": "research",
+          "agent": "researcher",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": null
+        },
+        {
+          "step": "analysis",
+          "agent": "analyst",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": null
+        },
+        {
+          "step": "writing",
+          "agent": "writer",
+          "model": null,
+          "cost_usd": 0.0,
+          "routing_tier": null
+        }
+      ],
+      "note": "Tier is advisory and only emitted when SUPERVISOR_PLAN=1. Tier estimate multipliers live in the planner, not the event stream."
+    },
+    "interventions": {
+      "interventions_applied": [
+        {
+          "action": "observe",
+          "policy_id": "duplicate_tool_protection",
+          "reason": "Equivalent tool request already occurred in this run.",
+          "human_review_required": false
+        },
+        {
+          "action": "observe",
+          "policy_id": "retry_budget",
+          "reason": "Retry count exceeds the configured budget. Observed 16 retries (budget 5).",
+          "human_review_required": false
+        }
+      ],
+      "policies_triggered_observe": [
+        {
+          "policy_id": "duplicate_tool_protection",
+          "reason": "Equivalent tool request already occurred in this run.",
+          "severity": null
+        },
+        {
+          "policy_id": "retry_budget",
+          "reason": "Retry count exceeds the configured budget. Observed 16 retries (budget 5).",
+          "severity": null
+        }
+      ],
+      "count_applied": 2,
+      "count_triggered": 2,
+      "note": "With enforcement off (default), interventions are observe-only policy.triggered events; SUPERVISOR_ENFORCE=true emits intervention.applied."
+    },
+    "cacheable_calls": {
+      "distinct_tool_inputs": 10,
+      "repeated_groups": [
+        {
+          "tool": "search_competitors",
+          "input": {
+            "query": "AI runtime supervision competitors 2026"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "AlphaCorp"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "BetaStack"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "GammaFlow"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "DeltaMind"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "EpsilonAI"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "ZetaWorks"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "EtaCloud"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        },
+        {
+          "tool": "fetch_source",
+          "input": {
+            "competitor_name": "ThetaOps"
+          },
+          "count": 2,
+          "idempotent": null,
+          "match_types": []
+        }
+      ],
+      "cacheable_candidates": [],
+      "summary_semantic_duplicates": 0,
+      "summary_cache_hits": 0,
+      "summary_cache_served": 0,
+      "summary_estimated_savings_usd": 0.0
+    },
+    "freshness": {
+      "cache_default_ttl_seconds": 300.0,
+      "memory_default_ttl_seconds": null,
+      "memory_enabled": true,
+      "memory_retrieved": [
+        {
+          "role": "researcher",
+          "included": [
+            "fbc8326a-9712-42f7-bfca-76b0e86ca869"
+          ],
+          "excluded": [],
+          "stale": [],
+          "drift": [],
+          "reason": "Role 'researcher' retrieved 1 of 1 candidate memories (stale=0, drift=0)."
+        }
+      ],
+      "proposed_cache_rule": "Serve idempotent hits up to cache TTL (default 300s); do not serve across runs unless a durable backend is enabled.",
+      "proposed_memory_rule": "working/short tiers expire ~session; long tier persists with optional TTL; drift (content hash change) excludes from retrieval, never auto-deletes."
+    },
+    "rerouting": {
+      "plan_enabled": false,
+      "routed_calls": [],
+      "note": "Routing is advisory today: it annotates model.requested with routing_tier; it never rewrites or blocks execution. Enforcement would be a separate opt-in."
+    },
+    "partner_responses": {
+      "cost_tiers": null,
+      "intervention_safety": null,
+      "cacheable_calls": null,
+      "cache_freshness": null,
+      "rerouting": null
+    }
+  }
+]
