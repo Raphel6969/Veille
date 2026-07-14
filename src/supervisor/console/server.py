@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from supervisor.console.config import get_settings
@@ -30,6 +32,18 @@ from supervisor.contracts.events import RunEventBatch
 from supervisor.io import save_trace_fixture
 
 app = FastAPI(title="Veille Local Integration Console", version="0.1.0")
+
+# Mount built React UI assets when available (must be before the catch-all route).
+_UI_DIR = Path(__file__).resolve().parents[3] / "ui" / "dist"
+_UI_READY = _UI_DIR.is_dir()
+if _UI_READY:
+    app.mount("/assets", StaticFiles(directory=str(_UI_DIR / "assets")), name="ui-assets")
+else:
+    print(
+        "React UI not found at ui/dist/. Run `cd ui && npm run build` to build it, "
+        "or use `npm run dev` (port 5173) during development.",
+        flush=True,
+    )
 
 
 class RunRequest(BaseModel):
@@ -133,3 +147,14 @@ def run_detail(run_id: str) -> dict[str, Any]:
         return explore(load_run(run_id))
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+# SPA catch-all — serve index.html for any non-API path (must be last).
+if _UI_READY:
+
+    @app.get("/{full_path:path}")
+    async def serve_ui(full_path: str) -> FileResponse:
+        file_path = _UI_DIR / full_path
+        if file_path.is_file():
+            return FileResponse(str(file_path))
+        return FileResponse(str(_UI_DIR / "index.html"))
