@@ -41,6 +41,8 @@ The current Adoption Foundation branch adds the first thin entry points:
 **Goal:** commit the current foundation and define the integration contract all
 future entry points use.
 
+**Status:** Complete (2026-07-15).
+
 **Exit:** one documented runtime boundary, no duplicate feature logic, and a
 reproducible baseline suite.
 
