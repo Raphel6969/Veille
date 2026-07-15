@@ -4,6 +4,7 @@ import * as api from "../api";
 export default function RunExplorer() {
   const [runList, setRunList] = useState<api.RunView[]>([]);
   const [selected, setSelected] = useState<api.RunView | null>(null);
+  const [baseline, setBaseline] = useState<api.RunView | null>(null);
 
   useEffect(() => {
     api.runs().then(setRunList).catch(() => {});
@@ -26,7 +27,7 @@ export default function RunExplorer() {
           {runList.map((r) => (
             <div
               key={r.run_id}
-              onClick={() => view(r.run_id)}
+              onClick={() => { view(r.run_id); setBaseline(baseline ? null : r); }}
               style={{
                 cursor: "pointer",
                 padding: 4,
@@ -38,7 +39,14 @@ export default function RunExplorer() {
           ))}
         </div>
         <div style={{ flex: 1 }}>
-          <h3>Detail</h3>
+          <h3>{baseline && selected ? "Baseline vs selected" : "Detail"}</h3>
+          {baseline && selected && <div style={{ background: "#fff", border: "1px solid #e8e7e3", borderRadius: 12, padding: 16, marginBottom: 12 }}>
+            <p style={{ color: "#667085" }}>Comparison uses the same normalized run summaries shown by VEILLE.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+              <b>Metric</b><b>Baseline</b><b>Selected</b>
+              {[["Cost", "total_cost_usd"], ["Latency", "total_latency_s"], ["Tool calls", "tool_calls"], ["Validation", "validation_checks"]].map(([label, key]) => <><span key={`${key}-label`}>{label}</span><span key={`${key}-base`}>{String(baseline.summary[key])}</span><span key={`${key}-selected`}>{String(selected.summary[key])}</span></>)}
+            </div>
+          </div>}
           {selected && (
             <pre style={{ fontSize: 12 }}>{JSON.stringify(selected, null, 2)}</pre>
           )}

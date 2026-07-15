@@ -29,7 +29,9 @@ from supervisor.console.run_registry import (
     run_workflow,
 )
 from supervisor.contracts.events import RunEventBatch
-from supervisor.io import save_trace_fixture
+from supervisor.contracts.preflight import ContextSource, PreflightRequest
+from supervisor.io import load_task_contract, save_trace_fixture
+from supervisor.sdk import Supervisor
 
 app = FastAPI(title="Veille Local Integration Console", version="0.1.0")
 
@@ -50,6 +52,11 @@ class RunRequest(BaseModel):
     scenario: str = "success"
     real: bool = False
     confirm: bool = False
+
+
+class PreflightConsoleRequest(BaseModel):
+    task_contract_path: str
+    context: list[str] = []
 
 
 @app.get("/api/health")
@@ -101,6 +108,24 @@ def workflow_detail(name: str) -> dict[str, Any]:
         "read_only_tools": wf.read_only_tools,
         "scenarios": wf.default_scenarios,
     }
+
+
+@app.post("/api/preflight")
+def preflight_endpoint(req: PreflightConsoleRequest) -> dict[str, Any]:
+    try:
+        task = load_task_contract(req.task_contract_path)
+        proposal = Supervisor(task).preflight(
+            PreflightRequest(
+                task_contract=task,
+                master_context=[
+                    ContextSource(source_id=str(i), content=value)
+                    for i, value in enumerate(req.context)
+                ],
+            )
+        )
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return proposal.model_dump(mode="json")
 
 
 @app.post("/api/workflows/{name}/run")
