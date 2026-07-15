@@ -80,7 +80,7 @@ decomposition; production storage.
 
 **Goal:** execute an approved proposal through the existing Supervisor.
 
-**Status:** In progress.
+**Status:** Complete (2026-07-15).
 
 **Exit:** approved plans supply the correct role-specific context and routing to
 an instrumented workflow, while observe mode remains behavior-preserving.
