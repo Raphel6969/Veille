@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
@@ -126,7 +126,7 @@ def preflight_endpoint(req: PreflightConsoleRequest) -> dict[str, Any]:
         )
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return proposal.model_dump(mode="json")
+    return cast(dict[str, Any], proposal.model_dump(mode="json"))
 
 
 @app.post("/api/workflows/{name}/run")
