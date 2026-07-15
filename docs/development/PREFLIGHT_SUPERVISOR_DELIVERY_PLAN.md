@@ -25,14 +25,52 @@ The product rule is non-negotiable:
 
 ## Current baseline
 
-Existing capabilities include task and event contracts, a `Supervisor` SDK,
-LangGraph instrumentation, policies/enforcement, planner/context/router
-components, optimization, memory governance, a local console, and real-world
-demo workflows. Planning, context, and routing are currently advisory SDK
-capabilities; they are not yet one cohesive preflight product path.
+## AI handoff context (read this first)
 
-The current Adoption Foundation branch adds the first thin entry points:
-`import veille` and `veille exec <app.py>`.
+**Goal:** VEILLE is a pre-execution control plane: request + master context →
+advisory proposal → explicit approval → role-specific context/routes → validated
+run evidence. It is not an agent framework or a model gateway.
+
+**Golden Rule:** implement behavior once in the Runtime Supervisor. SDK, CLI,
+console, LangGraph adapter, and daemon are thin entry points only.
+
+**Completed (Phases 0–6):**
+
+- `import veille`; `veille exec`; `veille preflight`; approved CLI runs; trace comparison.
+- `Supervisor.preflight(PreflightRequest)` returns deterministic
+  `PreflightProposal` (plan, cost tiers, context manifests, routes, reasons).
+- `ApprovedRunSession` applies only an explicitly approved proposal; advisory mode
+  does not alter normal execution.
+- Cited-market-research LangGraph demo maps roles to approved plan/context/routes.
+- Console preflight review, explicit safe-demo approval, and baseline comparison.
+- SQLite repository persists proposals and normalized run batches; `veille daemon`
+  hosts local durable state and `/health`.
+
+**Key paths:** runtime `src/supervisor/runtime/`; contracts
+`src/supervisor/contracts/preflight.py`; composition `src/supervisor/preflight.py`;
+LangGraph demo `examples/cited_market_research/agent.py`; daemon
+`src/supervisor/daemon.py`; SQLite `src/supervisor/storage/sqlite.py`.
+
+**Safety invariants:** advisory by default; approval required for applying context
+or routes; no secrets in traces; do not claim savings if task validation worsens;
+no duplicate policy/planning logic in entry points.
+
+**Remaining roadmap:** production hardening of Phase 6 (authenticated/project-
+isolated daemon, Postgres repository, recovery/backpressure/runbooks), then IDE
+thin client and design-partner pilot evidence. These are not complete yet.
+
+**Verify before/after changes:**
+
+```powershell
+.venv\Scripts\python.exe -m pytest -q
+.venv\Scripts\ruff.exe check .
+.venv\Scripts\ruff.exe format --check .
+.venv\Scripts\mypy.exe src\supervisor src\veille
+cd ui; npm run build
+```
+
+**Current evidence:** 200 tests passed, 1 skipped at Phase 6 validation (before
+this documentation-only change).
 
 ---
 
