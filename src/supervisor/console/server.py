@@ -52,6 +52,7 @@ class RunRequest(BaseModel):
     scenario: str = "success"
     real: bool = False
     confirm: bool = False
+    apply_preflight: bool = False
 
 
 class PreflightConsoleRequest(BaseModel):
@@ -133,11 +134,13 @@ def run_workflow_endpoint(name: str, req: RunRequest) -> dict[str, Any]:
     settings = get_settings()
     if req.real and not req.confirm:
         raise HTTPException(status_code=400, detail="Real execution requires confirm=true.")
+    if req.apply_preflight and not req.confirm:
+        raise HTTPException(status_code=400, detail="Preflight application requires confirm=true.")
     if settings.real_mode and req.real is False:
         # honor console real-mode only when explicitly requested
         pass
     try:
-        result = run_workflow(name, scenario=req.scenario)
+        result = run_workflow(name, scenario=req.scenario, apply_preflight=req.apply_preflight)
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     batch: RunEventBatch = result["batch"]

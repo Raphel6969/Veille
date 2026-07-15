@@ -106,8 +106,8 @@ export function runDetail(runId: string): Promise<RunView> {
   return get<RunView>(`/api/runs/${runId}`);
 }
 
-export function runWorkflow(name: string, scenario = "success"): Promise<RunView> {
-  return post<RunView>(`/api/workflows/${name}/run`, { scenario });
+export function runWorkflow(name: string, scenario = "success", apply_preflight = false): Promise<RunView> {
+  return post<RunView>(`/api/workflows/${name}/run`, { scenario, apply_preflight, confirm: apply_preflight });
 }
 
 export interface PreflightProposal { proposal_id: string; status: string; execution_plan: { selected_tier: string; steps: { step_id: string; role: string; description: string }[] }; cost_options: { tier: string; estimated_cost_usd_min: number; estimated_cost_usd_max: number; recommended: boolean }[]; context_manifests: { step_id: string; role: string; included: string[]; excluded: string[]; compressed: string[]; reason: string }[]; route_recommendations: { step_id: string; model: string; reason: string }[]; }
