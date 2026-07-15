@@ -19,3 +19,22 @@ def test_exec_runs_a_python_application_and_saves_a_trace(tmp_path: object, caps
     assert rc == 0
     assert "application ran" in capsys.readouterr().out  # type: ignore[attr-defined]
     assert list(traces.glob("*.json"))  # type: ignore[union-attr]
+
+
+def test_preflight_writes_an_advisory_proposal(tmp_path: object, capsys: object) -> None:
+    output = tmp_path / "proposal.json"  # type: ignore[operator]
+
+    rc = main(
+        [
+            "preflight",
+            "examples/cited_market_research/task_contract.yaml",
+            "--context",
+            "Research question: competitors",
+            "--output",
+            str(output),
+        ]
+    )
+
+    assert rc == 0
+    assert "Proposal" in capsys.readouterr().out  # type: ignore[attr-defined]
+    assert output.exists()  # type: ignore[union-attr]

@@ -27,9 +27,11 @@ from supervisor.console.run_registry import (
     run_workflow,
 )
 from supervisor.contracts.events import RunEventBatch
-from supervisor.io import load_trace_fixture, save_trace_fixture
+from supervisor.contracts.preflight import ContextSource, PreflightRequest
+from supervisor.io import load_task_contract, load_trace_fixture, save_trace_fixture
 from supervisor.policy import evaluate_observe
 from supervisor.runtime import run_script
+from supervisor.sdk import Supervisor
 from supervisor.telemetry import ConsoleOTelExporter
 
 # Ensure repo-root packages (e.g. the ``examples`` package) are importable when
@@ -264,6 +266,34 @@ def _exec(args: argparse.Namespace) -> int:
     return result.exit_code
 
 
+def _preflight(args: argparse.Namespace) -> int:
+    try:
+        task = load_task_contract(args.task_contract)
+    except Exception as exc:  # noqa: BLE001
+        print(f"Cannot load task contract: {exc}", file=sys.stderr)
+        return 2
+    context = [
+        ContextSource(source_id=str(index), content=value)
+        for index, value in enumerate(args.context or [])
+    ]
+    proposal = Supervisor(task).preflight(
+        PreflightRequest(
+            task_contract=task, master_context=context, allowed_models=args.model or []
+        )
+    )
+    payload = proposal.model_dump(mode="json")
+    if args.output:
+        destination = Path(args.output)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        print(f"Preflight proposal saved: {destination}")
+    print(
+        f"Proposal {proposal.proposal_id}: tier={proposal.execution_plan.selected_tier.value} "
+        f"steps={len(proposal.execution_plan.steps)} routes={len(proposal.route_recommendations)}"
+    )
+    return 0
+
+
 def _add_subparsers(sub: argparse._SubParsersAction[Any]) -> None:
     explore = sub.add_parser("explore", help="Inspect a supervised run.")
     src = explore.add_mutually_exclusive_group(required=True)
@@ -337,6 +367,13 @@ def _add_subparsers(sub: argparse._SubParsersAction[Any]) -> None:
         help="Arguments passed to the app (place them after --).",
     )
     execute.set_defaults(func=_exec)
+
+    preflight = sub.add_parser("preflight", help="Create an advisory plan before agent execution.")
+    preflight.add_argument("task_contract", help="Path to a task-contract YAML file.")
+    preflight.add_argument("--context", action="append", help="Labelled master-context slice.")
+    preflight.add_argument("--model", action="append", help="Allowed model (repeatable).")
+    preflight.add_argument("--output", help="Write the proposal JSON to this path.")
+    preflight.set_defaults(func=_preflight)
 
 
 def _explore_file(args: argparse.Namespace) -> int:
