@@ -4,6 +4,13 @@ All notable changes are documented here. This project follows phase-based delive
 
 ## [Unreleased]
 
+### Adoption Foundation
+
+- Added the public `import veille` SDK namespace, re-exporting the existing
+  Runtime Supervisor rather than introducing a second execution engine.
+- Added `veille exec <app.py>`: a safe observe-mode Python script envelope that
+  emits the standard runtime lifecycle and can save a normalized trace.
+
 ### Local Integration Console (ADR-013)
 
 - **`veille` CLI**: `doctor`, `connections`, `workflows`, `run`, `runs`, `providers`, `adapters`, `demo`, `explore`, `serve` subcommands. Registered as `[project.scripts] veille` in `pyproject.toml`.

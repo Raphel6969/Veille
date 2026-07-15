@@ -11,6 +11,7 @@ pip install veille-supervisor
 veille demo              # run the mock demo agent
 veille explore           # browse timeline + graphs
 veille serve             # web UI at http://localhost:8010
+veille exec app.py       # observe an existing Python app without changing it
 ```
 
 No API keys. No config. Just works.
@@ -19,6 +20,7 @@ No API keys. No config. Just works.
 
 - Versioned data contracts (task, events, plan, policy, validation)
 - Python SDK (`Supervisor` + `RunCollector`) for zero-touch event emission
+- Public `import veille` SDK plus `veille exec <app.py>` thin entry points over the same runtime
 - LangGraph adapter with automatic callback-based instrumentation
 - **OpenAI Agents SDK adapter** and **OpenAI Responses API adapter** (skeleton)
 - **Model provider port** with 8 provider drivers (LiteLLM, OpenAI, Anthropic, Gemini, OpenRouter, Ollama, LM Studio, OpenAI-compatible)

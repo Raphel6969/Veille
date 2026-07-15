@@ -4,6 +4,14 @@
 
 The AI Runtime Supervisor is a **control plane** that sits between agent applications and model/tool providers. It does not replace agent frameworks, gateways, or observability platforms—it integrates with them.
 
+### Golden Rule: one runtime, many entry points
+
+The Runtime Supervisor is the sole implementation point for plans, policies,
+events, governance, and validation. The Python SDK, `veille exec`, the local
+console, and future IDE/daemon integrations are thin entry points that invoke
+the same runtime and normalized event contracts. No entry point may implement
+its own policy or decision logic.
+
 ```mermaid
 flowchart TB
     subgraph app [Agent Application]
