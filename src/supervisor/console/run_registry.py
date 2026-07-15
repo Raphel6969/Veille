@@ -66,7 +66,9 @@ def _register_builtins() -> None:
             supports_real=False,
             read_only_tools=True,
             default_scenarios=["success", "expensive", "failed_validation"],
-            run_fn=lambda scenario="success", **kw: mr_run(scenario),
+            run_fn=lambda scenario="success", **kw: mr_run(
+                scenario, apply_preflight=bool(kw.get("apply_preflight", False))
+            ),
         )
     )
     register_workflow(

@@ -140,8 +140,19 @@ def _run(args: argparse.Namespace) -> int:
     if settings.real_mode and not args.yes:
         print("Real execution requires confirmation. Re-run with --yes.", file=sys.stderr)
         return 1
+    if args.proposal and not args.approve:
+        print("Proposal execution requires explicit --approve.", file=sys.stderr)
+        return 1
+    if args.proposal:
+        try:
+            proposal = json.loads(Path(args.proposal).read_text("utf-8"))
+            if proposal.get("status") != "advisory":
+                raise ValueError("proposal must be advisory")
+        except Exception as exc:  # noqa: BLE001
+            print(f"Cannot load proposal: {exc}", file=sys.stderr)
+            return 2
     try:
-        result = run_workflow(args.workflow, scenario=scenario)
+        result = run_workflow(args.workflow, scenario=scenario, apply_preflight=bool(args.proposal))
     except Exception as exc:  # noqa: BLE001
         print(f"Workflow failed: {exc}", file=sys.stderr)
         return 1
@@ -294,6 +305,21 @@ def _preflight(args: argparse.Namespace) -> int:
     return 0
 
 
+def _compare(args: argparse.Namespace) -> int:
+    try:
+        baseline = summarize(load_trace_fixture(args.baseline))
+        supervised = summarize(load_trace_fixture(args.supervised))
+    except Exception as exc:  # noqa: BLE001
+        print(f"Cannot compare runs: {exc}", file=sys.stderr)
+        return 2
+    print("VEILLE run comparison")
+    print(f"  cost_usd: {baseline.total_cost_usd:.4f} -> {supervised.total_cost_usd:.4f}")
+    print(f"  latency_s: {baseline.total_latency_s:.2f} -> {supervised.total_latency_s:.2f}")
+    print(f"  tool_calls: {baseline.tool_calls} -> {supervised.tool_calls}")
+    print(f"  validation_checks: {baseline.validation_checks} -> {supervised.validation_checks}")
+    return 0
+
+
 def _add_subparsers(sub: argparse._SubParsersAction[Any]) -> None:
     explore = sub.add_parser("explore", help="Inspect a supervised run.")
     src = explore.add_mutually_exclusive_group(required=True)
@@ -329,6 +355,12 @@ def _add_subparsers(sub: argparse._SubParsersAction[Any]) -> None:
     run.add_argument("--input", help="Scenario name or path to input JSON.")
     run.add_argument("--yes", action="store_true", help="Confirm real execution.")
     run.add_argument("--policy", action="store_true", help="Show observe-only policy flags.")
+    run.add_argument("--proposal", help="Advisory proposal JSON created by veille preflight.")
+    run.add_argument(
+        "--approve",
+        action="store_true",
+        help="Explicitly apply the proposal to a supported workflow.",
+    )
     run.set_defaults(func=_run)
 
     runs = sub.add_parser("runs", help="List/inspect saved runs.")
@@ -374,6 +406,11 @@ def _add_subparsers(sub: argparse._SubParsersAction[Any]) -> None:
     preflight.add_argument("--model", action="append", help="Allowed model (repeatable).")
     preflight.add_argument("--output", help="Write the proposal JSON to this path.")
     preflight.set_defaults(func=_preflight)
+
+    compare = sub.add_parser("compare", help="Compare baseline and supervised normalized traces.")
+    compare.add_argument("baseline", help="Baseline trace JSON.")
+    compare.add_argument("supervised", help="Supervised trace JSON.")
+    compare.set_defaults(func=_compare)
 
 
 def _explore_file(args: argparse.Namespace) -> int:
