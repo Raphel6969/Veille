@@ -60,6 +60,8 @@ instrumentation.
 
 **Goal:** make “request before execution” a first-class runtime input/output.
 
+**Status:** In progress.
+
 **Exit:** VEILLE can serialize, validate, explain, and replay a complete
 preflight proposal without executing an agent.
 

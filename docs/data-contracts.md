@@ -184,6 +184,30 @@ Used for replay and fixtures:
 absolute currency). Exactly one tier option is flagged `recommended`, matching
 `selected_tier`.
 
+## Preflight Request and Proposal (Adoption Foundation Phase 1)
+
+Preflight is an advisory, request-before-execution boundary. A caller supplies a
+task contract and labelled master-context slices. The Runtime Supervisor returns
+a deterministic `PreflightProposal`; it does not start a run, mutate application
+context, or route a live model call.
+
+```json
+{
+  "schema_version": "0.1.0",
+  "proposal_id": "stable-uuid",
+  "status": "advisory",
+  "execution_plan": { "selected_tier": "balanced" },
+  "cost_options": [{ "tier": "minimum" }, { "tier": "balanced", "recommended": true }],
+  "context_manifests": [{ "step_id": "research", "role": "researcher" }],
+  "route_recommendations": [{ "step_id": "research", "model": "mock-research" }],
+  "decision_ledger": [{ "category": "execution_plan", "reason": "Selected balanced tier..." }]
+}
+```
+
+Every plan, context, and route decision has a human-readable reason and
+provenance. `ApprovalDecision` records the future approval boundary; Phase 1
+does not apply it.
+
 ## Memory Record & Manifest (Phase 5, opt-in)
 
 ```json

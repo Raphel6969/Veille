@@ -18,6 +18,14 @@ flowchart TD
 
 ## Stage reference
 
+### Preflight (Adoption Foundation Phase 1)
+
+Before an agent run begins, `Supervisor.preflight(PreflightRequest(...))`
+composes the existing planner, context engine, and model router into one
+`PreflightProposal`. It returns cost tiers, role-specific context manifests,
+route recommendations, and a decision ledger. The proposal is advisory-only:
+no context/model call changes and no lifecycle event is emitted in this phase.
+
 | Stage | Phase 0 | Inputs | Outputs | Failure paths |
 |---|---|---|---|---|
 | Agent Request | Demo only | User query, task contract YAML | Initial agent state | Missing contract |
