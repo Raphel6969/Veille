@@ -151,9 +151,33 @@ class Supervisor:
 
     def plan(self) -> ExecutionPlan:
         """Build an execution plan (tier + steps) for this run's task contract."""
-        self._plan = self._planner.build_plan(self.task_contract)
-        self._plan_tier = self._plan.selected_tier
+        if self._plan is None:
+            self._plan = self._planner.build_plan(self.task_contract)
+            self._plan_tier = self._plan.selected_tier
         return self._plan
+
+    def preflight(self, request: Any) -> Any:
+        """Build an advisory proposal before starting this supervised run.
+
+        The proposal composes the existing planner, context engine, and router;
+        it does not mutate application execution or emit run events.
+        """
+        from supervisor.contracts.preflight import PreflightRequest
+        from supervisor.preflight import build_preflight
+
+        if not isinstance(request, PreflightRequest):
+            raise TypeError("request must be a PreflightRequest")
+        if request.task_contract.task_id != self.task_id:
+            raise ValueError("preflight task_contract must match this Supervisor task")
+        proposal = build_preflight(
+            request,
+            planner=self._planner,
+            context_engine=self._context_engine,
+            router=self._router,
+        )
+        self._plan = proposal.execution_plan
+        self._plan_tier = proposal.execution_plan.selected_tier
+        return proposal
 
     def route_model(
         self,
