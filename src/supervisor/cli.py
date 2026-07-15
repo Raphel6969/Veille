@@ -29,6 +29,7 @@ from supervisor.console.run_registry import (
 from supervisor.contracts.events import RunEventBatch
 from supervisor.io import load_trace_fixture, save_trace_fixture
 from supervisor.policy import evaluate_observe
+from supervisor.runtime import run_script
 from supervisor.telemetry import ConsoleOTelExporter
 
 # Ensure repo-root packages (e.g. the ``examples`` package) are importable when
@@ -244,6 +245,25 @@ def _serve(args: argparse.Namespace) -> int:
     return 0
 
 
+def _exec(args: argparse.Namespace) -> int:
+    """Run an application through the same runtime used by the SDK."""
+    try:
+        result = run_script(Path(args.script), args.script_args)
+    except FileNotFoundError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    except BaseException as exc:  # noqa: BLE001
+        print(f"Application failed: {exc}", file=sys.stderr)
+        return 1
+
+    if args.trace_dir:
+        destination = Path(args.trace_dir) / f"{result.batch.run_id}.json"
+        save_trace_fixture(result.batch, destination)
+        print(f"Veille trace saved: {destination}")
+    print(f"Runtime mode=observe run={result.batch.run_id} exit={result.exit_code}")
+    return result.exit_code
+
+
 def _add_subparsers(sub: argparse._SubParsersAction[Any]) -> None:
     explore = sub.add_parser("explore", help="Inspect a supervised run.")
     src = explore.add_mutually_exclusive_group(required=True)
@@ -305,6 +325,18 @@ def _add_subparsers(sub: argparse._SubParsersAction[Any]) -> None:
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
     serve.set_defaults(func=_serve)
+
+    execute = sub.add_parser(
+        "exec", help="Run a Python application through the shared observe-mode runtime."
+    )
+    execute.add_argument("script", help="Python application path.")
+    execute.add_argument("--trace-dir", help="Optional directory for the normalized run trace.")
+    execute.add_argument(
+        "script_args",
+        nargs="*",
+        help="Arguments passed to the app (place them after --).",
+    )
+    execute.set_defaults(func=_exec)
 
 
 def _explore_file(args: argparse.Namespace) -> int:

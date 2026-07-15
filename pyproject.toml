@@ -53,7 +53,7 @@ ui = [
 veille = "supervisor.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/supervisor"]
+packages = ["src/supervisor", "src/veille"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
