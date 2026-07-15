@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import json
 import sqlite3
 from pathlib import Path
 
+from supervisor.contracts.events import RunEventBatch
 from supervisor.contracts.preflight import PreflightProposal
 
 
@@ -15,7 +15,11 @@ class SQLiteProposalRepository:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._connect() as conn:
             conn.execute(
-                "CREATE TABLE IF NOT EXISTS proposals (proposal_id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
+                "CREATE TABLE IF NOT EXISTS proposals "
+                "(proposal_id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
+            )
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS runs (run_id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
             )
 
     def _connect(self) -> sqlite3.Connection:
@@ -41,3 +45,15 @@ class SQLiteProposalRepository:
                 str(row[0])
                 for row in conn.execute("SELECT proposal_id FROM proposals ORDER BY proposal_id")
             ]
+
+    def save_run(self, batch: RunEventBatch) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                "INSERT OR REPLACE INTO runs(run_id, payload) VALUES (?, ?)",
+                (batch.run_id, batch.model_dump_json()),
+            )
+
+    def load_run(self, run_id: str) -> RunEventBatch | None:
+        with self._connect() as conn:
+            row = conn.execute("SELECT payload FROM runs WHERE run_id = ?", (run_id,)).fetchone()
+        return RunEventBatch.model_validate_json(row[0]) if row else None

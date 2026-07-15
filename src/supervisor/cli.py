@@ -258,6 +258,18 @@ def _serve(args: argparse.Namespace) -> int:
     return 0
 
 
+def _daemon(args: argparse.Namespace) -> int:
+    try:
+        import uvicorn
+
+        from supervisor.daemon import create_daemon_app
+    except Exception as exc:  # noqa: BLE001
+        print(f"Daemon host requires the 'ui' extra. ({exc})", file=sys.stderr)
+        return 1
+    uvicorn.run(create_daemon_app(args.database), host=args.host, port=args.port)
+    return 0
+
+
 def _exec(args: argparse.Namespace) -> int:
     """Run an application through the same runtime used by the SDK."""
     try:
@@ -387,6 +399,12 @@ def _add_subparsers(sub: argparse._SubParsersAction[Any]) -> None:
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
     serve.set_defaults(func=_serve)
+
+    daemon = sub.add_parser("daemon", help="Start the local durable VEILLE daemon host.")
+    daemon.add_argument("--host", default="127.0.0.1")
+    daemon.add_argument("--port", type=int, default=8020)
+    daemon.add_argument("--database", default=".veille/veille.db")
+    daemon.set_defaults(func=_daemon)
 
     execute = sub.add_parser(
         "exec", help="Run a Python application through the shared observe-mode runtime."
