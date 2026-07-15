@@ -5,8 +5,9 @@ this module. Runtime capabilities are implemented in :class:`Supervisor` only.
 """
 
 from supervisor.runtime.execution import ExecutionResult, run_script
+from supervisor.runtime.session import ApprovedRunSession
 from supervisor.sdk import Supervisor
 
 RuntimeSupervisor = Supervisor
 
-__all__ = ["ExecutionResult", "RuntimeSupervisor", "Supervisor", "run_script"]
+__all__ = ["ApprovedRunSession", "ExecutionResult", "RuntimeSupervisor", "Supervisor", "run_script"]

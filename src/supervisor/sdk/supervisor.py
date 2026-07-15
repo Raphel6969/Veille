@@ -179,6 +179,12 @@ class Supervisor:
         self._plan_tier = proposal.execution_plan.selected_tier
         return proposal
 
+    def approve_preflight(self, proposal: Any, decision: Any) -> Any:
+        """Create the explicit, audited execution session for an approved proposal."""
+        from supervisor.runtime.session import ApprovedRunSession
+
+        return ApprovedRunSession(self, proposal, decision)
+
     def route_model(
         self,
         *,
