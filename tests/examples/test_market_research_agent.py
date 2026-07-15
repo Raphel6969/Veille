@@ -73,3 +73,14 @@ def test_memory_enabled_governs_retrieval() -> None:
         os.environ.pop("SUPERVISOR_MEMORY", None)
 
     assert counts.get("memory.retrieved", 0) >= 1
+
+
+def test_approved_preflight_drives_each_langgraph_role() -> None:
+    result = run_scenario("success", apply_preflight=True)
+
+    assert result["validation"].task_contract_met
+    events = result["batch"].events
+    assert sum(1 for event in events if event.event_type == EventType.PREFLIGHT_APPROVED) == 1
+    assert sum(1 for event in events if event.event_type == EventType.ROUTE_APPLIED) == 3
+    applied_context = [event for event in events if event.event_type == EventType.CONTEXT_ATTACHED]
+    assert {event.step_id for event in applied_context} == {"research", "analysis", "synthesis"}
