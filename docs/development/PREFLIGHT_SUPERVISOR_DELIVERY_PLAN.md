@@ -100,6 +100,8 @@ context deletion; learned policies.
 
 **Goal:** make the preflight proposal drive a real multi-role LangGraph workflow.
 
+**Status:** Complete (2026-07-15).
+
 **Exit:** one user request demonstrably becomes role-specific work before model
 and tool calls occur.
 
