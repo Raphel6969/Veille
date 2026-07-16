@@ -21,6 +21,11 @@ class SQLiteProposalRepository:
             conn.execute(
                 "CREATE TABLE IF NOT EXISTS runs (run_id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
             )
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS project_proposals "
+                "(project_id TEXT NOT NULL, proposal_id TEXT NOT NULL, payload TEXT NOT NULL, "
+                "PRIMARY KEY(project_id, proposal_id))"
+            )
 
     def _connect(self) -> sqlite3.Connection:
         return sqlite3.connect(self.path)
@@ -57,3 +62,19 @@ class SQLiteProposalRepository:
         with self._connect() as conn:
             row = conn.execute("SELECT payload FROM runs WHERE run_id = ?", (run_id,)).fetchone()
         return RunEventBatch.model_validate_json(row[0]) if row else None
+
+    def save_project_proposal(self, project_id: str, proposal: PreflightProposal) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                "INSERT OR REPLACE INTO project_proposals(project_id, proposal_id, payload) "
+                "VALUES (?, ?, ?)",
+                (project_id, proposal.proposal_id, proposal.model_dump_json()),
+            )
+
+    def load_project_proposal(self, project_id: str, proposal_id: str) -> PreflightProposal | None:
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT payload FROM project_proposals WHERE project_id = ? AND proposal_id = ?",
+                (project_id, proposal_id),
+            ).fetchone()
+        return PreflightProposal.model_validate_json(row[0]) if row else None

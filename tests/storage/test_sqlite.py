@@ -23,3 +23,14 @@ def test_sqlite_repository_persists_normalized_run_batch(tmp_path: object) -> No
     SQLiteProposalRepository(path).save_run(batch)  # type: ignore[arg-type]
 
     assert SQLiteProposalRepository(path).load_run("run-1") == batch  # type: ignore[arg-type]
+
+
+def test_project_proposals_are_isolated(tmp_path: object) -> None:
+    repo = SQLiteProposalRepository(tmp_path / "veille.db")  # type: ignore[arg-type,operator]
+    proposal = build_preflight(
+        PreflightRequest(task_contract=TaskContract(task_id="t", task="demo"))
+    )
+    repo.save_project_proposal("alpha", proposal)
+
+    assert repo.load_project_proposal("alpha", proposal.proposal_id) == proposal
+    assert repo.load_project_proposal("beta", proposal.proposal_id) is None
