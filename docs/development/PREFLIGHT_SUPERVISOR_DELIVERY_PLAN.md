@@ -34,7 +34,7 @@ run evidence. It is not an agent framework or a model gateway.
 **Golden Rule:** implement behavior once in the Runtime Supervisor. SDK, CLI,
 console, LangGraph adapter, and daemon are thin entry points only.
 
-**Completed (Phases 0–6):**
+**Delivered through Phase 6 hardening + Phase 7 scaffold:**
 
 - `import veille`; `veille exec`; `veille preflight`; approved CLI runs; trace comparison.
 - `Supervisor.preflight(PreflightRequest)` returns deterministic
@@ -44,7 +44,10 @@ console, LangGraph adapter, and daemon are thin entry points only.
 - Cited-market-research LangGraph demo maps roles to approved plan/context/routes.
 - Console preflight review, explicit safe-demo approval, and baseline comparison.
 - SQLite repository persists proposals and normalized run batches; `veille daemon`
-  hosts local durable state and `/health`.
+  hosts local durable state and `/health`; project-scoped proposals and a token
+  guard exist for protected daemon reads.
+- VS Code thin-client scaffold compiles: create/view a proposal, explicitly
+  approve the safe demo, and check daemon health.
 
 **Key paths:** runtime `src/supervisor/runtime/`; contracts
 `src/supervisor/contracts/preflight.py`; composition `src/supervisor/preflight.py`;
@@ -55,9 +58,22 @@ LangGraph demo `examples/cited_market_research/agent.py`; daemon
 or routes; no secrets in traces; do not claim savings if task validation worsens;
 no duplicate policy/planning logic in entry points.
 
-**Remaining roadmap:** production hardening of Phase 6 (authenticated/project-
-isolated daemon, Postgres repository, recovery/backpressure/runbooks), then IDE
-thin client and design-partner pilot evidence. These are not complete yet.
+**Current status:** Phases 0–4 are complete. Phase 5 delivered the core console
+review/approval/comparison flow, but needs richer redacted trace views and UI
+tests. Phase 6 delivered a local SQLite daemon and initial project/token guard,
+but is **not production-pilot complete**: no Postgres port, write API,
+restart/backpressure testing, or operations runbook. Phase 7 is an uncommitted
+VS Code scaffold; it needs settings, integration tests, packaging, and a commit.
+
+**Next work (in order):**
+
+1. Finish Phase 7: VS Code settings (CLI path, daemon URL, proposal path),
+   extension integration tests, package/build instructions, commit.
+2. Finish Phase 6 hardening: authenticated daemon write/read API, project/env
+   configuration, Postgres repository port, recovery/backpressure tests, pilot
+   runbook.
+3. Phase 8: dogfood on a real read-only workflow, collect sanitized traces, and
+   recruit 3–5 design partners. Do not claim broad production readiness first.
 
 **Verify before/after changes:**
 
@@ -69,8 +85,9 @@ thin client and design-partner pilot evidence. These are not complete yet.
 cd ui; npm run build
 ```
 
-**Current evidence:** 200 tests passed, 1 skipped at Phase 6 validation (before
-this documentation-only change).
+**Current evidence:** 202 Python tests passed, 1 skipped; Ruff and strict mypy
+passed at the daemon-hardening gate. The VS Code extension TypeScript check also
+passes. Re-run the commands above before any new commit.
 
 ---
 
@@ -158,6 +175,8 @@ generation.
 
 **Goal:** make the preflight flow easy to try on a developer’s own project.
 
+**Status:** Complete (2026-07-15).
+
 **Exit:** a developer can inspect, approve, run, and compare a plan locally.
 
 | Commit | Change | Verification |
@@ -177,6 +196,8 @@ application preflight orchestration without integration points.
 **Goal:** make the preflight decision understandable without creating a second
 runtime.
 
+**Status:** Core flow delivered; hardening/UI-test remainder pending.
+
 **Exit:** the console renders the same persisted proposal and run events emitted
 by the runtime.
 
@@ -191,6 +212,9 @@ by the runtime.
 
 **Goal:** support real multi-process pilots without making a hosted platform
 prematurely.
+
+**Status:** Local SQLite daemon + initial project/token guard delivered; pilot
+hardening remainder pending.
 
 **Exit:** a locally/self-hosted daemon hosts the same runtime state and audit
 path, with reliable recovery and operational visibility.
@@ -209,6 +233,9 @@ path, with reliable recovery and operational visibility.
 
 **Goal:** give local developers useful feedback without duplicating runtime
 logic.
+
+**Status:** VS Code scaffold implemented and TypeScript-checked; settings,
+integration tests, packaging, and commit pending.
 
 **Exit:** one IDE extension launches/reads the same CLI or daemon runs.
 

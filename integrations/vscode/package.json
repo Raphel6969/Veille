@@ -1,0 +1,20 @@
+{
+  "name": "veille-vscode",
+  "displayName": "VEILLE Preflight",
+  "version": "0.1.0",
+  "private": true,
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other"],
+  "activationEvents": ["onCommand:veille.preflight", "onCommand:veille.daemonHealth"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "veille.preflight", "title": "VEILLE: Create Preflight Proposal" },
+      { "command": "veille.viewProposal", "title": "VEILLE: View Preflight Proposal" },
+      { "command": "veille.approveRun", "title": "VEILLE: Approve & Run Workflow" },
+      { "command": "veille.daemonHealth", "title": "VEILLE: Check Local Daemon" }
+    ]
+  },
+  "scripts": { "compile": "tsc -p ./", "check": "tsc -p ./ --noEmit" },
+  "devDependencies": { "@types/node": "^20.0.0", "@types/vscode": "^1.85.0", "typescript": "^5.5.4" }
+}
