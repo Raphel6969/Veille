@@ -46,6 +46,8 @@ console, LangGraph adapter, and daemon are thin entry points only.
 - SQLite repository persists proposals and normalized run batches; `veille daemon`
   hosts local durable state and `/health`; project-scoped proposals and a token
   guard exist for protected daemon reads.
+- Optional Postgres/Supabase project storage is selected from `DB_URL`, while
+  SQLite remains the local default.
 - VS Code thin-client scaffold compiles: create/view a proposal, explicitly
   approve the safe demo, and check daemon health.
 
@@ -60,18 +62,16 @@ no duplicate policy/planning logic in entry points.
 
 **Current status:** Phases 0–4 are complete. Phase 5 delivered the core console
 review/approval/comparison flow, but needs richer redacted trace views and UI
-tests. Phase 6 delivered a local SQLite daemon and initial project/token guard,
-but is **not production-pilot complete**: no Postgres port, write API,
-restart/backpressure testing, or operations runbook. Phase 7 is an uncommitted
-VS Code scaffold; it needs settings, integration tests, packaging, and a commit.
+tests. Phase 6 now has authenticated project proposal/run APIs, SQLite by
+default, and a verified optional Postgres/Supabase repository selected from
+`DB_URL`; it is **not production-pilot complete** until recovery/backpressure
+testing and an operations runbook exist. Phase 7 has a configurable, compiled
+VS Code thin-client scaffold; integration tests and packaging remain.
 
 **Next work (in order):**
 
-1. Finish Phase 7: VS Code settings (CLI path, daemon URL, proposal path),
-   extension integration tests, package/build instructions, commit.
-2. Finish Phase 6 hardening: authenticated daemon write/read API, project/env
-   configuration, Postgres repository port, recovery/backpressure tests, pilot
-   runbook.
+1. Finish Phase 7: extension integration tests and package/build instructions.
+2. Finish Phase 6 hardening: recovery/backpressure tests and a pilot runbook.
 3. Phase 8: dogfood on a real read-only workflow, collect sanitized traces, and
    recruit 3–5 design partners. Do not claim broad production readiness first.
 

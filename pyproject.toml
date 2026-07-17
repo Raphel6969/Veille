@@ -48,6 +48,9 @@ ui = [
     "fastapi>=0.110,<1",
     "uvicorn>=0.30,<1",
 ]
+postgres = [
+    "psycopg[binary]>=3.2,<4",
+]
 
 [project.scripts]
 veille = "supervisor.cli:main"
