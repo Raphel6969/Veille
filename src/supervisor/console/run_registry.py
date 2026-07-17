@@ -174,12 +174,12 @@ def list_runs(traces_dir: str | Path = "fixtures/traces") -> list[RunInfo]:
             data = json.loads(p.read_text("utf-8"))
         except Exception:  # noqa: BLE001
             continue
-        
+
         timestamp = ""
         events = data.get("events", [])
         if events:
             timestamp = events[0].get("timestamp", "")
-            
+
         runs.append(
             RunInfo(
                 run_id=data.get("run_id", p.stem),
