@@ -165,7 +165,15 @@ def adapters() -> list[dict[str, Any]]:
 
 @app.get("/api/runs")
 def runs() -> list[dict[str, Any]]:
-    return [{"run_id": r.run_id, "task_id": r.task_id, "scenario": r.scenario} for r in list_runs()]
+    return [
+        {
+            "run_id": r.run_id,
+            "task_id": r.task_id,
+            "scenario": r.scenario,
+            "timestamp": r.timestamp,
+        }
+        for r in list_runs()
+    ]
 
 
 @app.get("/api/runs/{run_id}")

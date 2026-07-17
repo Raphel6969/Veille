@@ -43,6 +43,7 @@ class RunInfo:
     task_id: str
     scenario: str | None
     path: str
+    timestamp: str = ""
 
 
 _WORKFLOWS: dict[str, WorkflowInfo] = {}
@@ -168,19 +169,27 @@ def list_runs(traces_dir: str | Path = "fixtures/traces") -> list[RunInfo]:
     if not base.exists():
         return []
     runs: list[RunInfo] = []
-    for p in sorted(base.glob("*.json")):
+    for p in base.glob("*.json"):
         try:
             data = json.loads(p.read_text("utf-8"))
         except Exception:  # noqa: BLE001
             continue
+        
+        timestamp = ""
+        events = data.get("events", [])
+        if events:
+            timestamp = events[0].get("timestamp", "")
+            
         runs.append(
             RunInfo(
                 run_id=data.get("run_id", p.stem),
                 task_id=data.get("task_id", ""),
                 scenario=(data.get("metadata") or {}).get("scenario"),
                 path=str(p),
+                timestamp=timestamp,
             )
         )
+    runs.sort(key=lambda r: r.timestamp, reverse=True)
     return runs
 
 
