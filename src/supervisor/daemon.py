@@ -7,6 +7,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException
 
+from supervisor.contracts.preflight import PreflightProposal
 from supervisor.storage import SQLiteProposalRepository
 
 
@@ -24,6 +25,16 @@ def create_daemon_app(
     def require_token(x_veille_token: str | None = Header(default=None)) -> None:
         if not required_token or x_veille_token != required_token:
             raise HTTPException(status_code=401, detail="Valid X-Veille-Token required.")
+
+    @app.post("/projects/{project_id}/proposals")
+    def save_proposal(
+        project_id: str,
+        proposal: PreflightProposal,
+        x_veille_token: str | None = Header(default=None),
+    ) -> dict[str, str]:
+        require_token(x_veille_token)
+        repository.save_project_proposal(project_id, proposal)
+        return {"proposal_id": proposal.proposal_id, "project_id": project_id}
 
     @app.get("/projects/{project_id}/proposals/{proposal_id}")
     def proposal(
