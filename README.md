@@ -1,22 +1,24 @@
-# AI Runtime Supervisor / Veille Console
+# 👁️ AI Runtime Supervisor / Veille Console
+
+[![PyPI version](https://badge.fury.io/py/veille-supervisor.svg)](https://pypi.org/project/veille-supervisor/0.3.3/)
 
 Control plane for production AI-agent work. The Supervisor plans, contextualizes, routes, governs, and verifies each agent run—reducing wasted spend and unreliable outcomes without requiring teams to rebuild their applications.
 
-**Current release:** [0.3.1](https://pypi.org/project/veille-supervisor/0.3.1/) — Phases 1–5 + **Local Integration Console**. Event schema `0.2.0`. All capabilities are opt-in and off by default.
+**Current release:** [0.3.3](https://pypi.org/project/veille-supervisor/0.3.3/) — Phases 1–5 + **Local Integration Console**. Event schema `0.2.0`. All capabilities are opt-in and off by default.
 
-## Quickstart (2 minutes)
+## 🚀 Quickstart (2 minutes)
 
 ```bash
-pip install veille-supervisor
+pip install veille-supervisor==0.3.3
 veille demo              # run the mock demo agent
 veille explore           # browse timeline + graphs
 veille serve             # web UI at http://127.0.0.1:8000
 veille exec app.py       # observe an existing Python app without changing it
 ```
 
-No API keys. No config. Just works.
+✨ No API keys. No config. Just works.
 
-## What exists today
+## 📋 What exists today
 
 - Versioned data contracts (task, events, plan, policy, validation)
 - Python SDK (`Supervisor` + `RunCollector`) for zero-touch event emission
@@ -36,9 +38,9 @@ No API keys. No config. Just works.
 - **Local Integration Console** (`veille` CLI + FastAPI + React web UI) — register workflows, connect providers, run live, inspect execution
 - Local development environment (Docker Compose + pytest)
 
-## Quickstart
+## 🛠️ Development Setup
 
-### Prerequisites
+### ⚙️ Prerequisites
 
 - Python 3.12+
 - Docker Desktop (optional, for Postgres/Redis/MinIO scaffold)
@@ -103,7 +105,7 @@ python -m supervisor.cli explore --live --scenario expensive --policy --otel
 
 No API keys required. Mock models and tools are used by default.
 
-## Repository layout
+## 📁 Repository layout
 
 ```text
 src/supervisor/          Core contracts, SDK, adapters, analytics, policy, telemetry, CLI, console
@@ -115,7 +117,7 @@ ui/                      React+TypeScript+Vite web UI (veille console frontend)
 templates/               Baseline measurement templates
 ```
 
-## Documentation
+## 📚 Documentation
 
 | Document | Description |
 |---|---|
@@ -139,6 +141,6 @@ templates/               Baseline measurement templates
 | [OpenAI Agents SDK](docs/guides/openai-agents-sdk.md) | Running an OpenAI Agents SDK workflow |
 | [LiteLLM integration](docs/guides/litellm-integration.md) | Using LiteLLM for multi-provider access |
 
-## License
+## 📜 License
 
 MIT
