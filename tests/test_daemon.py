@@ -60,3 +60,51 @@ def test_daemon_persists_project_run_batch_with_token(tmp_path: object) -> None:
     assert saved.status_code == 200
     assert loaded.json()["run_id"] == "run-1"
     assert absent.status_code == 404
+
+
+def test_daemon_ready_endpoint_reports_write_capacity(tmp_path: object) -> None:
+    client = TestClient(create_daemon_app(tmp_path / "veille.db", max_inflight_writes=3))  # type: ignore[operator]
+
+    response = client.get("/ready")
+
+    assert response.status_code == 200
+    assert response.json()["max_inflight_writes"] == 3
+
+
+def test_daemon_recovers_persisted_project_data_after_restart(tmp_path: object) -> None:
+    database = tmp_path / "veille.db"  # type: ignore[operator]
+    proposal = build_preflight(
+        PreflightRequest(task_contract=TaskContract(task_id="t", task="restart demo"))
+    )
+    first = TestClient(create_daemon_app(database, token="test-token"))
+    saved = first.post(
+        "/projects/alpha/proposals",
+        json=proposal.model_dump(mode="json"),
+        headers={"X-Veille-Token": "test-token"},
+    )
+    restarted = TestClient(create_daemon_app(database, token="test-token"))
+    loaded = restarted.get(
+        f"/projects/alpha/proposals/{proposal.proposal_id}",
+        headers={"X-Veille-Token": "test-token"},
+    )
+
+    assert saved.status_code == 200
+    assert loaded.status_code == 200
+    assert loaded.json()["proposal_id"] == proposal.proposal_id
+
+
+def test_daemon_rejects_writes_when_bounded_capacity_is_saturated(tmp_path: object) -> None:
+    app = create_daemon_app(tmp_path / "veille.db", token="test-token", max_inflight_writes=1)  # type: ignore[operator]
+    write_slots = app.state.write_slots
+    assert write_slots.acquire(blocking=False)
+    client = TestClient(app)
+    batch = RunEventBatch(run_id="run-1", task_id="t", events=[])
+    response = client.post(
+        "/projects/alpha/runs",
+        json=batch.model_dump(mode="json"),
+        headers={"X-Veille-Token": "test-token"},
+    )
+    write_slots.release()
+
+    assert response.status_code == 429
+    assert response.headers["retry-after"] == "1"

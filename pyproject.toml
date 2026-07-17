@@ -78,5 +78,5 @@ packages = ["supervisor"]
 mypy_path = "src"
 
 [[tool.mypy.overrides]]
-module = ["langgraph.*", "langchain_core.*", "opentelemetry.*", "litellm.*"]
+module = ["langgraph.*", "langchain_core.*", "opentelemetry.*", "litellm.*", "psycopg.*"]
 ignore_missing_imports = true

@@ -266,7 +266,11 @@ def _daemon(args: argparse.Namespace) -> int:
     except Exception as exc:  # noqa: BLE001
         print(f"Daemon host requires the 'ui' extra. ({exc})", file=sys.stderr)
         return 1
-    uvicorn.run(create_daemon_app(args.database), host=args.host, port=args.port)
+    uvicorn.run(
+        create_daemon_app(args.database, max_inflight_writes=args.max_inflight_writes),
+        host=args.host,
+        port=args.port,
+    )
     return 0
 
 
@@ -404,6 +408,12 @@ def _add_subparsers(sub: argparse._SubParsersAction[Any]) -> None:
     daemon.add_argument("--host", default="127.0.0.1")
     daemon.add_argument("--port", type=int, default=8020)
     daemon.add_argument("--database", default=".veille/veille.db")
+    daemon.add_argument(
+        "--max-inflight-writes",
+        type=int,
+        default=16,
+        help="Maximum concurrent durable writes before requests receive HTTP 429.",
+    )
     daemon.set_defaults(func=_daemon)
 
     execute = sub.add_parser(
