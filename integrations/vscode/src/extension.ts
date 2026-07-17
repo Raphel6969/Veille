@@ -1,16 +1,17 @@
 import * as vscode from "vscode";
 
 export function activate(context: vscode.ExtensionContext) {
+  const setting = (name: string) => vscode.workspace.getConfiguration("veille").get<string>(name)!;
   context.subscriptions.push(vscode.commands.registerCommand("veille.preflight", async () => {
     const task = await vscode.window.showInputBox({ prompt: "Task-contract YAML path", value: "task_contract.yaml" });
     if (!task) return;
     const terminal = vscode.window.createTerminal("VEILLE");
     terminal.show();
-    terminal.sendText(`veille preflight "${task}" --output .veille/proposal.json`);
+    terminal.sendText(`${setting("cliPath")} preflight "${task}" --output "${setting("proposalPath")}"`);
   }));
 
   context.subscriptions.push(vscode.commands.registerCommand("veille.viewProposal", async () => {
-    const proposal = vscode.Uri.joinPath(vscode.workspace.workspaceFolders?.[0]?.uri ?? vscode.Uri.file("."), ".veille", "proposal.json");
+    const proposal = vscode.Uri.joinPath(vscode.workspace.workspaceFolders?.[0]?.uri ?? vscode.Uri.file("."), ...setting("proposalPath").split("/"));
     try {
       await vscode.workspace.fs.stat(proposal);
       await vscode.window.showTextDocument(proposal, { preview: true });
@@ -27,12 +28,12 @@ export function activate(context: vscode.ExtensionContext) {
     if (confirmed !== "Approve & Run") return;
     const terminal = vscode.window.createTerminal("VEILLE");
     terminal.show();
-    terminal.sendText("veille run cited_market_research --proposal .veille/proposal.json --approve");
+    terminal.sendText(`${setting("cliPath")} run ${setting("defaultWorkflow")} --proposal "${setting("proposalPath")}" --approve`);
   }));
 
   context.subscriptions.push(vscode.commands.registerCommand("veille.daemonHealth", async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8020/health");
+      const response = await fetch(`${setting("daemonUrl")}/health`);
       const health = await response.json() as { status?: string };
       vscode.window.showInformationMessage(`VEILLE daemon: ${health.status ?? "unknown"}`);
     } catch {

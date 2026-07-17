@@ -8,6 +8,15 @@
   "activationEvents": ["onCommand:veille.preflight", "onCommand:veille.daemonHealth"],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "VEILLE",
+      "properties": {
+        "veille.cliPath": { "type": "string", "default": "veille", "description": "VEILLE CLI executable." },
+        "veille.daemonUrl": { "type": "string", "default": "http://127.0.0.1:8020", "description": "Local VEILLE daemon URL." },
+        "veille.proposalPath": { "type": "string", "default": ".veille/proposal.json", "description": "Workspace-relative proposal JSON path." },
+        "veille.defaultWorkflow": { "type": "string", "default": "cited_market_research", "description": "Workflow used by Approve & Run." }
+      }
+    },
     "commands": [
       { "command": "veille.preflight", "title": "VEILLE: Create Preflight Proposal" },
       { "command": "veille.viewProposal", "title": "VEILLE: View Preflight Proposal" },

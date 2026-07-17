@@ -7,3 +7,6 @@ daemon health endpoint.
 Commands: create/view `.veille/proposal.json`, explicitly approve and run the
 safe cited-market-research workflow, and check daemon health. Run `npm install`,
 then `npm run compile`; launch it through VS Code's extension development host.
+
+Settings: `veille.cliPath`, `veille.daemonUrl`, `veille.proposalPath`, and
+`veille.defaultWorkflow`.
