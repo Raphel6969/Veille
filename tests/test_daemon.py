@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 
 from supervisor.contracts import PreflightRequest, TaskContract
+from supervisor.contracts.events import RunEventBatch
 from supervisor.daemon import create_daemon_app
 from supervisor.preflight import build_preflight
 
@@ -42,3 +43,20 @@ def test_daemon_persists_project_proposal_with_token(tmp_path: object) -> None:
     assert denied.status_code == 401
     assert saved.status_code == 200
     assert loaded.json()["proposal_id"] == proposal.proposal_id
+
+
+def test_daemon_persists_project_run_batch_with_token(tmp_path: object) -> None:
+    client = TestClient(create_daemon_app(tmp_path / "veille.db", token="test-token"))  # type: ignore[operator]
+    batch = RunEventBatch(run_id="run-1", task_id="t", events=[])
+
+    saved = client.post(
+        "/projects/alpha/runs",
+        json=batch.model_dump(mode="json"),
+        headers={"X-Veille-Token": "test-token"},
+    )
+    loaded = client.get("/projects/alpha/runs/run-1", headers={"X-Veille-Token": "test-token"})
+    absent = client.get("/projects/beta/runs/run-1", headers={"X-Veille-Token": "test-token"})
+
+    assert saved.status_code == 200
+    assert loaded.json()["run_id"] == "run-1"
+    assert absent.status_code == 404

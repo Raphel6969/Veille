@@ -7,6 +7,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException
 
+from supervisor.contracts.events import RunEventBatch
 from supervisor.contracts.preflight import PreflightProposal
 from supervisor.storage import SQLiteProposalRepository
 
@@ -35,6 +36,26 @@ def create_daemon_app(
         require_token(x_veille_token)
         repository.save_project_proposal(project_id, proposal)
         return {"proposal_id": proposal.proposal_id, "project_id": project_id}
+
+    @app.post("/projects/{project_id}/runs")
+    def save_run(
+        project_id: str,
+        batch: RunEventBatch,
+        x_veille_token: str | None = Header(default=None),
+    ) -> dict[str, str]:
+        require_token(x_veille_token)
+        repository.save_project_run(project_id, batch)
+        return {"run_id": batch.run_id, "project_id": project_id}
+
+    @app.get("/projects/{project_id}/runs/{run_id}")
+    def run(
+        project_id: str, run_id: str, x_veille_token: str | None = Header(default=None)
+    ) -> dict[str, str]:
+        require_token(x_veille_token)
+        found = repository.load_project_run(project_id, run_id)
+        if found is None:
+            raise HTTPException(status_code=404, detail="Run not found.")
+        return {"run_id": found.run_id, "project_id": project_id}
 
     @app.get("/projects/{project_id}/proposals/{proposal_id}")
     def proposal(
