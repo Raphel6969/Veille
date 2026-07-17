@@ -24,7 +24,7 @@ class OpenAIResponsesAdapter(GenericFrameworkAdapter):
         # When the real SDK is present, route through the Responses client so the
         # native trace is captured; otherwise run the generic instrumented callable.
         try:  # pragma: no cover - optional dependency
-            from openai import OpenAI  # type: ignore
+            from openai import OpenAI
 
             if hasattr(target, "run") or hasattr(target, "invoke"):
 
