@@ -35,8 +35,11 @@ from supervisor.sdk import Supervisor
 
 app = FastAPI(title="Veille Local Integration Console", version="0.1.0")
 
-# Mount built React UI assets when available (must be before the catch-all route).
-_UI_DIR = Path(__file__).resolve().parents[3] / "ui" / "dist"
+# Mount packaged React assets when available (must be before the catch-all route).
+# The repository path is retained solely for `npm run dev` / local builds.
+_PACKAGED_UI_DIR = Path(__file__).resolve().parent / "ui"
+_REPOSITORY_UI_DIR = Path(__file__).resolve().parents[3] / "ui" / "dist"
+_UI_DIR = _PACKAGED_UI_DIR if _PACKAGED_UI_DIR.is_dir() else _REPOSITORY_UI_DIR
 _UI_READY = _UI_DIR.is_dir()
 if _UI_READY:
     app.mount("/assets", StaticFiles(directory=str(_UI_DIR / "assets")), name="ui-assets")

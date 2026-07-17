@@ -71,6 +71,7 @@ export interface RunView {
   context: unknown[];
   cache: Record<string, unknown>;
   validation: Record<string, unknown>;
+  policy?: { policy_events?: unknown[]; intervention_events?: unknown[] };
   providers: string[];
 }
 

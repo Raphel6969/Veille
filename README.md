@@ -10,7 +10,7 @@ Control plane for production AI-agent work. The Supervisor plans, contextualizes
 pip install veille-supervisor
 veille demo              # run the mock demo agent
 veille explore           # browse timeline + graphs
-veille serve             # web UI at http://localhost:8010
+veille serve             # web UI at http://127.0.0.1:8000
 veille exec app.py       # observe an existing Python app without changing it
 ```
 

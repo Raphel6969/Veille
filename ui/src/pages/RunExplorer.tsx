@@ -1,56 +1,94 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import * as api from "../api";
+
+type TimelineEvent = {
+  timestamp?: string | null;
+  event_type?: string;
+  tool_name?: string | null;
+  model_name?: string | null;
+  status?: string | null;
+  duration_ms?: number | null;
+  cost_usd?: number | null;
+};
+
+function value(summary: Record<string, unknown>, key: string): string {
+  const item = summary[key];
+  if (typeof item === "number") return key.includes("cost") ? `$${item.toFixed(4)}` : String(item);
+  if (typeof item === "boolean") return item ? "Yes" : "No";
+  return item == null ? "—" : String(item);
+}
 
 export default function RunExplorer() {
   const [runList, setRunList] = useState<api.RunView[]>([]);
   const [selected, setSelected] = useState<api.RunView | null>(null);
-  const [baseline, setBaseline] = useState<api.RunView | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [params] = useSearchParams();
 
-  useEffect(() => {
-    api.runs().then(setRunList).catch(() => {});
-  }, []);
-
-  const view = (runId: string) => {
-    api.runDetail(runId).then(setSelected).catch(() => {
-      const found = runList.find((r) => r.run_id === runId);
-      setSelected(found || null);
-    });
+  const view = async (runId: string) => {
+    setError(null);
+    try {
+      setSelected(await api.runDetail(runId));
+    } catch (loadError: unknown) {
+      setError(loadError instanceof Error ? loadError.message : "Unable to load this run.");
+    }
   };
+
+  useEffect(() => { api.runs().then(setRunList).catch(() => setError("Unable to load saved runs.")); }, []);
+  useEffect(() => {
+    const runId = params.get("selected");
+    if (runId) void view(runId);
+  }, [params]);
+
+  const summary = selected?.summary ?? {};
+  const timeline = (selected?.timeline ?? []) as TimelineEvent[];
+  const policy = selected?.policy as { policy_events?: unknown[]; intervention_events?: unknown[] } | undefined;
+  const cache = selected?.cache ?? {};
+  const validation = selected?.validation ?? {};
 
   return (
     <div>
       <h2>Run Explorer</h2>
-      <div style={{ display: "flex", gap: 16 }}>
-        <div style={{ width: 300 }}>
+      <p style={{ color: "#475467" }}>Select a saved run to inspect the operational evidence Veille captured.</p>
+      <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+        <aside style={{ width: 330, background: "#fff", border: "1px solid #ddd", padding: 12 }}>
           <h3>Saved Runs</h3>
-          {runList.length === 0 && <p>No runs yet.</p>}
-          {runList.map((r) => (
-            <div
-              key={r.run_id}
-              onClick={() => { view(r.run_id); setBaseline(baseline ? null : r); }}
-              style={{
-                cursor: "pointer",
-                padding: 4,
-                background: selected?.run_id === r.run_id ? "#e0e0e0" : undefined,
-              }}
+          {runList.length === 0 && <p>No runs yet. Run a workflow first.</p>}
+          {runList.map((run) => (
+            <button
+              key={run.run_id}
+              onClick={() => void view(run.run_id)}
+              style={{ display: "block", width: "100%", textAlign: "left", margin: "6px 0", padding: 8, border: "1px solid #ccc", background: selected?.run_id === run.run_id ? "#d1fadf" : "#fff", cursor: "pointer" }}
             >
-              {r.run_id.substring(0, 8)} — {r.task_id}
-            </div>
+              <strong>{run.run_id.substring(0, 8)}</strong><br />{run.task_id}
+            </button>
           ))}
-        </div>
-        <div style={{ flex: 1 }}>
-          <h3>{baseline && selected ? "Baseline vs selected" : "Detail"}</h3>
-          {baseline && selected && <div style={{ background: "#fff", border: "1px solid #e8e7e3", borderRadius: 12, padding: 16, marginBottom: 12 }}>
-            <p style={{ color: "#667085" }}>Comparison uses the same normalized run summaries shown by VEILLE.</p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-              <b>Metric</b><b>Baseline</b><b>Selected</b>
-              {[["Cost", "total_cost_usd"], ["Latency", "total_latency_s"], ["Tool calls", "tool_calls"], ["Validation", "validation_checks"]].map(([label, key]) => <><span key={`${key}-label`}>{label}</span><span key={`${key}-base`}>{String(baseline.summary[key])}</span><span key={`${key}-selected`}>{String(selected.summary[key])}</span></>)}
+        </aside>
+        <section style={{ flex: 1, minWidth: 0 }}>
+          <h3>Evidence</h3>
+          {error && <p style={{ color: "#b42318" }}>{error}</p>}
+          {!selected && !error && <p>Select a run on the left. Its cost, policy, validation, cache, and event timeline will appear here.</p>}
+          {selected && <>
+            <p><strong>Run:</strong> {selected.run_id} &nbsp; <strong>Task:</strong> {selected.task_id}</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(140px, 1fr))", gap: 10 }}>
+              {["total_cost_usd", "total_latency_s", "tool_calls", "cache_served", "semantic_duplicates", "estimated_savings_usd"].map((key) => (
+                <div key={key} style={{ background: "#fff", border: "1px solid #ddd", padding: 10 }}>
+                  <small>{key.replace(/_/g, " ")}</small><br /><strong>{value(summary, key)}</strong>
+                </div>
+              ))}
             </div>
-          </div>}
-          {selected && (
-            <pre style={{ fontSize: 12 }}>{JSON.stringify(selected, null, 2)}</pre>
-          )}
-        </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginTop: 12 }}>
+              <div style={{ background: "#fff", border: "1px solid #ddd", padding: 10 }}><strong>Policy events</strong><br />{policy?.policy_events?.length ?? 0}</div>
+              <div style={{ background: "#fff", border: "1px solid #ddd", padding: 10 }}><strong>Cache reuse</strong><br />{value(cache, "served")} served / {value(cache, "hits")} hits</div>
+              <div style={{ background: "#fff", border: "1px solid #ddd", padding: 10 }}><strong>Validation</strong><br />{value(validation, "status")}</div>
+            </div>
+            <h4 style={{ marginTop: 20 }}>Timeline</h4>
+            <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff" }}>
+              <thead><tr><th>Event</th><th>Tool / model</th><th>Status</th><th>Duration</th><th>Cost</th></tr></thead>
+              <tbody>{timeline.map((event, index) => <tr key={`${event.timestamp ?? "event"}-${index}`}><td>{event.event_type}</td><td>{event.tool_name ?? event.model_name ?? "—"}</td><td>{event.status ?? "—"}</td><td>{event.duration_ms == null ? "—" : `${event.duration_ms} ms`}</td><td>{event.cost_usd == null ? "—" : `$${event.cost_usd.toFixed(4)}`}</td></tr>)}</tbody>
+            </table>
+          </>}
+        </section>
       </div>
     </div>
   );
