@@ -27,7 +27,30 @@ The product rule is non-negotiable:
 
 ## AI handoff context (read this first)
 
+**Latest verified status (2026-07-17; supersedes older handoff wording below):**
+
+- Phases 0???4, 5, 6, and 7 are complete.
+- Phase 5 now has redaction-first console trace projections, including nested
+  credential-shaped fields, API regression coverage, and a verified React production build.
+- Phase 6 now has daemon readiness, bounded durable-write admission (`429` + retry),
+  restart-recovery/backpressure coverage, and a self-hosted pilot operations runbook.
+- Verification: 210 Python tests passed, 1 skipped; Ruff, format check, strict mypy,
+  and the UI production build all passed.
+- **Active next work:** Phase 8. Dogfood a permissioned, read-only workflow, collect
+  sanitized evidence, then prepare the partner-evaluation package before recruiting
+  3???5 design partners. Do not make broad-production claims.
+
 **Goal:** VEILLE is a pre-execution control plane: request + master context →
+**Phase 8 implementation update (2026-07-17):**
+
+- Repository deliverables are complete: sanitized-fixture replay, validation-gated
+  scorecards, pilot checklist, and claims-disciplined demo rehearsal.
+- Verification: 216 Python tests passed, 1 skipped; Ruff, format check, strict mypy,
+  and the React production build passed.
+- The external exit criterion remains pending: collect permissioned real-workflow
+  evidence and obtain independent evaluation from 3???5 design partners.
+- Do not mark the broad-production gate complete or claim partner outcomes before then.
+
 advisory proposal → explicit approval → role-specific context/routes → validated
 run evidence. It is not an agent framework or a model gateway.
 
@@ -197,7 +220,7 @@ application preflight orchestration without integration points.
 **Goal:** make the preflight decision understandable without creating a second
 runtime.
 
-**Status:** Core flow delivered; hardening/UI-test remainder pending.
+**Status:** Complete (2026-07-17).
 
 **Exit:** the console renders the same persisted proposal and run events emitted
 by the runtime.
@@ -214,8 +237,7 @@ by the runtime.
 **Goal:** support real multi-process pilots without making a hosted platform
 prematurely.
 
-**Status:** Local SQLite daemon + initial project/token guard delivered; pilot
-hardening remainder pending.
+**Status:** Complete (2026-07-17).
 
 **Exit:** a locally/self-hosted daemon hosts the same runtime state and audit
 path, with reliable recovery and operational visibility.
