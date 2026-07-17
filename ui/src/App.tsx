@@ -20,23 +20,20 @@ const links = [
 export default function App() {
   return (
     <BrowserRouter>
-      <nav style={{ display: "flex", gap: 18, padding: "14px 28px", background: "#182230" }}>
+      <nav className="glass-panel" style={{ display: "flex", gap: 18, padding: "14px 28px", margin: "16px", borderBottom: "none", alignItems: "center" }}>
+        <strong style={{ marginRight: "16px", color: "var(--text-primary)" }}>Veille</strong>
         {links.map((l) => (
           <NavLink
             key={l.to}
             to={l.to}
             end={l.to === "/"}
-            style={({ isActive }) => ({
-              color: isActive ? "#ffffff" : "#aab4c4",
-              fontWeight: isActive ? 700 : 500,
-              textDecoration: "none",
-            })}
+            className="nav-link"
           >
             {l.label}
           </NavLink>
         ))}
       </nav>
-      <main style={{ minHeight: "calc(100vh - 52px)", padding: 16, background: "#f8f8f6", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}>
+      <main style={{ minHeight: "calc(100vh - 84px)", padding: "0 16px 16px 16px" }}>
         <Routes>
           <Route path="/" element={<Overview />} />
           <Route path="/workflows" element={<Workflows />} />

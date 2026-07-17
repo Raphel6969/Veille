@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as api from "../api";
+import { Dropdown } from "../components/Dropdown";
 
 export default function Workflows() {
   const [wfs, setWfs] = useState<api.WorkflowInfo[]>([]);
@@ -29,31 +30,30 @@ export default function Workflows() {
   return (
     <div>
       <h2>Workflows</h2>
-      <p style={{ color: "#475467" }}>Choose the scenario, run it, then open its evidence in Run Explorer.</p>
+      <p className="text-subtle">Choose the scenario, run it, then open its evidence in Run Explorer.</p>
       {wfs.map((workflow) => (
-        <div key={workflow.name} style={{ border: "1px solid #ccc", margin: "8px 0", padding: 12, background: "#fff" }}>
-          <strong>{workflow.name}</strong> <em>({workflow.framework})</em>
+        <div key={workflow.name} className="glass-card" style={{ marginBottom: 16 }}>
+          <strong>{workflow.name}</strong> <em className="text-subtle">({workflow.framework})</em>
           <p>{workflow.description}</p>
-          <label>
-            Scenario{" "}
-            <select
+          <label className="text-subtle" style={{ marginRight: 12, display: "inline-flex", alignItems: "center", gap: 8 }}>
+            Scenario
+            <Dropdown
               value={scenarioFor(workflow)}
-              onChange={(event) => setScenarios({ ...scenarios, [workflow.name]: event.target.value })}
+              options={workflow.scenarios}
+              onChange={(val) => setScenarios({ ...scenarios, [workflow.name]: val })}
               disabled={running !== null}
-            >
-              {workflow.scenarios.map((scenario) => <option key={scenario} value={scenario}>{scenario}</option>)}
-            </select>
-          </label>{" "}
-          <button onClick={() => run(workflow)} disabled={running !== null}>
+            />
+          </label>
+          <button className="glass-button" onClick={() => run(workflow)} disabled={running !== null}>
             {running === workflow.name ? "Running..." : "Run workflow"}
           </button>
         </div>
       ))}
       {result && (
-        <div style={{ marginTop: 16, padding: 12, background: "#ecfdf3", border: "1px solid #abefc6" }}>
-          <strong>Run captured:</strong> {result.run_id}
-          <div style={{ marginTop: 8 }}>
-            <button onClick={() => navigate(`/runs?selected=${result.run_id}`)}>View evidence in Run Explorer</button>
+        <div className="glass-alert" style={{ marginTop: 16, borderColor: "rgba(16, 185, 129, 0.3)", color: "#34d399", background: "rgba(16, 185, 129, 0.1)" }}>
+          <strong style={{ color: "#fff" }}>Run captured:</strong> {result.run_id}
+          <div style={{ marginTop: 12 }}>
+            <button className="glass-button" onClick={() => navigate(`/runs?selected=${result.run_id}`)}>View evidence in Run Explorer</button>
           </div>
         </div>
       )}

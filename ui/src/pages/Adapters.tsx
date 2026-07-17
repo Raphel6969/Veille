@@ -9,7 +9,8 @@ export default function Adapters() {
   return (
     <div>
       <h2>Adapters</h2>
-      <table>
+      <div className="glass-panel" style={{ padding: 0, overflowX: "auto" }}>
+      <table className="glass-table">
         <thead><tr><th>Name</th><th>Status</th><th>Description</th></tr></thead>
         <tbody>
           {items.map((a) => (
@@ -21,6 +22,7 @@ export default function Adapters() {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
