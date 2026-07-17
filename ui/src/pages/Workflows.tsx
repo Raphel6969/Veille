@@ -28,7 +28,7 @@ export default function Workflows() {
           <strong>{w.name}</strong> <em>({w.framework})</em>
           <p>{w.description}</p>
           <button onClick={() => run(w.name)} disabled={running}>
-            {running ? "Running..." : `Run (${w.default_scenarios[0]})`}
+            {running ? "Running..." : `Run (${w.scenarios[0] ?? "default"})`}
           </button>
         </div>
       ))}

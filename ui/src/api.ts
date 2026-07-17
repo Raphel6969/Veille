@@ -40,7 +40,7 @@ export interface WorkflowInfo {
   framework: string;
   supports_real: boolean;
   description: string;
-  default_scenarios: string[];
+  scenarios: string[];
 }
 
 export interface ConnectionInfo {
