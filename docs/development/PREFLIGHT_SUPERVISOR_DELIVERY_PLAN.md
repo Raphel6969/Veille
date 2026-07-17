@@ -34,7 +34,8 @@ run evidence. It is not an agent framework or a model gateway.
 **Golden Rule:** implement behavior once in the Runtime Supervisor. SDK, CLI,
 console, LangGraph adapter, and daemon are thin entry points only.
 
-**Delivered through Phase 6 hardening + Phase 7 scaffold:**
+**Delivered through the Phase 6 durable-runtime foundation and Phase 7 IDE
+preview:**
 
 - `import veille`; `veille exec`; `veille preflight`; approved CLI runs; trace comparison.
 - `Supervisor.preflight(PreflightRequest)` returns deterministic
@@ -72,7 +73,7 @@ an installable VSIX.
 **Next work (in order):**
 
 1. Finish Phase 6 hardening: recovery/backpressure tests and a pilot runbook.
-3. Phase 8: dogfood on a real read-only workflow, collect sanitized traces, and
+2. Phase 8: dogfood on a real read-only workflow, collect sanitized traces, and
    recruit 3–5 design partners. Do not claim broad production readiness first.
 
 **Verify before/after changes:**
@@ -234,8 +235,8 @@ path, with reliable recovery and operational visibility.
 **Goal:** give local developers useful feedback without duplicating runtime
 logic.
 
-**Status:** VS Code scaffold implemented and TypeScript-checked; settings,
-integration tests, packaging, and commit pending.
+**Status:** Complete as an IDE preview (2026-07-17). The configurable VS Code
+thin client has command integration tests and produces an installable VSIX.
 
 **Exit:** one IDE extension launches/reads the same CLI or daemon runs.
 
@@ -270,6 +271,6 @@ and evaluate measurable, validated outcomes.
 
 ## Suggested next implementation phase
 
-Begin **Phase 1 — Preflight contracts and decision record**. It creates the
-single product object every future entry point needs and turns existing advisory
-planner/context/router components into one coherent runtime operation.
+Finish **Phase 6 — Durable pilot runtime and daemon host** hardening. Add
+recovery and backpressure coverage plus a self-hosted pilot operations runbook
+before starting Phase 8 dogfooding and design-partner recruitment.
