@@ -272,6 +272,9 @@ thin client has command integration tests and produces an installable VSIX.
 
 **Goal:** prove usefulness on real, permissioned workflows before broad claims.
 
+
+**Status:** Repository implementation complete; external pilot evidence and independent design-partner evaluation pending.
+
 **Exit:** 3–5 design partners can independently run VEILLE on safe workloads
 and evaluate measurable, validated outcomes.
 
