@@ -65,13 +65,13 @@ review/approval/comparison flow, but needs richer redacted trace views and UI
 tests. Phase 6 now has authenticated project proposal/run APIs, SQLite by
 default, and a verified optional Postgres/Supabase repository selected from
 `DB_URL`; it is **not production-pilot complete** until recovery/backpressure
-testing and an operations runbook exist. Phase 7 has a configurable, compiled
-VS Code thin-client scaffold; integration tests and packaging remain.
+testing and an operations runbook exist. Phase 7 is complete as an IDE preview:
+the configurable VS Code thin client has command integration tests and produces
+an installable VSIX.
 
 **Next work (in order):**
 
-1. Finish Phase 7: extension integration tests and package/build instructions.
-2. Finish Phase 6 hardening: recovery/backpressure tests and a pilot runbook.
+1. Finish Phase 6 hardening: recovery/backpressure tests and a pilot runbook.
 3. Phase 8: dogfood on a real read-only workflow, collect sanitized traces, and
    recruit 3–5 design partners. Do not claim broad production readiness first.
 

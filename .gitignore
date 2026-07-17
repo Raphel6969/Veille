@@ -46,6 +46,8 @@ htmlcov/
 
 # Node / UI
 node_modules/
+*.vsix
+integrations/vscode/out/
 ui/dist/
 ui/node_modules/
 *.tsbuildinfo

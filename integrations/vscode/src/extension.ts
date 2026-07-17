@@ -1,17 +1,26 @@
 import * as vscode from "vscode";
+import { approvedRunCommand, daemonHealthUrl, preflightCommand, VeilleSettings } from "./commands";
 
 export function activate(context: vscode.ExtensionContext) {
-  const setting = (name: string) => vscode.workspace.getConfiguration("veille").get<string>(name)!;
+  const settings = (): VeilleSettings => {
+    const configuration = vscode.workspace.getConfiguration("veille");
+    return {
+      cliPath: configuration.get<string>("cliPath")!,
+      daemonUrl: configuration.get<string>("daemonUrl")!,
+      proposalPath: configuration.get<string>("proposalPath")!,
+      defaultWorkflow: configuration.get<string>("defaultWorkflow")!,
+    };
+  };
   context.subscriptions.push(vscode.commands.registerCommand("veille.preflight", async () => {
     const task = await vscode.window.showInputBox({ prompt: "Task-contract YAML path", value: "task_contract.yaml" });
     if (!task) return;
     const terminal = vscode.window.createTerminal("VEILLE");
     terminal.show();
-    terminal.sendText(`${setting("cliPath")} preflight "${task}" --output "${setting("proposalPath")}"`);
+    terminal.sendText(preflightCommand(settings(), task));
   }));
 
   context.subscriptions.push(vscode.commands.registerCommand("veille.viewProposal", async () => {
-    const proposal = vscode.Uri.joinPath(vscode.workspace.workspaceFolders?.[0]?.uri ?? vscode.Uri.file("."), ...setting("proposalPath").split("/"));
+    const proposal = vscode.Uri.joinPath(vscode.workspace.workspaceFolders?.[0]?.uri ?? vscode.Uri.file("."), ...settings().proposalPath.split("/"));
     try {
       await vscode.workspace.fs.stat(proposal);
       await vscode.window.showTextDocument(proposal, { preview: true });
@@ -28,12 +37,12 @@ export function activate(context: vscode.ExtensionContext) {
     if (confirmed !== "Approve & Run") return;
     const terminal = vscode.window.createTerminal("VEILLE");
     terminal.show();
-    terminal.sendText(`${setting("cliPath")} run ${setting("defaultWorkflow")} --proposal "${setting("proposalPath")}" --approve`);
+    terminal.sendText(approvedRunCommand(settings()));
   }));
 
   context.subscriptions.push(vscode.commands.registerCommand("veille.daemonHealth", async () => {
     try {
-      const response = await fetch(`${setting("daemonUrl")}/health`);
+      const response = await fetch(daemonHealthUrl(settings()));
       const health = await response.json() as { status?: string };
       vscode.window.showInformationMessage(`VEILLE daemon: ${health.status ?? "unknown"}`);
     } catch {
