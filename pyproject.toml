@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "veille-supervisor"
-version = "0.3.1"
+version = "0.3.3"
 description = "Control plane for production AI-agent work: plan, govern, and verify agent runs."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -48,12 +48,19 @@ ui = [
     "fastapi>=0.110,<1",
     "uvicorn>=0.30,<1",
 ]
+postgres = [
+    "psycopg[binary]>=3.2,<4",
+]
 
 [project.scripts]
 veille = "supervisor.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/supervisor"]
+packages = ["src/supervisor", "src/veille", "examples"]
+force-include = { "ui/dist" = "supervisor/console/ui" }
+
+[tool.hatch.build.targets.sdist]
+artifacts = ["ui/dist/**"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -75,5 +82,5 @@ packages = ["supervisor"]
 mypy_path = "src"
 
 [[tool.mypy.overrides]]
-module = ["langgraph.*", "langchain_core.*", "opentelemetry.*", "litellm.*"]
+module = ["langgraph.*", "langchain_core.*", "opentelemetry.*", "litellm.*", "psycopg.*"]
 ignore_missing_imports = true

@@ -13,7 +13,8 @@ export default function Overview() {
   return (
     <div>
       <h2>Overview</h2>
-      <table>
+      <div className="glass-panel" style={{ padding: "0" }}>
+      <table className="glass-table">
         <tbody>
           <tr><td>Python</td><td>{d.python_version}</td></tr>
           <tr><td>Runtime</td><td>{d.runtime_version}</td></tr>
@@ -27,8 +28,9 @@ export default function Overview() {
           <tr><td>Workflows</td><td>{d.registered_workflows.join(", ")}</td></tr>
         </tbody>
       </table>
+      </div>
       {d.warnings.length > 0 && (
-        <div style={{ background: "#fff3cd", padding: 8, marginTop: 12 }}>
+        <div className="glass-alert" style={{ marginTop: 24 }}>
           <strong>Warnings:</strong>
           <ul>{d.warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
         </div>

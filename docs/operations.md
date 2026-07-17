@@ -145,6 +145,30 @@ Set `LOG_LEVEL` in `.env`. The demo and `run-explorer` print summaries to stdout
 
 ## Runbooks
 
+
+### Self-hosted pilot daemon (Phase 6)
+
+Use a local, project-scoped database and a non-empty daemon token. Bind to loopback by
+default; put TLS and an authenticated reverse proxy in front of it before exposing it
+outside the host.
+
+```powershell
+$env:VEILLE_DAEMON_TOKEN = "replace-with-a-long-random-secret"
+veille daemon --host 127.0.0.1 --port 8020 --database .veille/veille.db --max-inflight-writes 16
+```
+
+- Check liveness with `GET /health` and admission readiness with `GET /ready`.
+  The latter reports the configured durable-write limit.
+- Clients must send `X-Veille-Token`; never put this token in source control, traces,
+  command history, or a URL. Use a secret manager or protected environment injection.
+- A saturated daemon returns `429` with `Retry-After: 1`. Retry only idempotent proposal
+  and run uploads with exponential backoff; do not send unbounded parallel retries.
+- Stop the daemon cleanly before copying `.veille/veille.db`. Keep encrypted backups
+  according to the pilot's agreed retention window, and periodically prove a restore by
+  starting `veille daemon` against a copied database and reading a known project record.
+- For an incident, stop new clients, preserve the database copy and daemon logs, rotate
+  `VEILLE_DAEMON_TOKEN`, then restart. Roll back by pointing the daemon at the last
+  verified database backup; do not edit SQLite tables manually.
 - **Enabling observe-mode policies:** they run by default in `evaluate_observe`; use `python -m supervisor.cli explore --live --scenario expensive --policy` to view matches.
 - **Enabling enforcement (Phase 2):** set `SUPERVISOR_ENFORCE=true` (or construct `Supervisor(enforce=True)`). Policies act per their configured action (`block`/`stop`/`pause`). Default is observe — enforcement never changes behavior unless explicitly enabled.
 - **Enabling advisory planning (Phase 3):** set `SUPERVISOR_PLAN=1` (or call `Supervisor.plan()` before `start_run`). This annotates runs with a `PlanTier` (`run.started.tier`), builds per-step context manifests, and routes models by capability + tier. Default is off — planning is purely advisory and never blocks a run. The plan tier is visible in `RunSummary.plan_tier` and routed calls in `RunSummary.routing`.

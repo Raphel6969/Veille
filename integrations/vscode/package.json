@@ -1,0 +1,81 @@
+{
+  "name": "veille-vscode",
+  "displayName": "VEILLE Preflight",
+  "publisher": "veille",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Raphel6969/Veille.git"
+  },
+  "files": ["out", "README.md", "LICENSE"],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:veille.preflight",
+    "onCommand:veille.daemonHealth"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "VEILLE",
+      "properties": {
+        "veille.cliPath": {
+          "type": "string",
+          "default": "veille",
+          "description": "VEILLE CLI executable."
+        },
+        "veille.daemonUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:8020",
+          "description": "Local VEILLE daemon URL."
+        },
+        "veille.proposalPath": {
+          "type": "string",
+          "default": ".veille/proposal.json",
+          "description": "Workspace-relative proposal JSON path."
+        },
+        "veille.defaultWorkflow": {
+          "type": "string",
+          "default": "cited_market_research",
+          "description": "Workflow used by Approve & Run."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "veille.preflight",
+        "title": "VEILLE: Create Preflight Proposal"
+      },
+      {
+        "command": "veille.viewProposal",
+        "title": "VEILLE: View Preflight Proposal"
+      },
+      {
+        "command": "veille.approveRun",
+        "title": "VEILLE: Approve & Run Workflow"
+      },
+      {
+        "command": "veille.daemonHealth",
+        "title": "VEILLE: Check Local Daemon"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "check": "tsc -p ./ --noEmit",
+    "test": "npm run compile && node --test out/test/commands.test.js",
+    "package": "npm run compile && vsce package --out veille-vscode.vsix"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.9.2",
+    "typescript": "^5.5.4"
+  }
+}

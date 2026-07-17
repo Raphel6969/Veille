@@ -27,6 +27,12 @@ from examples.cited_market_research.trace_capture import validate_brief
 from supervisor.adapters.langgraph.adapter import LangGraphInstrumentedAdapter
 from supervisor.adapters.litellm.mock import LiteLLMMockAdapter
 from supervisor.contracts.events import EventType
+from supervisor.contracts.preflight import (
+    ApprovalDecision,
+    ApprovalStatus,
+    ContextSource,
+    PreflightRequest,
+)
 from supervisor.io import load_task_contract, save_trace_fixture
 from supervisor.memory import MemoryTier
 from supervisor.policy import StopRun, evaluate, evaluate_observe
@@ -78,10 +84,16 @@ class AgentState(TypedDict):
 
 
 def researcher_node(
-    state: AgentState, supervisor: Supervisor, adapter: LiteLLMMockAdapter
+    state: AgentState,
+    supervisor: Supervisor,
+    adapter: LiteLLMMockAdapter,
+    session: Any | None = None,
 ) -> AgentState:
     with supervisor.node(step_id="research", agent_id="researcher", role="researcher"):
-        if _planning_enabled():
+        if session is not None:
+            session.context_for("research")
+            routing = session.route_for("research", "research")
+        elif _planning_enabled():
             supervisor.context(
                 step_id="research",
                 agent_id="researcher",
@@ -170,10 +182,16 @@ def researcher_node(
 
 
 def analyst_node(
-    state: AgentState, supervisor: Supervisor, adapter: LiteLLMMockAdapter
+    state: AgentState,
+    supervisor: Supervisor,
+    adapter: LiteLLMMockAdapter,
+    session: Any | None = None,
 ) -> AgentState:
     with supervisor.node(step_id="analysis", agent_id="analyst", role="analyst"):
-        if _planning_enabled():
+        if session is not None:
+            session.context_for("analysis")
+            analysis_routing = session.route_for("analysis", "analysis")
+        elif _planning_enabled():
             supervisor.context(
                 step_id="analysis",
                 agent_id="analyst",
@@ -275,10 +293,16 @@ def analyst_node(
 
 
 def writer_node(
-    state: AgentState, supervisor: Supervisor, adapter: LiteLLMMockAdapter
+    state: AgentState,
+    supervisor: Supervisor,
+    adapter: LiteLLMMockAdapter,
+    session: Any | None = None,
 ) -> AgentState:
     with supervisor.node(step_id="writing", agent_id="writer", role="writer"):
-        if _planning_enabled():
+        if session is not None:
+            session.context_for("synthesis")
+            writing_routing = session.route_for("synthesis", "synthesis")
+        elif _planning_enabled():
             supervisor.context(
                 step_id="writing",
                 agent_id="writer",
@@ -335,11 +359,13 @@ def writer_node(
         return {**state, "role": "done", "brief": brief}
 
 
-def build_graph(supervisor: Supervisor, adapter: LiteLLMMockAdapter) -> Any:
+def build_graph(
+    supervisor: Supervisor, adapter: LiteLLMMockAdapter, session: Any | None = None
+) -> Any:
     graph = StateGraph(AgentState)
-    graph.add_node("researcher", lambda s: researcher_node(s, supervisor, adapter))
-    graph.add_node("analyst", lambda s: analyst_node(s, supervisor, adapter))
-    graph.add_node("writer", lambda s: writer_node(s, supervisor, adapter))
+    graph.add_node("researcher", lambda s: researcher_node(s, supervisor, adapter, session))
+    graph.add_node("analyst", lambda s: analyst_node(s, supervisor, adapter, session))
+    graph.add_node("writer", lambda s: writer_node(s, supervisor, adapter, session))
     graph.set_entry_point("researcher")
     graph.add_edge("researcher", "analyst")
     graph.add_edge("analyst", "writer")
@@ -347,17 +373,36 @@ def build_graph(supervisor: Supervisor, adapter: LiteLLMMockAdapter) -> Any:
     return graph.compile()
 
 
-def run_scenario(scenario: Literal["success", "expensive", "failed_validation"]) -> dict[str, Any]:
+def run_scenario(
+    scenario: Literal["success", "expensive", "failed_validation"], *, apply_preflight: bool = False
+) -> dict[str, Any]:
     task = load_task_contract(TASK_CONTRACT_PATH)
     enforce = _enforcement_enabled()
     supervisor = Supervisor(task, enforce=enforce)
     supervisor.scenario = scenario
     adapter = LiteLLMMockAdapter(use_mock=True)
 
-    if _planning_enabled():
+    session = None
+    if apply_preflight:
+        proposal = supervisor.preflight(
+            PreflightRequest(
+                task_contract=task,
+                master_context=[
+                    ContextSource(source_id=str(i), content=value)
+                    for i, value in enumerate(MASTER_CONTEXT)
+                ],
+            )
+        )
+        session = supervisor.approve_preflight(
+            proposal,
+            ApprovalDecision(proposal_id=proposal.proposal_id, status=ApprovalStatus.APPROVED),
+        )
+        session.start_run()
+    elif _planning_enabled():
         supervisor.plan()
-    supervisor.start_run()
-    graph = build_graph(supervisor, adapter)
+    if session is None:
+        supervisor.start_run()
+    graph = build_graph(supervisor, adapter, session)
     instrumented = LangGraphInstrumentedAdapter().attach(
         graph, supervisor, auto_run_lifecycle=False
     )

@@ -4,6 +4,36 @@ All notable changes are documented here. This project follows phase-based delive
 
 ## [Unreleased]
 
+## [0.3.3] — 2026-07-18
+
+### Demo-ready console
+
+- Add per-workflow scenario selection in the Console, including the `expensive` and
+  `failed_validation` cited-market-research scenarios.
+- Make saved runs explicitly selectable and replace the raw JSON pane with a readable evidence
+  view: summary metrics, policy/cache/validation rollups, and a costed event timeline.
+- Link a newly completed workflow run directly to its Run Explorer evidence.
+
+## [0.3.2] — 2026-07-17
+
+### Distribution reliability
+
+- Bundle the compiled Local Integration Console in both the wheel and source distribution, so
+  `pip install veille-supervisor[ui]` followed by `veille serve` works outside a repository
+  checkout.
+- Ship the built-in demo workflows with the package, so installed `veille doctor`, `veille demo`,
+  and `veille run` commands have the same registry as local development.
+- Declare the runtime `pydantic-settings` dependency and align the runtime version reported by
+  `veille doctor` with the package release.
+- Build the React UI from a clean `npm ci` install in CI.
+
+### Adoption Foundation
+
+- Added the public `import veille` SDK namespace, re-exporting the existing
+  Runtime Supervisor rather than introducing a second execution engine.
+- Added `veille exec <app.py>`: a safe observe-mode Python script envelope that
+  emits the standard runtime lifecycle and can save a normalized trace.
+
 ### Local Integration Console (ADR-013)
 
 - **`veille` CLI**: `doctor`, `connections`, `workflows`, `run`, `runs`, `providers`, `adapters`, `demo`, `explore`, `serve` subcommands. Registered as `[project.scripts] veille` in `pyproject.toml`.

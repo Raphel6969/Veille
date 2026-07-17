@@ -12,6 +12,14 @@ Phase-by-phase delivery per the [master prompt](development/AI_DEVELOPER_MASTER_
 | 5 | Memory and enterprise | Not started | Multi-tenancy, RBAC, audit, retention |
 | 6 | Simulation and learned policies | Not started | Offline simulation, learned recommendations |
 
+## Adoption Foundation — in progress
+
+This approved cross-cutting slice establishes the product rule that VEILLE has
+one Runtime Supervisor and many thin entry points. The first delivered entry
+points are the public `import veille` SDK and `veille exec <app.py>` observe-mode
+execution envelope. IDE and daemon hosts remain future thin clients over the
+same runtime, not separate policy implementations.
+
 ## Phase 0 deliverables
 
 - [x] Repository structure and documentation system

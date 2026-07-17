@@ -91,3 +91,15 @@ class TestExplore:
         view = explore(batch)
         assert view["validation"] is not None
         assert view["validation"]["status"] == "passed"
+
+    def test_trace_attributes_redact_prompts_and_credentials(self) -> None:
+        batch = _make_batch()
+        batch.events[1].attributes.update(
+            {"raw_prompt": "private instruction", "nested": {"api_token": "secret-value"}}
+        )
+
+        view = explore(batch)
+        attributes = view["timeline"][1]["attributes"]
+
+        assert attributes["raw_prompt"] == "[REDACTED]"
+        assert attributes["nested"]["api_token"] == "[REDACTED]"

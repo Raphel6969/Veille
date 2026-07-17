@@ -2,6 +2,20 @@
 
 This document lays out the remaining work to take Veille from a working `pre_dev` branch to a shipped, tested, and shared open-source project.
 
+## Current delivery context — 2026-07-18
+
+The repository work for the **0.3.3 release candidate** is complete: the Python
+gate is green, the UI builds from a clean install, the Console is packaged in
+both distribution formats, and an isolated wheel install can run `veille doctor`
+and load the packaged UI. The Console now supports workflow scenario selection
+and a readable Run Explorer evidence view.
+
+The remaining release action is external: publish the already-built 0.3.3
+artifacts to TestPyPI, validate a clean install, then publish the same artifacts
+to PyPI. The next repository work is product polish, beginning with newest-first
+Run Explorer ordering and the Console UI overhaul. See the maintained
+[Current TODO](todo.md) for the ordered backlog.
+
 ## Phase 1 — Ship it (this week)
 
 ### 1. Merge `pre_dev` → `main` + tag a release

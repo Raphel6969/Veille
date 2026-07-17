@@ -1,0 +1,301 @@
+# Preflight Supervisor Delivery Plan
+
+## Objective
+
+Deliver VEILLE as a production-pilot-ready **Preflight Supervisor**: before an
+agent executes, VEILLE receives a user request and master context, produces an
+explainable task contract, execution plan, per-role context manifests,
+cost/latency options, and model-routing recommendations, then executes through
+the same Runtime Supervisor after explicit approval.
+
+The product rule is non-negotiable:
+
+> VEILLE has one Runtime Supervisor and many entry points. SDK, CLI, IDE, and
+> daemon integrations are thin adapters over the same contracts, decisions,
+> policies, execution path, and audit trail.
+
+## Delivery rules
+
+- Each commit must be independently testable and leave the runtime compatible.
+- Observe/advisory mode is the default. Context mutation, routing, caching, and
+  enforcement require explicit configuration and a human-readable reason.
+- No entry point may implement planning, policy, routing, or context behavior.
+- Every optimization is measured against validation/task success, not cost alone.
+- Complete a phase's verification and obtain approval before starting the next.
+
+## Current baseline
+
+## AI handoff context (read this first)
+
+**Latest verified status (2026-07-17; supersedes older handoff wording below):**
+
+- Phases 0???4, 5, 6, and 7 are complete.
+- Phase 5 now has redaction-first console trace projections, including nested
+  credential-shaped fields, API regression coverage, and a verified React production build.
+- Phase 6 now has daemon readiness, bounded durable-write admission (`429` + retry),
+  restart-recovery/backpressure coverage, and a self-hosted pilot operations runbook.
+- Verification: 210 Python tests passed, 1 skipped; Ruff, format check, strict mypy,
+  and the UI production build all passed.
+- **Active next work:** Phase 8. Dogfood a permissioned, read-only workflow, collect
+  sanitized evidence, then prepare the partner-evaluation package before recruiting
+  3???5 design partners. Do not make broad-production claims.
+
+**Goal:** VEILLE is a pre-execution control plane: request + master context →
+**Phase 8 implementation update (2026-07-17):**
+
+- Repository deliverables are complete: sanitized-fixture replay, validation-gated
+  scorecards, pilot checklist, and claims-disciplined demo rehearsal.
+- Verification: 216 Python tests passed, 1 skipped; Ruff, format check, strict mypy,
+  and the React production build passed.
+- The external exit criterion remains pending: collect permissioned real-workflow
+  evidence and obtain independent evaluation from 3???5 design partners.
+- Do not mark the broad-production gate complete or claim partner outcomes before then.
+
+advisory proposal → explicit approval → role-specific context/routes → validated
+run evidence. It is not an agent framework or a model gateway.
+
+**Golden Rule:** implement behavior once in the Runtime Supervisor. SDK, CLI,
+console, LangGraph adapter, and daemon are thin entry points only.
+
+**Delivered through the Phase 6 durable-runtime foundation and Phase 7 IDE
+preview:**
+
+- `import veille`; `veille exec`; `veille preflight`; approved CLI runs; trace comparison.
+- `Supervisor.preflight(PreflightRequest)` returns deterministic
+  `PreflightProposal` (plan, cost tiers, context manifests, routes, reasons).
+- `ApprovedRunSession` applies only an explicitly approved proposal; advisory mode
+  does not alter normal execution.
+- Cited-market-research LangGraph demo maps roles to approved plan/context/routes.
+- Console preflight review, explicit safe-demo approval, and baseline comparison.
+- SQLite repository persists proposals and normalized run batches; `veille daemon`
+  hosts local durable state and `/health`; project-scoped proposals and a token
+  guard exist for protected daemon reads.
+- Optional Postgres/Supabase project storage is selected from `DB_URL`, while
+  SQLite remains the local default.
+- VS Code thin-client scaffold compiles: create/view a proposal, explicitly
+  approve the safe demo, and check daemon health.
+
+**Key paths:** runtime `src/supervisor/runtime/`; contracts
+`src/supervisor/contracts/preflight.py`; composition `src/supervisor/preflight.py`;
+LangGraph demo `examples/cited_market_research/agent.py`; daemon
+`src/supervisor/daemon.py`; SQLite `src/supervisor/storage/sqlite.py`.
+
+**Safety invariants:** advisory by default; approval required for applying context
+or routes; no secrets in traces; do not claim savings if task validation worsens;
+no duplicate policy/planning logic in entry points.
+
+**Current status:** Phases 0–4 are complete. Phase 5 delivered the core console
+review/approval/comparison flow, but needs richer redacted trace views and UI
+tests. Phase 6 now has authenticated project proposal/run APIs, SQLite by
+default, and a verified optional Postgres/Supabase repository selected from
+`DB_URL`; it is **not production-pilot complete** until recovery/backpressure
+testing and an operations runbook exist. Phase 7 is complete as an IDE preview:
+the configurable VS Code thin client has command integration tests and produces
+an installable VSIX.
+
+**Next work (in order):**
+
+1. Finish Phase 6 hardening: recovery/backpressure tests and a pilot runbook.
+2. Phase 8: dogfood on a real read-only workflow, collect sanitized traces, and
+   recruit 3–5 design partners. Do not claim broad production readiness first.
+
+**Verify before/after changes:**
+
+```powershell
+.venv\Scripts\python.exe -m pytest -q
+.venv\Scripts\ruff.exe check .
+.venv\Scripts\ruff.exe format --check .
+.venv\Scripts\mypy.exe src\supervisor src\veille
+cd ui; npm run build
+```
+
+**Current evidence:** 202 Python tests passed, 1 skipped; Ruff and strict mypy
+passed at the daemon-hardening gate. The VS Code extension TypeScript check also
+passes. Re-run the commands above before any new commit.
+
+---
+
+## Phase 0 — Lock the runtime boundary and baseline
+
+**Goal:** commit the current foundation and define the integration contract all
+future entry points use.
+
+**Status:** Complete (2026-07-15).
+
+**Exit:** one documented runtime boundary, no duplicate feature logic, and a
+reproducible baseline suite.
+
+| Commit | Change | Verification |
+|---|---|---|
+| `feat(runtime): establish public veille SDK and execution envelope` | Commit `import veille`, `supervisor.runtime`, and `veille exec`. | Runtime/CLI tests; package import test. |
+| `docs: record one-runtime adoption rule` | Commit Golden Rule architecture, adoption guide, roadmap, and changelog updates. | Links and terminology reviewed. |
+| `test: capture current end-to-end baselines` | Add stable golden traces for the current market-research and real-world workflows. | Full suite; summaries stored for comparison. |
+| `chore: make repository formatting baseline clean` | Format the existing `design_partner_demo.py` drift; do not mix behavior changes. | `ruff format --check .`. |
+
+**Non-goals:** new planning behavior, daemon, IDE extension, automatic provider
+instrumentation.
+
+## Phase 1 — Preflight contracts and decision record
+
+**Goal:** make “request before execution” a first-class runtime input/output.
+
+**Status:** Complete (2026-07-15).
+
+**Exit:** VEILLE can serialize, validate, explain, and replay a complete
+preflight proposal without executing an agent.
+
+| Commit | Change | Verification |
+|---|---|---|
+| `feat(contracts): add preflight request and proposal schemas` | Add versioned `PreflightRequest`, `RoleSpec`, `ContextSource`, `CostOption`, `RouteRecommendation`, `PreflightProposal`, and `ApprovalDecision`. | Schema round trips, backwards-compatibility tests, JSON fixtures. |
+| `feat(runtime): add preflight decision ledger` | Add structured decision IDs/reasons that connect task, plan, manifests, routes, estimates, and validation criteria. | Every proposal field has a reason/provenance test. |
+| `feat(planning): build proposal from task and master context` | Compose the existing planner, context engine, and router behind `RuntimeSupervisor.preflight()`. | Deterministic golden proposal for a research task. |
+| `feat(cost): expose comparable cost and latency options` | Produce Minimum, Balanced, High Quality, Maximum Assurance ranges with explicit trade-offs. | Tier ordering, budget/risk constraints, clear recommendation tests. |
+| `docs: specify preflight API and decision semantics` | Update contracts, runtime chain, architecture, and ADR. | Documentation examples execute in tests. |
+
+**Non-goals:** automatically changing an application’s calls; LLM-powered task
+decomposition; production storage.
+
+## Phase 2 — Safe plan application in the runtime
+
+**Goal:** execute an approved proposal through the existing Supervisor.
+
+**Status:** Complete (2026-07-15).
+
+**Exit:** approved plans supply the correct role-specific context and routing to
+an instrumented workflow, while observe mode remains behavior-preserving.
+
+| Commit | Change | Verification |
+|---|---|---|
+| `feat(runtime): add approved-plan execution session` | Introduce a `RunSession` that binds one approved proposal to one `Supervisor` run. | Session lifecycle emits proposal and run correlation IDs. |
+| `feat(context): provide role-context resolver` | Resolve a manifest into safe included/excluded/compressed context slices, with confidentiality boundaries. | Role isolation and redaction tests. |
+| `feat(routing): apply approved route recommendations` | Allow an adapter to request a step’s approved model route; preserve fallback and policy checks. | Routing is advisory unless activation is explicitly enabled. |
+| `feat(validation): bind completion to the task contract` | Make required fields, citations, and custom deterministic checks part of final run status. | A cheap plan cannot pass when validation regresses. |
+| `test(runtime): prove observe-mode non-interference` | Replay the same instrumented workflow with preflight disabled/observe/active. | Same business output in observe mode; active changes are auditable. |
+
+**Non-goals:** autonomous model selection outside approved allowlists; silent
+context deletion; learned policies.
+
+## Phase 3 — First real framework path: LangGraph
+
+**Goal:** make the preflight proposal drive a real multi-role LangGraph workflow.
+
+**Status:** Complete (2026-07-15).
+
+**Exit:** one user request demonstrably becomes role-specific work before model
+and tool calls occur.
+
+| Commit | Change | Verification |
+|---|---|---|
+| `feat(langgraph): map graph nodes to preflight roles and steps` | Extend the existing adapter with approved-plan/session hooks. | Callback events correlate node, role, manifest, and route. |
+| `feat(example): add a real preflight research workflow` | Replace demo-only narration with an end-to-end read-only workflow using real-shaped input/context. | Offline fixture and safe local HTTP integration test. |
+| `feat(example): add deliberately wasteful control scenario` | Include irrelevant context, duplicate lookup, and weak route baselines. | Before/after comparison validates outcome equivalence or improvement. |
+| `test(adapter): add golden-plan replay coverage` | Replay sanitized requests and assert plan, context allocations, routes, and validation. | Golden traces stable across releases. |
+| `docs: publish framework integration recipe` | Explain the smallest LangGraph integration and all activation flags. | Recipe is smoke-tested. |
+
+**Non-goals:** deep support for CrewAI/OpenAI Agents SDK; general automatic graph
+generation.
+
+## Phase 4 — SDK and CLI product experience
+
+**Goal:** make the preflight flow easy to try on a developer’s own project.
+
+**Status:** Complete (2026-07-15).
+
+**Exit:** a developer can inspect, approve, run, and compare a plan locally.
+
+| Commit | Change | Verification |
+|---|---|---|
+| `feat(sdk): expose preflight and approved-run API` | Add stable `veille.preflight(...)` and `proposal.approve()`/session APIs; retain old imports. | Copy-paste SDK quickstart test. |
+| `feat(cli): add veille preflight` | Accept request text, task-contract file, and context sources; print/save a proposal. | JSON and human-readable output fixtures. |
+| `feat(cli): add veille run --proposal` | Require explicit approval for active routing/context application and persist the linked trace. | Refusal without approval; successful approved run test. |
+| `feat(cli): add baseline comparison report` | Compare baseline vs supervised cost, latency, calls, validation, and quality checks. | Known duplicate/wasteful scenario test. |
+| `docs: publish dogfood and demo runbooks` | Add personal-use, local safety, and live-demo instructions. | Commands smoke-tested from a clean environment. |
+
+**Important boundary:** `veille exec app.py` remains an observe-mode envelope
+unless the application uses an SDK/framework adapter. Do not claim arbitrary
+application preflight orchestration without integration points.
+
+## Phase 5 — Console as a decision-and-evidence view
+
+**Goal:** make the preflight decision understandable without creating a second
+runtime.
+
+**Status:** Complete (2026-07-17).
+
+**Exit:** the console renders the same persisted proposal and run events emitted
+by the runtime.
+
+| Commit | Change | Verification |
+|---|---|---|
+| `feat(console): add proposal read models and API endpoints` | Read-only API over runtime proposal/run records. | Contract tests prove API is a projection, not recomputation. |
+| `feat(ui): add preflight review page` | Show task contract, plan graph, per-role context, routes, cost options, and approval state. | Component and API tests. |
+| `feat(ui): add baseline-versus-run comparison` | Visualize validated quality, spend, latency, and interventions. | Golden fixture screenshots/Playwright flow. |
+| `feat(console): add redaction-first trace views` | Ensure raw prompts/payloads stay hidden unless explicitly retained. | Redaction regression tests. |
+
+## Phase 6 — Durable pilot runtime and daemon host
+
+**Goal:** support real multi-process pilots without making a hosted platform
+prematurely.
+
+**Status:** Complete (2026-07-17).
+
+**Exit:** a locally/self-hosted daemon hosts the same runtime state and audit
+path, with reliable recovery and operational visibility.
+
+| Commit | Change | Verification |
+|---|---|---|
+| `feat(storage): add durable run/proposal/audit repository port` | Define repository interfaces; ship SQLite/local default and Postgres implementation behind configuration. | Restart/replay and migration tests. |
+| `feat(daemon): host runtime API and worker` | Add `veille daemon` for receiving proposals/runs and exporting OTel; it invokes the shared runtime only. | SDK/CLI/daemon produce compatible event batches. |
+| `feat(daemon): add authenticated project and environment boundaries` | Project IDs, API tokens, configuration scoping, and safe secret resolution. | Cross-project isolation and secret-redaction tests. |
+| `feat(ops): add health, readiness, retry, and backpressure controls` | Health endpoints, bounded queues, recovery, structured logs, safe shutdown. | Fault-injection and restart tests. |
+| `docs: add self-hosted pilot runbook` | Docker/local deployment, backup/retention, incident and rollback steps. | Clean-host smoke test. |
+
+**Non-goals:** multi-region SaaS, billing, SSO, autonomous enforcement.
+
+## Phase 7 — IDE integration as a thin client
+
+**Goal:** give local developers useful feedback without duplicating runtime
+logic.
+
+**Status:** Complete as an IDE preview (2026-07-17). The configurable VS Code
+thin client has command integration tests and produces an installable VSIX.
+
+**Exit:** one IDE extension launches/reads the same CLI or daemon runs.
+
+| Commit | Change | Verification |
+|---|---|---|
+| `docs: choose first IDE and extension protocol` | Default to VS Code only if pilot users validate it. | ADR records scope and API boundary. |
+| `feat(vscode): run/inspect preflight via CLI or daemon` | Provide command palette actions, proposal preview, and trace links. | Extension integration tests against local daemon/CLI. |
+| `feat(vscode): add configuration and safety UX` | Make activation modes, project selection, and data boundaries visible. | No active action without explicit confirmation test. |
+
+## Phase 8 — Production-pilot proof and launch package
+
+**Goal:** prove usefulness on real, permissioned workflows before broad claims.
+
+
+**Status:** Repository implementation complete; external pilot evidence and independent design-partner evaluation pending.
+
+**Exit:** 3–5 design partners can independently run VEILLE on safe workloads
+and evaluate measurable, validated outcomes.
+
+| Commit | Change | Verification |
+|---|---|---|
+| `test(pilot): add sanitized golden-trace suite` | Capture representative partner-approved traces with retention/redaction controls. | Deterministic replay in CI. |
+| `feat(evaluation): add quality-and-savings scorecard` | Compare task success, validation, cost, latency, false interventions, and user acceptance. | Scorecard cannot report savings as success when validation drops. |
+| `docs: publish pilot integration and security checklist` | Define prerequisites, supported boundaries, rollback, and known limits. | Design-partner review. |
+| `docs: publish evidence-backed demo and launch material` | Use one real, permissioned before/after workflow; make claims only from measured evidence. | Demo rehearsal and release checklist. |
+
+## Release gates
+
+| Gate | Required before claiming it |
+|---|---|
+| Developer preview | Phases 0–4 complete; local SDK/CLI workflow with reproducible proposal and validation. |
+| Pilot-ready | Phase 6 complete; durable storage, isolation, recovery, runbooks, and real-workflow evidence. |
+| IDE preview | Phase 7 complete; IDE acts only as a thin client over runtime decisions. |
+| Broad production claim | Phase 8 evidence plus security review, operational SLOs, and explicit supported-workload limits. |
+
+## Suggested next implementation phase
+
+Finish **Phase 6 — Durable pilot runtime and daemon host** hardening. Add
+recovery and backpressure coverage plus a self-hosted pilot operations runbook
+before starting Phase 8 dogfooding and design-partner recruitment.

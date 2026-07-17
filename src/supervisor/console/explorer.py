@@ -9,7 +9,7 @@ available.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from supervisor.analytics import summarize
 from supervisor.context.diversification import (
@@ -18,6 +18,39 @@ from supervisor.context.diversification import (
 )
 from supervisor.contracts.events import EventType, RunEventBatch
 from supervisor.planning import Planner, estimate
+
+_REDACTED = "[REDACTED]"
+_SENSITIVE_ATTRIBUTE_PARTS = (
+    "api_key",
+    "authorization",
+    "credential",
+    "password",
+    "secret",
+    "token",
+    "prompt",
+    "payload",
+)
+
+
+def _redact(value: Any, *, key: str = "") -> Any:
+    """Return a console-safe projection; raw prompts and credentials never leave it."""
+    normalized_key = key.lower().replace("-", "_")
+    if any(part in normalized_key for part in _SENSITIVE_ATTRIBUTE_PARTS):
+        return _REDACTED
+    if isinstance(value, dict):
+        return {
+            str(item_key): _redact(item_value, key=str(item_key))
+            for item_key, item_value in value.items()
+        }
+    if isinstance(value, list):
+        return [_redact(item, key=key) for item in value]
+    if isinstance(value, tuple):
+        return [_redact(item, key=key) for item in value]
+    return value
+
+
+def _safe_attributes(attributes: dict[str, Any]) -> dict[str, Any]:
+    return cast(dict[str, Any], _redact(attributes))
 
 
 def _timeline(batch: RunEventBatch) -> list[dict[str, Any]]:
@@ -32,7 +65,7 @@ def _timeline(batch: RunEventBatch) -> list[dict[str, Any]]:
             "duration_ms": e.duration_ms,
             "cost_usd": e.cost_usd,
             "status": e.status,
-            "attributes": e.attributes,
+            "attributes": _safe_attributes(e.attributes),
         }
         for e in batch.events
     ]
@@ -74,7 +107,7 @@ def _policy_intervention(batch: RunEventBatch) -> dict[str, Any]:
             "event_type": e.event_type,
             "step_id": e.step_id,
             "tool_name": e.tool_name,
-            "attributes": e.attributes,
+            "attributes": _safe_attributes(e.attributes),
         }
         for e in batch.events
         if e.event_type == EventType.POLICY_TRIGGERED
@@ -83,7 +116,7 @@ def _policy_intervention(batch: RunEventBatch) -> dict[str, Any]:
         {
             "step_id": e.step_id,
             "tool_name": e.tool_name,
-            "attributes": e.attributes,
+            "attributes": _safe_attributes(e.attributes),
         }
         for e in batch.events
         if e.event_type == EventType.INTERVENTION_APPLIED

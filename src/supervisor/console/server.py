@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
@@ -29,12 +29,17 @@ from supervisor.console.run_registry import (
     run_workflow,
 )
 from supervisor.contracts.events import RunEventBatch
-from supervisor.io import save_trace_fixture
+from supervisor.contracts.preflight import ContextSource, PreflightRequest
+from supervisor.io import load_task_contract, save_trace_fixture
+from supervisor.sdk import Supervisor
 
 app = FastAPI(title="Veille Local Integration Console", version="0.1.0")
 
-# Mount built React UI assets when available (must be before the catch-all route).
-_UI_DIR = Path(__file__).resolve().parents[3] / "ui" / "dist"
+# Mount packaged React assets when available (must be before the catch-all route).
+# The repository path is retained solely for `npm run dev` / local builds.
+_PACKAGED_UI_DIR = Path(__file__).resolve().parent / "ui"
+_REPOSITORY_UI_DIR = Path(__file__).resolve().parents[3] / "ui" / "dist"
+_UI_DIR = _PACKAGED_UI_DIR if _PACKAGED_UI_DIR.is_dir() else _REPOSITORY_UI_DIR
 _UI_READY = _UI_DIR.is_dir()
 if _UI_READY:
     app.mount("/assets", StaticFiles(directory=str(_UI_DIR / "assets")), name="ui-assets")
@@ -50,6 +55,12 @@ class RunRequest(BaseModel):
     scenario: str = "success"
     real: bool = False
     confirm: bool = False
+    apply_preflight: bool = False
+
+
+class PreflightConsoleRequest(BaseModel):
+    task_contract_path: str
+    context: list[str] = []
 
 
 @app.get("/api/health")
@@ -103,16 +114,36 @@ def workflow_detail(name: str) -> dict[str, Any]:
     }
 
 
+@app.post("/api/preflight")
+def preflight_endpoint(req: PreflightConsoleRequest) -> dict[str, Any]:
+    try:
+        task = load_task_contract(req.task_contract_path)
+        proposal = Supervisor(task).preflight(
+            PreflightRequest(
+                task_contract=task,
+                master_context=[
+                    ContextSource(source_id=str(i), content=value)
+                    for i, value in enumerate(req.context)
+                ],
+            )
+        )
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return cast(dict[str, Any], proposal.model_dump(mode="json"))
+
+
 @app.post("/api/workflows/{name}/run")
 def run_workflow_endpoint(name: str, req: RunRequest) -> dict[str, Any]:
     settings = get_settings()
     if req.real and not req.confirm:
         raise HTTPException(status_code=400, detail="Real execution requires confirm=true.")
+    if req.apply_preflight and not req.confirm:
+        raise HTTPException(status_code=400, detail="Preflight application requires confirm=true.")
     if settings.real_mode and req.real is False:
         # honor console real-mode only when explicitly requested
         pass
     try:
-        result = run_workflow(name, scenario=req.scenario)
+        result = run_workflow(name, scenario=req.scenario, apply_preflight=req.apply_preflight)
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     batch: RunEventBatch = result["batch"]
@@ -134,7 +165,15 @@ def adapters() -> list[dict[str, Any]]:
 
 @app.get("/api/runs")
 def runs() -> list[dict[str, Any]]:
-    return [{"run_id": r.run_id, "task_id": r.task_id, "scenario": r.scenario} for r in list_runs()]
+    return [
+        {
+            "run_id": r.run_id,
+            "task_id": r.task_id,
+            "scenario": r.scenario,
+            "timestamp": r.timestamp,
+        }
+        for r in list_runs()
+    ]
 
 
 @app.get("/api/runs/{run_id}")

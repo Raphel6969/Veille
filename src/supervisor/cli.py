@@ -27,8 +27,11 @@ from supervisor.console.run_registry import (
     run_workflow,
 )
 from supervisor.contracts.events import RunEventBatch
-from supervisor.io import load_trace_fixture, save_trace_fixture
+from supervisor.contracts.preflight import ContextSource, PreflightRequest
+from supervisor.io import load_task_contract, load_trace_fixture, save_trace_fixture
 from supervisor.policy import evaluate_observe
+from supervisor.runtime import run_script
+from supervisor.sdk import Supervisor
 from supervisor.telemetry import ConsoleOTelExporter
 
 # Ensure repo-root packages (e.g. the ``examples`` package) are importable when
@@ -137,8 +140,19 @@ def _run(args: argparse.Namespace) -> int:
     if settings.real_mode and not args.yes:
         print("Real execution requires confirmation. Re-run with --yes.", file=sys.stderr)
         return 1
+    if args.proposal and not args.approve:
+        print("Proposal execution requires explicit --approve.", file=sys.stderr)
+        return 1
+    if args.proposal:
+        try:
+            proposal = json.loads(Path(args.proposal).read_text("utf-8"))
+            if proposal.get("status") != "advisory":
+                raise ValueError("proposal must be advisory")
+        except Exception as exc:  # noqa: BLE001
+            print(f"Cannot load proposal: {exc}", file=sys.stderr)
+            return 2
     try:
-        result = run_workflow(args.workflow, scenario=scenario)
+        result = run_workflow(args.workflow, scenario=scenario, apply_preflight=bool(args.proposal))
     except Exception as exc:  # noqa: BLE001
         print(f"Workflow failed: {exc}", file=sys.stderr)
         return 1
@@ -244,6 +258,84 @@ def _serve(args: argparse.Namespace) -> int:
     return 0
 
 
+def _daemon(args: argparse.Namespace) -> int:
+    try:
+        import uvicorn
+
+        from supervisor.daemon import create_daemon_app
+    except Exception as exc:  # noqa: BLE001
+        print(f"Daemon host requires the 'ui' extra. ({exc})", file=sys.stderr)
+        return 1
+    uvicorn.run(
+        create_daemon_app(args.database, max_inflight_writes=args.max_inflight_writes),
+        host=args.host,
+        port=args.port,
+    )
+    return 0
+
+
+def _exec(args: argparse.Namespace) -> int:
+    """Run an application through the same runtime used by the SDK."""
+    try:
+        result = run_script(Path(args.script), args.script_args)
+    except FileNotFoundError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    except BaseException as exc:  # noqa: BLE001
+        print(f"Application failed: {exc}", file=sys.stderr)
+        return 1
+
+    if args.trace_dir:
+        destination = Path(args.trace_dir) / f"{result.batch.run_id}.json"
+        save_trace_fixture(result.batch, destination)
+        print(f"Veille trace saved: {destination}")
+    print(f"Runtime mode=observe run={result.batch.run_id} exit={result.exit_code}")
+    return result.exit_code
+
+
+def _preflight(args: argparse.Namespace) -> int:
+    try:
+        task = load_task_contract(args.task_contract)
+    except Exception as exc:  # noqa: BLE001
+        print(f"Cannot load task contract: {exc}", file=sys.stderr)
+        return 2
+    context = [
+        ContextSource(source_id=str(index), content=value)
+        for index, value in enumerate(args.context or [])
+    ]
+    proposal = Supervisor(task).preflight(
+        PreflightRequest(
+            task_contract=task, master_context=context, allowed_models=args.model or []
+        )
+    )
+    payload = proposal.model_dump(mode="json")
+    if args.output:
+        destination = Path(args.output)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        print(f"Preflight proposal saved: {destination}")
+    print(
+        f"Proposal {proposal.proposal_id}: tier={proposal.execution_plan.selected_tier.value} "
+        f"steps={len(proposal.execution_plan.steps)} routes={len(proposal.route_recommendations)}"
+    )
+    return 0
+
+
+def _compare(args: argparse.Namespace) -> int:
+    try:
+        baseline = summarize(load_trace_fixture(args.baseline))
+        supervised = summarize(load_trace_fixture(args.supervised))
+    except Exception as exc:  # noqa: BLE001
+        print(f"Cannot compare runs: {exc}", file=sys.stderr)
+        return 2
+    print("VEILLE run comparison")
+    print(f"  cost_usd: {baseline.total_cost_usd:.4f} -> {supervised.total_cost_usd:.4f}")
+    print(f"  latency_s: {baseline.total_latency_s:.2f} -> {supervised.total_latency_s:.2f}")
+    print(f"  tool_calls: {baseline.tool_calls} -> {supervised.tool_calls}")
+    print(f"  validation_checks: {baseline.validation_checks} -> {supervised.validation_checks}")
+    return 0
+
+
 def _add_subparsers(sub: argparse._SubParsersAction[Any]) -> None:
     explore = sub.add_parser("explore", help="Inspect a supervised run.")
     src = explore.add_mutually_exclusive_group(required=True)
@@ -279,6 +371,12 @@ def _add_subparsers(sub: argparse._SubParsersAction[Any]) -> None:
     run.add_argument("--input", help="Scenario name or path to input JSON.")
     run.add_argument("--yes", action="store_true", help="Confirm real execution.")
     run.add_argument("--policy", action="store_true", help="Show observe-only policy flags.")
+    run.add_argument("--proposal", help="Advisory proposal JSON created by veille preflight.")
+    run.add_argument(
+        "--approve",
+        action="store_true",
+        help="Explicitly apply the proposal to a supported workflow.",
+    )
     run.set_defaults(func=_run)
 
     runs = sub.add_parser("runs", help="List/inspect saved runs.")
@@ -305,6 +403,42 @@ def _add_subparsers(sub: argparse._SubParsersAction[Any]) -> None:
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
     serve.set_defaults(func=_serve)
+
+    daemon = sub.add_parser("daemon", help="Start the local durable VEILLE daemon host.")
+    daemon.add_argument("--host", default="127.0.0.1")
+    daemon.add_argument("--port", type=int, default=8020)
+    daemon.add_argument("--database", default=".veille/veille.db")
+    daemon.add_argument(
+        "--max-inflight-writes",
+        type=int,
+        default=16,
+        help="Maximum concurrent durable writes before requests receive HTTP 429.",
+    )
+    daemon.set_defaults(func=_daemon)
+
+    execute = sub.add_parser(
+        "exec", help="Run a Python application through the shared observe-mode runtime."
+    )
+    execute.add_argument("script", help="Python application path.")
+    execute.add_argument("--trace-dir", help="Optional directory for the normalized run trace.")
+    execute.add_argument(
+        "script_args",
+        nargs="*",
+        help="Arguments passed to the app (place them after --).",
+    )
+    execute.set_defaults(func=_exec)
+
+    preflight = sub.add_parser("preflight", help="Create an advisory plan before agent execution.")
+    preflight.add_argument("task_contract", help="Path to a task-contract YAML file.")
+    preflight.add_argument("--context", action="append", help="Labelled master-context slice.")
+    preflight.add_argument("--model", action="append", help="Allowed model (repeatable).")
+    preflight.add_argument("--output", help="Write the proposal JSON to this path.")
+    preflight.set_defaults(func=_preflight)
+
+    compare = sub.add_parser("compare", help="Compare baseline and supervised normalized traces.")
+    compare.add_argument("baseline", help="Baseline trace JSON.")
+    compare.add_argument("supervised", help="Supervised trace JSON.")
+    compare.set_defaults(func=_compare)
 
 
 def _explore_file(args: argparse.Namespace) -> int:

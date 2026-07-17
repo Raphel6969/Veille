@@ -40,7 +40,7 @@ export interface WorkflowInfo {
   framework: string;
   supports_real: boolean;
   description: string;
-  default_scenarios: string[];
+  scenarios: string[];
 }
 
 export interface ConnectionInfo {
@@ -71,6 +71,7 @@ export interface RunView {
   context: unknown[];
   cache: Record<string, unknown>;
   validation: Record<string, unknown>;
+  policy?: { policy_events?: unknown[]; intervention_events?: unknown[] };
   providers: string[];
 }
 
@@ -106,6 +107,12 @@ export function runDetail(runId: string): Promise<RunView> {
   return get<RunView>(`/api/runs/${runId}`);
 }
 
-export function runWorkflow(name: string, scenario = "success"): Promise<RunView> {
-  return post<RunView>(`/api/workflows/${name}/run`, { scenario });
+export function runWorkflow(name: string, scenario = "success", apply_preflight = false): Promise<RunView> {
+  return post<RunView>(`/api/workflows/${name}/run`, { scenario, apply_preflight, confirm: apply_preflight });
+}
+
+export interface PreflightProposal { proposal_id: string; status: string; execution_plan: { selected_tier: string; steps: { step_id: string; role: string; description: string }[] }; cost_options: { tier: string; estimated_cost_usd_min: number; estimated_cost_usd_max: number; recommended: boolean }[]; context_manifests: { step_id: string; role: string; included: string[]; excluded: string[]; compressed: string[]; reason: string }[]; route_recommendations: { step_id: string; model: string; reason: string }[]; }
+
+export function preflight(task_contract_path: string, context: string[]): Promise<PreflightProposal> {
+  return post<PreflightProposal>("/api/preflight", { task_contract_path, context });
 }

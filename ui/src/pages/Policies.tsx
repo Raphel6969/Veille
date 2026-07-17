@@ -11,7 +11,8 @@ export default function Policies() {
   return (
     <div>
       <h2>Policy Configuration</h2>
-      <table>
+      <div className="glass-panel" style={{ padding: 0, overflowX: "auto" }}>
+      <table className="glass-table">
         <tbody>
           <tr><td>Policy Mode</td><td>{d.policy_mode}</td></tr>
           <tr><td>Enforcement Enabled</td><td>{String(d.enforce_enabled)}</td></tr>
@@ -24,6 +25,7 @@ export default function Policies() {
           <tr><td>Router Status</td><td>{d.router_status}</td></tr>
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

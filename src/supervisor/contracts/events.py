@@ -20,6 +20,8 @@ class EventType(StrEnum):
     TOOL_REQUESTED = "tool.requested"
     TOOL_COMPLETED = "tool.completed"
     CONTEXT_ATTACHED = "context.attached"
+    PREFLIGHT_APPROVED = "preflight.approved"
+    ROUTE_APPLIED = "route.applied"
     MEMORY_RETRIEVED = "memory.retrieved"
     MEMORY_EXPIRED = "memory.expired"
     RETRY_SCHEDULED = "retry.scheduled"
