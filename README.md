@@ -140,7 +140,3 @@ templates/               Baseline measurement templates
 | [OpenRouter integration](docs/guides/openrouter-setup.md) | Using OpenRouter as a gateway |
 | [OpenAI Agents SDK](docs/guides/openai-agents-sdk.md) | Running an OpenAI Agents SDK workflow |
 | [LiteLLM integration](docs/guides/litellm-integration.md) | Using LiteLLM for multi-provider access |
-
-## 📜 License
-
-MIT
